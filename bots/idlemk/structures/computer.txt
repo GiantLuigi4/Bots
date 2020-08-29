@@ -1,0 +1,6 @@
+cps/func:
+2
+desc:
+An everyday, [real world] modern pc
+bc:
+1

@@ -1,0 +1,6 @@
+cps/func:
+134
+desc:
+The most modern and stable build of Chroz Explorer, allowing for 100 billion search results in 0.01 milliseconds
+bc:
+64

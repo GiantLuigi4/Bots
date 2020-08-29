@@ -1,0 +1,6 @@
+cps/func:
+rand(0,250000)
+desc:
+A bot that does art. Still can't judge art to tell if it's good or bad, so a human is still needed luckily.
+bc:
+200000

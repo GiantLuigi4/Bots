@@ -1,0 +1,6 @@
+cps/func:
+4
+desc:
+plug it into your pc, and stop working off memory
+bc:
+3

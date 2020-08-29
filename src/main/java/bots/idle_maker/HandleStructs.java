@@ -1,6 +1,7 @@
 package bots.idle_maker;
 
 import net.dv8tion.jda.core.EmbedBuilder;
+import utils.Files;
 
 import java.awt.*;
 import java.io.File;
@@ -117,7 +118,11 @@ public class HandleStructs {
     public static ArrayList<Structure> getStructs() {
         ArrayList<Structure> structs = new ArrayList<>();
         
-        File fi = new File("D:\\bot\\idlemk\\confirmed\\structure");
+        File fi = new File(Files.dir+"\\bots\\idlemk\\structures");
+        
+        if (!fi.exists()) {
+            fi.mkdirs();
+        }
         
         for (File fi2 : fi.listFiles()) {
             try {

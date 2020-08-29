@@ -1,0 +1,6 @@
+cps/func:
+10000
+desc:
+So you know how absolute 0 degrees is under 0 same with this!
+bc:
+50000

@@ -1,0 +1,6 @@
+cps/func:
+2500
+desc:
+A Wifi That exceeds previous limits of old wifi connections!!
+bc:
+10000

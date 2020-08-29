@@ -1,0 +1,6 @@
+cps/func:
+25000
+desc:
+A i99 processor to solve all your mechanical needs!
+bc:
+100000

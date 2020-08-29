@@ -4,10 +4,8 @@ import java.io.File;
 import java.util.Scanner;
 
 public class PropertyReader {
-	private static final String dir = System.getProperty("user.dir");
-	
 	public static String read(String file, String property) {
-		File f = new File(dir + "\\" + file);
+		File f = new File(Files.dir + "\\" + file);
 		try {
 			Scanner sc = new Scanner(f);
 			String line = "";

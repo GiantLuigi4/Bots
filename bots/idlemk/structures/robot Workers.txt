@@ -1,0 +1,6 @@
+cps/func:
+120
+desc:
+Robots that perform actions for you
+bc:
+60

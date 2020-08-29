@@ -1,0 +1,6 @@
+cps/func:
+rand(0,50)
+desc:
+An open source bot who rates images, but doesn't exactly work at all.
+bc:
+50

@@ -1,0 +1,6 @@
+cps/func:
+5
+desc:
+A nokia 3310 bulletproof phone.
+bc:
+12

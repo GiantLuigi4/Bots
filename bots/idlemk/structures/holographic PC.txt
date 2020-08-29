@@ -1,0 +1,6 @@
+cps/func:
+500
+desc:
+A holographic pc, for all your futuristic needs
+bc:
+1000

@@ -1,0 +1,6 @@
+cps/func:
+200
+desc:
+better wifi, to support more devices, and allow for faster web browsing
+bc:
+500

@@ -1,0 +1,6 @@
+cps/func:
+5000
+desc:
+A battery personally ran by a speedster from The Flash!
+bc:
+25000

@@ -1,0 +1,6 @@
+cps/func:
+1000
+desc:
+A Super boosted Alienware, From dark matter! Pretty cool right?
+bc:
+5000
