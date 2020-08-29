@@ -45,10 +45,10 @@ public class IdleMkr extends ListenerAdapter {
         } catch (LoginException err) {
         }
         //bots.idle_maker.handlestructs.getamt("380845972441530368",2L);
-        structures = Handlestructs.getStructs();
+        structures = HandleStructs.getStructs();
         emote = botBuilt.getEmoteById(Long.parseLong("657410151178960916"));
         currencyname = emote.getAsMention() + "cogs";
-        Handlestructs.getCPS("380845972441530368");
+        HandleStructs.getCPS("380845972441530368");
     }
     
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -178,8 +178,8 @@ public class IdleMkr extends ListenerAdapter {
                 
                 
                         try {
-                            struct = structures.get(Handlestructs.findStruct(name));
-                            num = Handlestructs.findStruct(name);
+                            struct = structures.get(HandleStructs.findStruct(name));
+                            num = HandleStructs.findStruct(name);
 
                         /*event.getChannel().sendMessage("" +
                                 "name:`"+struct.name+"`\n" +
@@ -271,12 +271,12 @@ public class IdleMkr extends ListenerAdapter {
                         
                                 //System.out.println("name:"+struct.name);
                         
-                                event.getChannel().sendMessage(" ").embed(Handlestructs.buystruct(userid, mention, struct, fi, fi2, count, name).build()).complete();
+                                event.getChannel().sendMessage(" ").embed(HandleStructs.buyStruct(userid, mention, struct, fi, fi2, count, name).build()).complete();
                         
                             } else {
                                 try {
-                                    struct = structures.get(Handlestructs.findStruct(arg.toLowerCase()));
-                                    num = Handlestructs.findStruct(arg.toLowerCase());
+                                    struct = structures.get(HandleStructs.findStruct(arg.toLowerCase()));
+                                    num = HandleStructs.findStruct(arg.toLowerCase());
                             
                                     //System.out.println(arg.toLowerCase());
                             
@@ -284,7 +284,7 @@ public class IdleMkr extends ListenerAdapter {
                             
                                     //System.out.println("name:"+struct.name);
                             
-                                    event.getChannel().sendMessage(" ").embed(Handlestructs.buystruct(userid, mention, struct, fi, fi2, count, name).build()).complete();
+                                    event.getChannel().sendMessage(" ").embed(HandleStructs.buyStruct(userid, mention, struct, fi, fi2, count, name).build()).complete();
                                 } catch (NullPointerException err) {
                                     //System.out.println(err.getMessage());
                                     EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -325,7 +325,14 @@ public class IdleMkr extends ListenerAdapter {
                         try {
                             for (int i = 0; i < IdleMkr.structures.size(); i++) {
                                 Structure struct = structures.get(i);
-                                Scanner sc = new Scanner(new File(fi.getPath() + "\\purchases\\" + struct.getID() + ".txt"));
+                                File file = new File(fi.getPath() + "\\purchases\\" + struct.getID() + ".txt");
+                                if (!file.exists()) {
+                                    file.createNewFile();
+                                    FileWriter writer = new FileWriter(file);
+                                    writer.write("0");
+                                    writer.close();
+                                }
+                                Scanner sc = new Scanner(file);
                         
                                 BigInteger num = new BigInteger(sc.nextLine());
                                 BigInteger costfor1 = (new BigInteger("" + struct.cost).add(num.multiply(num)).add(new BigInteger("" + struct.cost)));
@@ -349,6 +356,7 @@ public class IdleMkr extends ListenerAdapter {
                             embedBuilder.addField("Please report this to:", "GiantLuigi4#6616", false);
                             MessageAction msg2 = event.getChannel().sendMessage(" ").embed(embedBuilder.build());
                             msg2.complete();
+                            err.printStackTrace();
                         } catch (NoSuchElementException err) {
                             embedBuilder.setColor(new Color(250, 63, 10));
                             embedBuilder.clearFields();
@@ -357,6 +365,7 @@ public class IdleMkr extends ListenerAdapter {
                             embedBuilder.addField("Please report this to:", "GiantLuigi4#6616", false);
                             MessageAction msg2 = event.getChannel().sendMessage(" ").embed(embedBuilder.build());
                             msg2.complete();
+                            err.printStackTrace();
                         }
                 
                     }
@@ -451,8 +460,8 @@ public class IdleMkr extends ListenerAdapter {
                                 System.out.println(userid);
                                 name = event.getJDA().getUserById(userid).getName();
                             }
-                            String currency = "" + Handlestructs.getamt(userid, Handlestructs.getCPS(userid));
-                            String cps = "" + Handlestructs.getCPS(userid);
+                            String currency = "" + HandleStructs.getAmt(userid, HandleStructs.getCPS(userid));
+                            String cps = "" + HandleStructs.getCPS(userid);
                             String totalcoins = "";
                             try {
                                 Scanner sc = new Scanner(new File("D:\\bot\\idlemk\\userdata\\" + userid + "\\" + "totalcoins.txt"));

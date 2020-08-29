@@ -8,14 +8,11 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Scanner;
+import java.util.*;
 
-public class Handlestructs
+public class HandleStructs
 {
-    public static BigInteger getamt(String userid, BigInteger cps)
+    public static BigInteger getAmt(String userid, BigInteger cps)
     {
         Date date = new Date();
         //SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
@@ -57,7 +54,7 @@ public class Handlestructs
                 FileWriter righter2 = new FileWriter(fi2);
 
                 currency = new BigInteger(""+(new BigInteger(""+data[1].longValue()).add(new BigInteger(""+seconds).multiply(cps))));
-
+                
                 coins = coins.add(new BigInteger(""+(new BigInteger(""+seconds).multiply(cps))));
 
                 //System.out.println(date.getTime()+"\n"+currency);
@@ -86,22 +83,25 @@ public class Handlestructs
         try {
             int i = 0;
             File fi = new File("D:\\bot\\idlemk\\userdata\\"+userid);
-            //Scanner sc = new Scanner(fi);
-            //counts.add(new BigInteger(sc.nextLine()));
-            //System.out.println(counts.get(counts.size()-1));
-            //CPS.add(new BigInteger(""+bots.idle_maker.Bot.structures.get(i).cps).multiply(counts.get(i)));
-            //System.out.println("cpsfromstuct:"+CPS.get(i));
-            //i++;
             for (i = 0; i< IdleMkr.structures.size(); i++)
             {
                 Structure struct = IdleMkr.structures.get(i);
                 Scanner sc = new Scanner(new File(fi.getPath()+"\\purchases\\"+struct.getID()+".txt"));
                 counts.add(new BigInteger(sc.nextLine()));
-                //System.out.println(counts.get(counts.size()-1));
-                CPS.add(new BigInteger(""+struct.cps).multiply(counts.get(i)));
+                String cps = struct.cps;
+                String structCPS = "";
+                if (cps.contains("rand(")) {
+                    String test = cps.substring(cps.indexOf("rand("));
+                    test = test.substring(0,test.indexOf(")"));
+                    Random random = new Random();
+                    String[] strings = test.split(",");
+                    int val = random.nextInt(Integer.parseInt(strings[1]))+Integer.parseInt(strings[0].replace("rand(",""));
+                    structCPS = ""+val;
+                } else {
+                    structCPS = cps;
+                }
+                CPS.add(new BigInteger(structCPS).multiply(counts.get(i)));
                 sc.close();
-                //System.out.println("cpsfromstuct:"+CPS.get(i));
-                //i++;
             }
         } catch (IOException err)
         {
@@ -151,13 +151,13 @@ public class Handlestructs
                     }
                 }
                 sc.nextLine();
-                int cps = Integer.parseInt(sc.nextLine());
+                String cps = (sc.nextLine());
                 sc.nextLine();
                 String descriptor = sc.nextLine();
                 sc.nextLine();
                 int baseCost = Integer.parseInt(sc.nextLine());
 
-                Structure struct = new Structure(name,descriptor,cps,baseCost);
+                Structure struct = new Structure(name,descriptor,""+cps,baseCost);
                 structs.add(struct);
 
                 sc.close();
@@ -200,7 +200,7 @@ public class Handlestructs
 
         return number;
     }
-    public static EmbedBuilder buystruct(String userid, String mention, Structure struct, File fi, File fi2, Long count, String username)
+    public static EmbedBuilder buyStruct(String userid, String mention, Structure struct, File fi, File fi2, Long count, String username)
     {
         ArrayList<String> purchases = new ArrayList<>();
 
@@ -222,7 +222,7 @@ public class Handlestructs
 
             boolean canBuyMore = true;
             boolean boughtanything = false;
-            BigInteger currency = Handlestructs.getamt(userid, Handlestructs.getCPS(userid));
+            BigInteger currency = HandleStructs.getAmt(userid, HandleStructs.getCPS(userid));
 
             BigInteger spent = new BigInteger("0");
 

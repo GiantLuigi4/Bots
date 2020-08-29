@@ -7,10 +7,10 @@ public class Structure implements Comparable
 {
     protected String name = "";
     protected String description = "";
-    protected int cps = 0;
+    protected String cps = "0";
     protected int cost = 0;
 
-    public Structure(String name, String description, int cps, int cost) {
+    public Structure(String name, String description, String cps, int cost) {
         this.name = name;
         this.description = description;
         this.cps = cps;
@@ -19,12 +19,21 @@ public class Structure implements Comparable
 
     public BigInteger getID()
     {
-        String number = "";
+        StringBuilder number = new StringBuilder();
+    
+        try {
+            number.append(Integer.parseInt(cps));
+        } catch (Throwable err) {
+            for (char c:cps.toCharArray()) {
+                number.append((int)c);
+            }
+        }
+//        number.append(cps);
+        number.append(cost);
 
-        number += ""+cps;
-        number += ""+cost;
-
+        //Thank you Chicken_Man370#1333, aka 400105769674211330
         String chars = "~!@#$%^&()_+/-QWERTYUIOP{}|+ASDFGHJKL:\"ZXCVBNM<>? `1234567890-=/*-qwertyuiop[]+asdfghjkl;'zxcvbnm,.";
+
         ArrayList<Character> charslist = new ArrayList<>();
         for (int i=0;i<=chars.length()-1;i++)
         {
@@ -33,7 +42,7 @@ public class Structure implements Comparable
         for (int i=0; i<=name.length()-1;i++)
         {
             if(charslist.contains(name.charAt(i)))
-                number+=""+charslist.indexOf(name.charAt(i));
+                number.append(charslist.indexOf(name.charAt(i)));
         }
         /*for (int i=0; i<=description.length()-1;i++)
         {
@@ -41,7 +50,8 @@ public class Structure implements Comparable
                 number+=""+charslist.indexOf(description.charAt(i));
         }*/
 
-        return new BigInteger(number);
+//        System.out.println(number.toString());
+        return new BigInteger(number.toString());
     }
 
     public int compareTo(Object o) {
