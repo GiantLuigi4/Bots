@@ -177,7 +177,7 @@ public class RoleReactionBot extends ListenerAdapter {
                             builder.setTitle("Reaction added!");
                             builder.setColor(Color.GREEN);
     
-                            builder.addField("Chanel", textChannel.getAsMention(), false);
+                            builder.addField("Channel", textChannel.getAsMention(), false);
                             builder.addField("Message", textChannel.getMessageById(args[0]).complete().getContentRaw(), false);
                             builder.addField("Emote", botBuilt.getEmoteById(args[1]).getAsMention(), false);
                             builder.addField("Role", botBuilt.getRoleById(args[2]).getAsMention(), false);

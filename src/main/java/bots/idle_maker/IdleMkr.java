@@ -89,18 +89,20 @@ public class IdleMkr extends ListenerAdapter {
                     String file = "D:\\bot\\idlemk\\userdata\\" + userid + "\\purchases\\" + structures.get(i).getID() + ".txt";
                     File fistruct = new File(file);
                     fistruct.getParentFile().mkdirs();
-                    if (!fistruct.exists()) {
-                        try {
-                            fistruct.createNewFile();
-                            FileWriter fiwrite = new FileWriter(fistruct);
-                            if (oldpurchases) {
-                                fiwrite.write(sc.nextLine());
-                            } else {
-                                fiwrite.write("0");
+                    if (sc!=null) {
+                        if (!fistruct.exists()) {
+                            try {
+                                fistruct.createNewFile();
+                                FileWriter fiwrite = new FileWriter(fistruct);
+                                if (oldpurchases) {
+                                    fiwrite.write(sc.nextLine());
+                                } else {
+                                    fiwrite.write("0");
+                                }
+                                fiwrite.close();
+                            } catch (IOException err) {
+                                //System.out.println("err");
                             }
-                            fiwrite.close();
-                        } catch (IOException err) {
-                            //System.out.println("err");
                         }
                     }
                 }
