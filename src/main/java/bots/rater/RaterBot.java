@@ -300,44 +300,47 @@ public class RaterBot extends ListenerAdapter {
         frame.setVisible(true);
         
         confg.setVisible(true);
-        while (open) {
-            frameIMG.setAlwaysOnTop(true);
-            frame.setAlwaysOnTop(true);
-            if (frame.isActive()) {
-                frameIMG.setVisible(true);
-            } else {
-                frameIMG.setVisible(false);
-            }
-            frame.setSize(frame.getWidth(), 300);
-            confg.setSize(20, frame.getHeight());
-            confg.setLocation(frame.getX() + frame.getWidth() - 10, frame.getY());
-            //confg.pack();
-            //frame.toFront();
-            component.repaint();
-            boolean toDebug = false;
-            for (String text : confgs.getText().split(" ")) {
-                if (!toDebug) {
-                    toDebug = (open && text.contains("-debug"));
+        Thread thread = new Thread(()-> {
+            while (open) {
+                frameIMG.setAlwaysOnTop(true);
+                frame.setAlwaysOnTop(true);
+                if (frame.isActive()) {
+                    frameIMG.setVisible(true);
+                } else {
+                    frameIMG.setVisible(false);
                 }
-                debug = toDebug;
-                if (text.contains("-save:debug_")) {
-                    for (String text2 : text.split("_")) {
-                        File file = new File(text2);
-                        if (file.isDirectory()) {
-                            if (file.canRead() && file.canWrite()) {
-                                folder = new File(text2 + ("\\" + (System.currentTimeMillis() * System.nanoTime())));
-                                fileSave = new File(text2 + (folder.getAbsolutePath() + "\\" + "rated.png"));
-                                fileSave2 = new File(text2 + (folder.getAbsolutePath() + "\\" + "original.png"));
-                                //System.out.println(folder.getAbsolutePath());
-                                saveFile = true;
+                frame.setSize(frame.getWidth(), 300);
+                confg.setSize(20, frame.getHeight());
+                confg.setLocation(frame.getX() + frame.getWidth() - 10, frame.getY());
+                //confg.pack();
+                //frame.toFront();
+                component.repaint();
+                boolean toDebug = false;
+                for (String text : confgs.getText().split(" ")) {
+                    if (!toDebug) {
+                        toDebug = (open && text.contains("-debug"));
+                    }
+                    debug = toDebug;
+                    if (text.contains("-save:debug_")) {
+                        for (String text2 : text.split("_")) {
+                            File file = new File(text2);
+                            if (file.isDirectory()) {
+                                if (file.canRead() && file.canWrite()) {
+                                    folder = new File(text2 + ("\\" + (System.currentTimeMillis() * System.nanoTime())));
+                                    fileSave = new File(text2 + (folder.getAbsolutePath() + "\\" + "rated.png"));
+                                    fileSave2 = new File(text2 + (folder.getAbsolutePath() + "\\" + "original.png"));
+                                    //System.out.println(folder.getAbsolutePath());
+                                    saveFile = true;
+                                }
                             }
                         }
                     }
                 }
             }
-        }
+        });
+        thread.start();
         //builder.setEnableShutdownHook(true);
-        Runtime.getRuntime().exit(0);
+//        Runtime.getRuntime().exit(0);
         
         //392384-perms token
     }
