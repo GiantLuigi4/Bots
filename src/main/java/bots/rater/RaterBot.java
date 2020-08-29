@@ -300,7 +300,7 @@ public class RaterBot extends ListenerAdapter {
         frame.setVisible(true);
         
         confg.setVisible(true);
-        Thread thread = new Thread(()-> {
+        Thread thread = new Thread(() -> {
             while (open) {
                 frameIMG.setAlwaysOnTop(true);
                 frame.setAlwaysOnTop(true);

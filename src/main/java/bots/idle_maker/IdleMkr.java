@@ -76,7 +76,7 @@ public class IdleMkr extends ListenerAdapter {
             if (hasSave) {
                 String userid = message.getAuthor().getId();
                 Scanner sc = null;
-        
+    
                 if (oldpurchases) {
                     try {
                         sc = new Scanner(new File("D:\\bot\\idlemk\\userdata\\" + userid + "\\purchases.txt"));
@@ -84,12 +84,12 @@ public class IdleMkr extends ListenerAdapter {
                         //System.out.println("err");
                     }
                 }
-        
+    
                 for (int i = 0; i < structures.size(); i++) {
                     String file = "D:\\bot\\idlemk\\userdata\\" + userid + "\\purchases\\" + structures.get(i).getID() + ".txt";
                     File fistruct = new File(file);
                     fistruct.getParentFile().mkdirs();
-                    if (sc!=null) {
+                    if (sc != null) {
                         if (!fistruct.exists()) {
                             try {
                                 fistruct.createNewFile();
@@ -106,7 +106,7 @@ public class IdleMkr extends ListenerAdapter {
                         }
                     }
                 }
-        
+    
                 try {
                     sc.close();
                 } catch (NullPointerException err) {
@@ -154,15 +154,15 @@ public class IdleMkr extends ListenerAdapter {
                     if (messageText.startsWith(prefix + "prefix")) {
                         String userid = message.getAuthor().getId();
                         File fi = new File("D:\\bot\\idlemk\\userdata\\" + userid + "\\" + "personalprefix.txt");
-                
+    
                         String arg = messageText.substring((prefix + "prefix ").length());
                         //System.out.println(arg);
-                
+    
                         event.getChannel().sendMessage("" +
                                 "Prefix successfully set from:`" + prefix + "`, to :`" + arg + "`.\n" +
                                 "If you get confused, run -idleMaker:help" +
                                 "").complete();
-                
+    
                         try {
                             FileWriter righter = new FileWriter(fi);
                             righter.write(arg);
@@ -172,11 +172,11 @@ public class IdleMkr extends ListenerAdapter {
                     }
                     if (messageText.startsWith(prefix + "search")) {
                         String name = messageText.substring((prefix + "search").length() + 1);
-                
+    
                         Structure struct = null;
                         int num = -1;
-                
-                
+    
+    
                         try {
                             struct = structures.get(HandleStructs.findStruct(name));
                             num = HandleStructs.findStruct(name);
@@ -199,7 +199,7 @@ public class IdleMkr extends ListenerAdapter {
                             embedBuilder.addField(currencyname + " to purchase for the first time:", "" + struct.cost, false);
                             embedBuilder.addField("ID (for future reference):", "" + struct.getID(), false);
                             embedBuilder.addField("ID (to buy):", "" + num, false);
-                    
+        
                             event.getChannel().sendMessage(" ").embed(embedBuilder.build()).complete();
 
                         /*System.out.println("name:"+struct.name);
@@ -213,16 +213,16 @@ public class IdleMkr extends ListenerAdapter {
                             event.getChannel().sendMessage(err.getMessage()).complete();
                         }
                     }
-            
+    
                     if (messageText.startsWith(prefix + "buy")) {
                         String userid = message.getAuthor().getId();
                         String mention = message.getAuthor().getAsMention();
                         String name = message.getAuthor().getName();
-                
+        
                         String messageTextCmd = "";
                         Long count = 0L;
-                
-                
+        
+        
                         if (messageText.startsWith(prefix + "buy:")) {
                             String text = messageText.substring((prefix).length());
                             String[] msg = text.split(":", 2);
@@ -235,17 +235,17 @@ public class IdleMkr extends ListenerAdapter {
                         } else {
                             messageTextCmd = messageText;
                         }
-                
-                
+        
+        
                         String arg;
                         if (messageTextCmd.startsWith(prefix)) {
                             arg = messageTextCmd.substring((prefix + "buy").length() + 1);
                         } else {
                             arg = messageTextCmd.substring(("buy").length());
                         }
-                
+        
                         //System.out.println(arg);
-                
+        
                         boolean isnumber = true;
                         try {
                             new BigInteger(arg);
@@ -254,37 +254,40 @@ public class IdleMkr extends ListenerAdapter {
                             isnumber = false;
                             //System.out.println("err");
                         }
-                
+        
                         File fi = new File("D:\\bot\\idlemk\\userdata\\" + userid + "\\");
                         File fi2 = new File("D:\\bot\\idlemk\\userdata\\" + userid + "\\" + "lastupdated.txt");
-                
+        
                         Structure struct = null;
                         int num = -1;
                         try {
                             if (isnumber) {
                                 struct = structures.get(Integer.parseInt(arg));
                                 num = Integer.parseInt(arg);
-                        
+    
                                 //System.out.println(struct.name);
-                        
+    
                                 //event.getChannel().sendMessage("name:`"+struct.name+"`").complete();
-                        
+    
                                 //System.out.println("name:"+struct.name);
-                        
+    
                                 event.getChannel().sendMessage(" ").embed(HandleStructs.buyStruct(userid, mention, struct, fi, fi2, count, name).build()).complete();
-                        
+    
                             } else {
                                 try {
                                     struct = structures.get(HandleStructs.findStruct(arg.toLowerCase()));
                                     num = HandleStructs.findStruct(arg.toLowerCase());
-                            
+    
                                     //System.out.println(arg.toLowerCase());
-                            
+    
                                     //event.getChannel().sendMessage("name:`"+struct.name+"`").complete();
-                            
+    
                                     //System.out.println("name:"+struct.name);
-                            
-                                    event.getChannel().sendMessage(" ").embed(HandleStructs.buyStruct(userid, mention, struct, fi, fi2, count, name).build()).complete();
+    
+                                    Structure finalStruct = struct;
+                                    Long finalCount = count;
+                                    Thread buyThread = new Thread(() -> event.getChannel().sendMessage(" ").embed(HandleStructs.buyStruct(userid, mention, finalStruct, fi, fi2, finalCount, name).build()).complete());
+                                    buyThread.start();
                                 } catch (NullPointerException err) {
                                     //System.out.println(err.getMessage());
                                     EmbedBuilder embedBuilder = new EmbedBuilder();
@@ -307,20 +310,20 @@ public class IdleMkr extends ListenerAdapter {
                             embedBuilder.addField("If it continues to fail,:", "report this to GiantLuigi4#6616", false);
                             event.getChannel().sendMessage(" ").embed(embedBuilder.build()).complete();
                         }
-                
+        
                     }
                     if (messageText.startsWith(prefix + "list")) {
                         String msg = "";
-                
+    
                         String name = message.getAuthor().getName();
-                
+    
                         String userid = message.getAuthor().getId();
-                
+    
                         EmbedBuilder embedBuilder = new EmbedBuilder();
                         embedBuilder.setAuthor(message.getAuthor().getName() + " requested:");
                         embedBuilder.setTitle(name + "'s structures");
                         embedBuilder.setColor(new Color(8, 124, 250));
-                
+    
                         File fi = new File("D:\\bot\\idlemk\\userdata\\" + userid + "\\");
                         try {
                             for (int i = 0; i < IdleMkr.structures.size(); i++) {
@@ -333,19 +336,19 @@ public class IdleMkr extends ListenerAdapter {
                                     writer.close();
                                 }
                                 Scanner sc = new Scanner(file);
-                        
+    
                                 BigInteger num = new BigInteger(sc.nextLine());
                                 BigInteger costfor1 = (new BigInteger("" + struct.cost).add(num.multiply(num)).add(new BigInteger("" + struct.cost)));
-                        
+    
                                 embedBuilder.addField(struct.name, "cps: **" + struct.cps + "**, cost: **" + costfor1 + "**, Count: **" + num + "**", false);
-                        
+    
                                 msg += "`" + i + ". " + struct.name + "`\n";
-                        
+    
                                 sc.close();
                             }
-                    
+    
                             //event.getChannel().sendMessage(msg).complete();
-                    
+    
                             MessageAction msg2 = event.getChannel().sendMessage(" ").embed(embedBuilder.build());
                             msg2.complete();
                         } catch (IOException err) {
@@ -367,20 +370,20 @@ public class IdleMkr extends ListenerAdapter {
                             msg2.complete();
                             err.printStackTrace();
                         }
-                
+    
                     }
                     if (messageText.startsWith(prefix + "start")) {
                         String userid = message.getAuthor().getId();
                         String mention = message.getAuthor().getAsMention();
-                
+    
                         File fi = new File("D:\\bot\\idlemk\\userdata\\" + userid);
                         File fi2 = new File("D:\\bot\\idlemk\\userdata\\" + userid + "\\" + "lastupdated.txt");
                         //File fi3 = new File("D:\\bot\\idlemk\\userdata\\"+userid+"\\"+"purchases.txt");
                         File fi4 = new File("D:\\bot\\idlemk\\userdata\\" + userid + "\\" + "totalcoins.txt");
                         File fi5 = new File("D:\\bot\\idlemk\\userdata\\" + userid + "\\" + "personalprefix.txt");
-                
+    
                         fi.mkdirs();
-                
+    
                         for (int i = 0; i < structures.size(); i++) {
                             String file = "D:\\bot\\idlemk\\userdata\\" + userid + "\\purchases\\" + structures.get(i).getID() + ".txt";
                             File fistruct = new File(file);
@@ -401,9 +404,9 @@ public class IdleMkr extends ListenerAdapter {
                                 }
                             }
                         }
-                
+    
                         //fi.mkdirs();
-                
+    
                         try {
                             fi2.createNewFile();
                             //fi3.createNewFile();
@@ -411,13 +414,13 @@ public class IdleMkr extends ListenerAdapter {
                             fi5.createNewFile();
                         } catch (IOException err) {
                         }
-                
+    
                         try {
                             Thread.sleep(10);
                         } catch (InterruptedException err) {
-                    
+        
                         }
-                
+    
                         Date date = new Date();
                         //System.out.println(date.getTime()+"\n"+5);
                         try {
@@ -435,19 +438,19 @@ public class IdleMkr extends ListenerAdapter {
                             righter4.close();
                         } catch (IOException err) {
                         }
-                
+    
                         String username = message.getAuthor().getName();
                         EmbedBuilder embedBuilder = new EmbedBuilder();
                         embedBuilder.setAuthor(username + " has created a profile!");
                         embedBuilder.setTitle(" ");
                         embedBuilder.setColor(new Color(8, 124, 250));
                         embedBuilder.addField("Time started:", new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()), true);
-                
+    
                         event.getChannel().sendMessage(" ").embed(embedBuilder.build()).complete();
-                
+    
                         //Message msg2 = event.getChannel().sendMessage(mention + "! Your profile has successfully been created!").complete();
                         //event.getChannel().sendMessage(msg2);
-                
+    
                     }
                     if (messageText.startsWith(prefix + "stats")) {
                         try {
@@ -469,7 +472,7 @@ public class IdleMkr extends ListenerAdapter {
                                 sc.close();
                             } catch (IOException err) {
                             }
-                    
+    
                             EmbedBuilder embedBuilder = new EmbedBuilder();
                             embedBuilder.setAuthor(message.getAuthor().getName() + " requested:");
                             embedBuilder.setTitle(name + "'s stats");
@@ -524,7 +527,7 @@ public class IdleMkr extends ListenerAdapter {
                                         truedesc + "\n" +
                                         basecost + "\n"
                         );*/
-                    
+    
                             File fi = new File("D:\\bot\\idlemk\\awatingconf\\" + args[2].substring(0, args[2].length() - 1) + "\\" + args[3].substring(0, args[3].length() - 1));
                             File fi2 = new File("D:\\bot\\idlemk\\awatingconf\\" + args[2].substring(0, args[2].length() - 1) + "\\" + args[3].substring(0, args[3].length() - 1) + "\\suggestion.txt");
                             fi2.getParentFile().mkdirs();
@@ -533,7 +536,7 @@ public class IdleMkr extends ListenerAdapter {
                             try {
                                 if (!fi.exists() || (fi2.isDirectory() || !fi2.exists())) {
                                     fi2.createNewFile();
-                            
+    
                                     FileWriter righter = new FileWriter(fi2);
                                     righter.write(
                                             "cps/func:\n"
@@ -544,9 +547,9 @@ public class IdleMkr extends ListenerAdapter {
                                                     + basecost + "\n"
                                     );
                                     righter.close();
-                            
+    
                                     String name = message.getAuthor().getName();
-                            
+    
                                     EmbedBuilder embedBuilder = new EmbedBuilder();
                                     embedBuilder.setAuthor(name + " suggested:");
                                     embedBuilder.setTitle(args[3].substring(0, args[3].length() - 1));
@@ -557,12 +560,12 @@ public class IdleMkr extends ListenerAdapter {
                                     embedBuilder.addField("Base Cost:", basecost, true);
                                     MessageAction msg2 = event.getChannel().sendMessage(" ").embed(embedBuilder.build());
                                     msg2.complete();
-                            
+    
                                     //Message msg2 = event.getChannel().sendMessage("Suggestion added successfully.").complete();
                                     //event.getChannel().sendMessage(msg2);
                                 } else {
                                     String name = message.getAuthor().getName();
-                            
+    
                                     EmbedBuilder embedBuilder = new EmbedBuilder();
                                     embedBuilder.setAuthor(name);
                                     embedBuilder.setTitle("Suggestion Failed.");
@@ -571,13 +574,13 @@ public class IdleMkr extends ListenerAdapter {
                                     embedBuilder.addField("Suggestion Name:", args[3].substring(0, args[3].length() - 1), false);
                                     MessageAction msg2 = event.getChannel().sendMessage(" ").embed(embedBuilder.build());
                                     msg2.complete();
-                            
+    
                                     //Message msg2 = event.getChannel().sendMessage("Suggestion has already been made.").complete();
                                     //event.getChannel().sendMessage(msg2);
                                 }
                             } catch (IOException err) {
                                 String name = message.getAuthor().getName();
-                        
+    
                                 EmbedBuilder embedBuilder = new EmbedBuilder();
                                 embedBuilder.setAuthor(name);
                                 embedBuilder.setTitle("Suggestion Failed.");
@@ -586,14 +589,14 @@ public class IdleMkr extends ListenerAdapter {
                                 embedBuilder.addField("Report this error to:", "GiantLuigi4#6616", false);
                                 MessageAction msg2 = event.getChannel().sendMessage(" ").embed(embedBuilder.build());
                                 msg2.complete();
-                        
+    
                                 //Message msg2 = event.getChannel().sendMessage("An error occured:`" + err.getMessage() + "`. Please contact GiantLuigi4#6616").complete();
                                 //event.getChannel().sendMessage(msg2);
                             }
-                    
+    
                         } catch (ArrayIndexOutOfBoundsException err) {
                             String name = message.getAuthor().getName();
-                    
+    
                             EmbedBuilder embedBuilder = new EmbedBuilder();
                             embedBuilder.setAuthor(name);
                             embedBuilder.setTitle("Suggestion Failed.");
@@ -601,7 +604,7 @@ public class IdleMkr extends ListenerAdapter {
                             embedBuilder.addField("", "You must fill out ALL arguments. Do -idleMaker:help for help", false);
                             MessageAction msg2 = event.getChannel().sendMessage(" ").embed(embedBuilder.build());
                             msg2.complete();
-                    
+    
                             //Message msg2 = event.getChannel().sendMessage("Please fill out ALL arguments.").complete();
                             //event.getChannel().sendMessage(msg2);
                         }

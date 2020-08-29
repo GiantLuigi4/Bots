@@ -29,7 +29,7 @@ public class RoleReactionBot extends ListenerAdapter {
     
     public static void main(String[] args) {
         JDABuilder builder = new JDABuilder(AccountType.BOT);
-        String token = PropertyReader.read("bots.properties","roleReaction");
+        String token = PropertyReader.read("bots.properties", "roleReaction");
         builder.setToken(token);
         builder.setStatus(OnlineStatus.ONLINE);
         builder.setGame(Game.watching("for -rrb:help." + ".. V0.2"));
