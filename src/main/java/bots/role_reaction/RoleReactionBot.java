@@ -37,11 +37,12 @@ public class RoleReactionBot extends ListenerAdapter {
         builder.addEventListener(bot);
         try {
             botBuilt = builder.buildAsync();
+            id = botBuilt.getSelfUser().getId();
         } catch (LoginException ignored) {
         }
     }
     
-    private final String id = "659769290857250846";
+    private static String id = "659769290857250846";
     
     @Override
     public void onReady(ReadyEvent event) {

@@ -40,7 +40,7 @@ public class RaterBot extends ListenerAdapter {
     private static int pixelR = 0;
     private static int pixelD = 0;
     
-    private final String id = "640589019989803019";
+    private static String id = "640589019989803019";
     
     private static BufferedImage comparisonBimig = null;
     
@@ -196,6 +196,7 @@ public class RaterBot extends ListenerAdapter {
         RaterBot bot = new RaterBot();
         builder.addEventListener(bot);
         botBuilt = builder.buildAsync();
+        id = botBuilt.getSelfUser().getId();
         frame.addWindowListener(new WindowListener() {
             @Override
             public void windowOpened(WindowEvent e) {

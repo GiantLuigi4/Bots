@@ -74,7 +74,7 @@ public class PublicRaterBot extends ListenerAdapter {
     public static BufferedImage img = null;
     public static BufferedImage ratedImg = null;
     
-    private static final String id = "643612417695285253";
+    private static String id = "643612417695285253";
     
     public static File folder = null;
     public static File fileSave = null;
@@ -91,6 +91,7 @@ public class PublicRaterBot extends ListenerAdapter {
         PublicRaterBot bot = new PublicRaterBot();
         builder.addEventListener(bot);
         botBuilt = builder.buildAsync();
+        id = botBuilt.getSelfUser().getId();
     }
     
     public void onMessageReceived(MessageReceivedEvent event) {

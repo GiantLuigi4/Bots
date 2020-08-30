@@ -43,6 +43,7 @@ public class IdleMkr extends ListenerAdapter {
         builder.addEventListener(bot);
         try {
             botBuilt = builder.buildAsync();
+            id = botBuilt.getSelfUser().getId();
         } catch (LoginException err) {
         }
         //bots.idle_maker.handlestructs.getamt("380845972441530368",2L);
