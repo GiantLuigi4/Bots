@@ -301,10 +301,14 @@ public class RaterBot extends ListenerAdapter {
         frameIMG.add(component);
         //frameIMG.setUndecorated(true);
         frame.validate();
-        frameIMG.setVisible(true);
-        frame.setVisible(true);
+        try {
+            if (Boolean.parseBoolean(PropertyReader.read("Settings.properties","debugLog"))) {
+                frameIMG.setVisible(true);
+                frame.setVisible(true);
+                confg.setVisible(true);
+            }
+        } catch (Throwable ignored) {}
         
-        confg.setVisible(true);
         Thread thread = new Thread(() -> {
             while (open) {
                 frameIMG.setAlwaysOnTop(true);
