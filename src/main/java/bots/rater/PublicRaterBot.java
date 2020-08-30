@@ -22,7 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-public class PublicBot extends ListenerAdapter {
+public class PublicRaterBot extends ListenerAdapter {
     public static JFrame frame = new JFrame("Debug Window-output");
     public static JFrame confg = new JFrame("Confgs");
     public static JWindow frameIMG = new JWindow();
@@ -88,7 +88,7 @@ public class PublicBot extends ListenerAdapter {
         JDABuilder builder = new JDABuilder(AccountType.BOT);
         builder.setToken(grabbedToken);
         builder.setGame(Game.watching("for -rater:help"));
-        PublicBot bot = new PublicBot();
+        PublicRaterBot bot = new PublicRaterBot();
         builder.addEventListener(bot);
         botBuilt = builder.buildAsync();
     }

@@ -183,11 +183,12 @@ public class RaterBot extends ListenerAdapter {
         
             }
         };
-        
-        PublicBot.main(a);
+    
+        if (PropertyReader.contains("bots.properties","rbPublic"))
+            PublicRaterBot.main(a);
         
         //functions.getPath();
-    
+        
         String grabbedToken = PropertyReader.read("bots.properties", "rbPrivate");
         JDABuilder builder = new JDABuilder(AccountType.BOT);
         builder.setToken(grabbedToken);
