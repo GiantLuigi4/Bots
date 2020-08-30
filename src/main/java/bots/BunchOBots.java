@@ -13,6 +13,7 @@ public class BunchOBots {
 	public static final String drive = PropertyReader.read("settings.properties","drive");
 	
 	public static void main(String[] args) throws LoginException {
+		Files.create("Settings.properties","drive:C");
 		if (!Files.create("bots.properties")) {
 			if (PropertyReader.contains("bots.properties","roleReaction")) {
 				RoleReactionBot.main(args);
