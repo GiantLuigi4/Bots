@@ -1,5 +1,6 @@
 package bots.idle_maker;
 
+import bots.BunchOBots;
 import net.dv8tion.jda.core.EmbedBuilder;
 import utils.Files;
 
@@ -22,8 +23,8 @@ public class HandleStructs {
         //System.out.println(formatter2.format(date));
         //System.out.println(formatter3.format(date));
     
-        File fi = new File("D:\\bot\\idlemk\\userdata\\" + userid + "\\" + "lastupdated.txt");
-        File fi2 = new File("D:\\bot\\idlemk\\userdata\\" + userid + "\\" + "totalcoins.txt");
+        File fi = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid + "\\" + "lastupdated.txt");
+        File fi2 = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid + "\\" + "totalcoins.txt");
     
         BigInteger[] data = new BigInteger[2];
         data[0] = new BigInteger("0");
@@ -72,7 +73,7 @@ public class HandleStructs {
     }
     
     public static BigInteger getCPS(String userid) {
-        //File fi = new File("D:\\bot\\idlemk\\userdata\\"+userid+"\\"+"purchases.txt");
+        //File fi = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\"+userid+"\\"+"purchases.txt");
         
         ArrayList<BigInteger> counts = new ArrayList<>();
         ArrayList<BigInteger> CPS = new ArrayList<>();
@@ -81,7 +82,7 @@ public class HandleStructs {
         
         try {
             int i = 0;
-            File fi = new File("D:\\bot\\idlemk\\userdata\\" + userid);
+            File fi = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid);
             for (i = 0; i < IdleMkr.structures.size(); i++) {
                 Structure struct = IdleMkr.structures.get(i);
                 Scanner sc = new Scanner(new File(fi.getPath() + "\\purchases\\" + struct.getID() + ".txt"));
