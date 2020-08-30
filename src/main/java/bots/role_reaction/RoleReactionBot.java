@@ -32,7 +32,7 @@ public class RoleReactionBot extends ListenerAdapter {
         String token = PropertyReader.read("bots.properties", "roleReaction");
         builder.setToken(token);
         builder.setStatus(OnlineStatus.ONLINE);
-        builder.setGame(Game.watching("for -rrb:help." + ".. V0.2"));
+        builder.setGame(Game.watching("for -rrb:help." + ".. V0.3"));
         bot = new RoleReactionBot();
         builder.addEventListener(bot);
         try {
@@ -231,12 +231,21 @@ public class RoleReactionBot extends ListenerAdapter {
                 }
             }
             if (event.getMessage().getContentRaw().startsWith("-rrb:help") && event.getChannel().getName().contains("bot")) {
-                event.getChannel().sendMessage("" +
-                        "Commands:\n" +
-                        "`-rrb:help` -> display this message\n" +
-                        "`-rrb:addrr [message id] [emote id] [role id]` -> add a reaction role.\n" +
-                        "**DM for invite link.**" +
-                        "").complete();
+//                event.getChannel().sendMessage("" +
+//                        "Commands:\n" +
+//                        "`-rrb:help` -> display this message\n" +
+//                        "`-rrb:addrr [message id] [emote id] [role id]` -> add a reaction role.\n" +
+//                        "**DM for invite link.**" +
+//                        "").complete();
+                EmbedBuilder builder = new EmbedBuilder();
+                String requester = event.getAuthor().getName();
+                builder.setAuthor(requester);
+                builder.setTitle("Help");
+                builder.setColor(new Color(requester.length()%255, Math.abs(Objects.hash(requester))%255, Math.abs(Objects.hash(requester.toLowerCase()))%255));
+                builder.addField("**-rrb:help**","Display this message.", false);
+                builder.addField("**-rrb:addrr `message id` `emote id` `role id`**","Add a role reaction.", false);
+                builder.setFooter("Bot by: GiantLuigi4", "https://cdn.discordapp.com/avatars/380845972441530368/27de0e038db60752d1e8b7b4fced0f4e.png?size=128");
+                event.getChannel().sendMessage(" ").embed(builder.build()).complete();
             }
         }
     }

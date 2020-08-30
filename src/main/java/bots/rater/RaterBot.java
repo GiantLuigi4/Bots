@@ -1,6 +1,7 @@
 package bots.rater;
 
 import net.dv8tion.jda.core.AccountType;
+import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.*;
@@ -189,8 +190,7 @@ public class RaterBot extends ListenerAdapter {
     
         String grabbedToken = PropertyReader.read("bots.properties", "rbPrivate");
         JDABuilder builder = new JDABuilder(AccountType.BOT);
-        String token = grabbedToken;
-        builder.setToken(token);
+        builder.setToken(grabbedToken);
         builder.setGame(Game.watching("for -rater:help, version:" + Messages.version));
         RaterBot bot = new RaterBot();
         builder.addEventListener(bot);
@@ -374,8 +374,7 @@ public class RaterBot extends ListenerAdapter {
     
                         float activity = 0;
                         float messagesRead = 0;
-                        //Message msgRate = event.getChannel().sendMessage("Loading... Please wait...").complete();
-                        //event.getChannel().sendMessage("Loading... Please wait...").complete();
+                        Message msgRate = event.getChannel().sendMessage("Loading... Please wait...").complete();
                         if (debug)
                             textArea.append("RankUser:" + username + "\n");
                         if (true) {
@@ -413,8 +412,8 @@ public class RaterBot extends ListenerAdapter {
                                                 }
                                             }
                                         }
-                                    } catch (net.dv8tion.jda.core.exceptions.InsufficientPermissionException err) {
-    
+                                    } catch (Throwable err) {
+                                        textArea.append(err.getLocalizedMessage());
                                     }
                                     if (debug)
                                         textArea.append("Finished A Message History" + "\n");
@@ -423,18 +422,30 @@ public class RaterBot extends ListenerAdapter {
                                         textArea.append("UnreadChannel" + "\n");
                                 }
                             }
-                            activity = activity / messagesRead;
-                            activity *= 10;
-                            if (activity >= 10) {
-                                Emote emote = botBuilt.getEmoteById(Long.parseLong("641385084611723266"));
-                                Message msgRate = event.getChannel().sendMessage("I rate " + username + " a " + emote.getAsMention() + "/" + emote.getAsMention()).complete();
-                            } else {
-                                Message msgRate = event.getChannel().sendMessage("I rate " + username + " a " + activity + "/10").complete();
+                            try {
+                                activity = activity / messagesRead;
+                                activity *= 10;
+                                if (activity >= 10) {
+                                    Emote emote = botBuilt.getEmoteById(Long.parseLong("641385084611723266"));
+                                    msgRate.editMessage("I rate " + username + " a " + emote.getAsMention() + "/" + emote.getAsMention()).complete();
+                                } else {
+                                    msgRate.editMessage("I rate " + username + " a " + activity + "/10").complete();
+                                }
+                                if (Ping)
+                                    event.getChannel().sendMessage("Rate command sent with a ping, results may be completely off.").complete();
+                            } catch (Throwable err) {
+                                EmbedBuilder builder = new EmbedBuilder();
+                                builder.setColor(Color.RED);
+                                builder.setAuthor(event.getAuthor().getName());
+                                builder.setTitle("Error!");
+                                builder.addField("An error occurred:", err.toString(), false);
+                                if (err.getLocalizedMessage() != null) {
+                                    builder.addField("Message:", err.getLocalizedMessage(), false);
+                                } else if (err.getMessage() != null) {
+                                    builder.addField("Message:", err.getMessage(), false);
+                                }
+                                event.getChannel().sendMessage(" ").embed(builder.build()).complete();
                             }
-                            if (Ping)
-                                event.getChannel().sendMessage("Rate command sent with a ping, results may be completely off.").complete();
-                            //msgRate.editMessage("I rate " + username + " a " + activity + "/10");
-                            //textArea.append("I rate " + username + " a " + activity + "/10");
                         }
                     }
                     if (messageText.startsWith("-rater:help")) {
@@ -443,7 +454,7 @@ public class RaterBot extends ListenerAdapter {
                         } else if (messageText.startsWith("-rater:help -rate:user")) {
                             Message msgRate = event.getChannel().sendMessage(Messages.helpUser).complete();
                         } else {
-                            Message msgRate = event.getChannel().sendMessage(Messages.help).complete();
+                            event.getChannel().sendMessage(" ").embed(Messages.buildHelp(event.getAuthor().getName()).build()).complete();
                         }
                     }
                     if (messageText.startsWith("-rater:clear") || messageText.startsWith("-rater:empty")) {
@@ -638,6 +649,7 @@ public class RaterBot extends ListenerAdapter {
                 }
             }
         } catch (Throwable ignored) {
+            ignored.printStackTrace();
         }
     }
     

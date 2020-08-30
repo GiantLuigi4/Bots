@@ -1,6 +1,7 @@
 package bots.rater;
 
 import net.dv8tion.jda.core.AccountType;
+import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.*;
@@ -85,20 +86,17 @@ public class PublicBot extends ListenerAdapter {
     public static void main(String[] a) throws LoginException {
         String grabbedToken = PropertyReader.read("bots.properties", "rbPublic");
         JDABuilder builder = new JDABuilder(AccountType.BOT);
-        String token = grabbedToken;
-        builder.setToken(token);
+        builder.setToken(grabbedToken);
         builder.setGame(Game.watching("for -rater:help"));
-        RaterBot bot = new RaterBot();
+        PublicBot bot = new PublicBot();
         builder.addEventListener(bot);
         botBuilt = builder.buildAsync();
     }
     
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.getJDA().getSelfUser().getId().equals(id)) {
-            //Message message = event.getMessage();
             String msgId = event.getMessageId();
             String Chan = event.getTextChannel().getName();
-            //User user = event.getJDA().getSelfUser();
             Message message = event.getChannel().getMessageById(msgId).complete();
             String messageText = message.getContentDisplay();
             if (Chan.toLowerCase().contains("bot")) {
@@ -111,11 +109,10 @@ public class PublicBot extends ListenerAdapter {
                             textArea.append("Rated by ping, results may be off" + "\n");
                         Ping = true;
                     }
-    
+                    
                     float activity = 0;
                     float messagesRead = 0;
-                    //Message msgRate = event.getChannel().sendMessage("Loading... Please wait...").complete();
-                    //event.getChannel().sendMessage("Loading... Please wait...").complete();
+                    Message msgRate = event.getChannel().sendMessage("Loading... Please wait...").complete();
                     if (debug)
                         textArea.append("RankUser:" + username + "\n");
                     if (true) {
@@ -124,55 +121,76 @@ public class PublicBot extends ListenerAdapter {
                             if (debug)
                                 textArea.append("Read Channel:" + chn.getName() + "\n");
                             if ((!chn.getName().startsWith("_") && !chn.getName().toLowerCase().contains("bot") && !chn.getParent().getName().startsWith("-") && !chn.getParent().getName().toLowerCase().contains("bot")) && chn.getGuild().equals(event.getGuild())) {
-                                List<Message> msgs = chn.getHistory().retrievePast(100).complete();
-                                for (Message msg : msgs) {
-                                    String sender = msg.getAuthor().getName();
-    
-                                    String usernameWithoutLastFourChars = username.substring(0, username.length() - 4);
-    
-                                    if (debug)
-                                        textArea.append(usernameWithoutLastFourChars + "\n");
-    
-                                    if (usernameWithoutLastFourChars.endsWith("#"))
-                                        sender += "#" + msg.getAuthor().getDiscriminator();
-    
-                                    if (debug)
-                                        textArea.append(username + ":" + sender + "\n");
-    
-                                    if (sender.equals(username)) {
-                                        activity += 1f;
-                                        if (messageText.toLowerCase().contains("bruh"))
-                                            activity /= 2;
-                                        messagesRead += 1f;
+                                try {
+                                    List<Message> msgs = chn.getHistory().retrievePast(100).complete();
+                                    for (Message msg : msgs) {
+                                        String sender = msg.getAuthor().getName();
+        
+                                        String usernameWithoutLastFourChars = username.substring(0, username.length() - 4);
+        
                                         if (debug)
-                                            textArea.append("SentByUser!" + "\n");
-                                    } else {
-                                        messagesRead += 1f;
+                                            textArea.append(usernameWithoutLastFourChars + "\n");
+        
+                                        if (usernameWithoutLastFourChars.endsWith("#"))
+                                            sender += "#" + msg.getAuthor().getDiscriminator();
+        
+                                        if (debug)
+                                            textArea.append(username + ":" + sender + "\n");
+        
+                                        if (sender.equals(username)) {
+                                            activity += 1f;
+                                            if (messageText.toLowerCase().contains("bruh"))
+                                                activity /= 2;
+                                            messagesRead += 1f;
+                                            if (debug)
+                                                textArea.append("SentByUser!" + "\n");
+                                        } else {
+                                            messagesRead += 1f;
+                                        }
                                     }
+                                    if (debug)
+                                        textArea.append("Finished A Message History" + "\n");
+                                } catch (Throwable ignored) {
                                 }
-                                if (debug)
-                                    textArea.append("Finished A Message History" + "\n");
                             } else {
                                 if (debug)
                                     textArea.append("UnreadChannel" + "\n");
                             }
                         }
-                        activity = activity / messagesRead;
-                        activity *= 10;
-                        if (activity >= 10) {
-                            Emote emote = botBuilt.getEmoteById(Long.parseLong("641385084611723266"));
-                            Message msgRate = event.getChannel().sendMessage("I rate " + username + " a " + emote.getAsMention() + "/" + emote.getAsMention()).complete();
-                        } else {
-                            Message msgRate = event.getChannel().sendMessage("I rate " + username + " a " + activity + "/10").complete();
+                        try {
+                            activity = activity / messagesRead;
+                            activity *= 10;
+                            if (activity >= 10) {
+                                Emote emote = botBuilt.getEmoteById(Long.parseLong("641385084611723266"));
+                                msgRate.editMessage("I rate " + username + " a " + emote.getAsMention() + "/" + emote.getAsMention()).complete();
+                            } else {
+                                msgRate.editMessage("I rate " + username + " a " + activity + "/10").complete();
+                            }
+                            if (Ping)
+                                event.getChannel().sendMessage("Rate command sent with a ping, results may be completely off.").complete();
+                        } catch (Throwable err) {
+                            EmbedBuilder builder = new EmbedBuilder();
+                            builder.setColor(Color.RED);
+                            builder.setAuthor(event.getAuthor().getName());
+                            builder.setTitle("Error!");
+                            builder.addField("An error occurred:", err.toString(), false);
+                            if (err.getLocalizedMessage() != null) {
+                                builder.addField("Message:", err.getLocalizedMessage(), false);
+                            } else if (err.getMessage() != null) {
+                                builder.addField("Message:", err.getMessage(), false);
+                            }
+                            event.getChannel().sendMessage(" ").embed(builder.build()).complete();
                         }
-                        if (Ping)
-                            event.getChannel().sendMessage("Rate command sent with a ping, results may be completely off.").complete();
-                        //msgRate.editMessage("I rate " + username + " a " + activity + "/10");
-                        //textArea.append("I rate " + username + " a " + activity + "/10");
                     }
                 }
                 if (messageText.startsWith("-rater:help")) {
-                    Message msgRate = event.getChannel().sendMessage(Messages.help).complete();
+                    if (messageText.startsWith("-rater:help -rate:image")) {
+                        Message msgRate = event.getChannel().sendMessage(Messages.helpImage).complete();
+                    } else if (messageText.startsWith("-rater:help -rate:user")) {
+                        Message msgRate = event.getChannel().sendMessage(Messages.helpUser).complete();
+                    } else {
+                        event.getChannel().sendMessage(" ").embed(Messages.buildHelp(event.getAuthor().getName()).build()).complete();
+                    }
                 }
                 if (messageText.startsWith("-rater:clear") || messageText.startsWith("-rater:empty")) {
                     img = null;
