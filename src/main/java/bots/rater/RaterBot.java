@@ -196,6 +196,9 @@ public class RaterBot extends ListenerAdapter {
         RaterBot bot = new RaterBot();
         builder.addEventListener(bot);
         botBuilt = builder.buildAsync();
+        try {
+            Thread.sleep(1000);
+        } catch (Throwable ignored) {}
         id = botBuilt.getSelfUser().getId();
         frame.addWindowListener(new WindowListener() {
             @Override

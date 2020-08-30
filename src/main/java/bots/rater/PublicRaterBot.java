@@ -91,6 +91,9 @@ public class PublicRaterBot extends ListenerAdapter {
         PublicRaterBot bot = new PublicRaterBot();
         builder.addEventListener(bot);
         botBuilt = builder.buildAsync();
+        try {
+            Thread.sleep(1000);
+        } catch (Throwable ignored) {}
         id = botBuilt.getSelfUser().getId();
     }
     

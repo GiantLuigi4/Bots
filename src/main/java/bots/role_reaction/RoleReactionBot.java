@@ -37,8 +37,9 @@ public class RoleReactionBot extends ListenerAdapter {
         builder.addEventListener(bot);
         try {
             botBuilt = builder.buildAsync();
+            Thread.sleep(1000);
             id = botBuilt.getSelfUser().getId();
-        } catch (LoginException ignored) {
+        } catch (Throwable ignored) {
         }
     }
     
@@ -46,71 +47,74 @@ public class RoleReactionBot extends ListenerAdapter {
     
     @Override
     public void onReady(ReadyEvent event) {
-        if (event.getJDA().getSelfUser().getId().equals(id)) {
-            for (Guild g : botBuilt.getGuilds()) {
-                //System.out.println("b");
-                File fi = new File("D:\\bot\\rrb\\messages\\" + g.getId());
-                //System.out.println("c");
-                try {
-                    for (File fi2 : Objects.requireNonNull(fi.listFiles())) {
-                        for (File fi3 : Objects.requireNonNull(fi2.listFiles())) {
-                            try {
-                                Scanner sc = new Scanner(fi3);
-                                for (TextChannel txtchn : botBuilt.getGuildById(fi.getName()).getTextChannels()) {
-                                    try {
-                                        RestAction<Message> msg = txtchn.getMessageById(fi2.getName());
-                                        msg.complete();
-                                        Emote emote = botBuilt.getEmoteById(Long.parseLong(fi3.getName().substring(0, fi3.getName().length() - 4)));
-                                        msg.queue();
-                                        String role = sc.nextLine();
-                                        msg.complete().addReaction(emote).submit();
-                                        for (MessageReaction reaction : msg.complete().getReactions()) {
-                                            if (reaction.getReactionEmote().getId().equals(emote.getId())) {
-                                                Guild guild = reaction.getGuild();
-                                                List<Member> users = guild.getMembersWithRoles(guild.getRoleById(role));
-                                                ArrayList<Member> withReaction = new ArrayList<>();
-                                                ArrayList<User> toRemove = new ArrayList<>();
-                                                for (User user : reaction.getUsers()) {
-                                                    if (!users.contains(guild.getMember(user))) {
-                                                        try {
-                                                            if (guild.getMember(user) != null) {
-                                                                withReaction.add(guild.getMember(user));
-                                                                guild.getController().addRolesToMember(guild.getMember(user), guild.getRoleById(role)).complete();
-                                                            } else {
-                                                                toRemove.add(user);
+        Thread td = new Thread(()->{
+            if (event.getJDA().getSelfUser().getId().equals(id)) {
+                for (Guild g : botBuilt.getGuilds()) {
+                    //System.out.println("b");
+                    File fi = new File("D:\\bot\\rrb\\messages\\" + g.getId());
+                    //System.out.println("c");
+                    try {
+                        for (File fi2 : Objects.requireNonNull(fi.listFiles())) {
+                            for (File fi3 : Objects.requireNonNull(fi2.listFiles())) {
+                                try {
+                                    Scanner sc = new Scanner(fi3);
+                                    for (TextChannel txtchn : botBuilt.getGuildById(fi.getName()).getTextChannels()) {
+                                        try {
+                                            RestAction<Message> msg = txtchn.getMessageById(fi2.getName());
+                                            msg.complete();
+                                            Emote emote = botBuilt.getEmoteById(Long.parseLong(fi3.getName().substring(0, fi3.getName().length() - 4)));
+                                            msg.queue();
+                                            String role = sc.nextLine();
+                                            msg.complete().addReaction(emote).submit();
+                                            for (MessageReaction reaction : msg.complete().getReactions()) {
+                                                if (reaction.getReactionEmote().getId().equals(emote.getId())) {
+                                                    Guild guild = reaction.getGuild();
+                                                    List<Member> users = guild.getMembersWithRoles(guild.getRoleById(role));
+                                                    ArrayList<Member> withReaction = new ArrayList<>();
+                                                    ArrayList<User> toRemove = new ArrayList<>();
+                                                    for (User user : reaction.getUsers()) {
+                                                        if (!users.contains(guild.getMember(user))) {
+                                                            try {
+                                                                if (guild.getMember(user) != null) {
+                                                                    withReaction.add(guild.getMember(user));
+                                                                    guild.getController().addRolesToMember(guild.getMember(user), guild.getRoleById(role)).complete();
+                                                                } else {
+                                                                    toRemove.add(user);
+                                                                }
+                                                            } catch (Throwable ignored) {
+                                                                ignored.printStackTrace();
                                                             }
-                                                        } catch (Throwable ignored) {
-                                                            ignored.printStackTrace();
+                                                        } else {
+                                                            withReaction.add(guild.getMember(user));
                                                         }
-                                                    } else {
-                                                        withReaction.add(guild.getMember(user));
                                                     }
-                                                }
-                                                for (Member user : users) {
-                                                    if (!withReaction.contains(user)) {
-                                                        guild.getController().removeRolesFromMember(user, guild.getRoleById(role)).complete();
+                                                    for (Member user : users) {
+                                                        if (!withReaction.contains(user)) {
+                                                            guild.getController().removeRolesFromMember(user, guild.getRoleById(role)).complete();
+                                                        }
                                                     }
-                                                }
-                                                for (User user : toRemove) {
-                                                    reaction.removeReaction(user);
+                                                    for (User user : toRemove) {
+                                                        reaction.removeReaction(user);
+                                                    }
                                                 }
                                             }
+                                        } catch (Throwable ignored) {
                                         }
-                                    } catch (Throwable ignored) {
                                     }
+                                    sc.close();
+                                } catch (IOException err) {
+                                    System.out.println("Fatal Error");
                                 }
-                                sc.close();
-                            } catch (IOException err) {
-                                System.out.println("Fatal Error");
                             }
                         }
+                    } catch (NullPointerException err) {
+                        //System.out.println("Guild has no role reactions setup.");
                     }
-                } catch (NullPointerException err) {
-                    //System.out.println("Guild has no role reactions setup.");
                 }
+                super.onReady(event);
             }
-            super.onReady(event);
-        }
+        });
+        td.start();
     }
     
     @Override
