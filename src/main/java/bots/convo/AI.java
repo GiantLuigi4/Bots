@@ -73,7 +73,7 @@ public class AI {
 			File outputs = new File(f.getPath() + "\\out.txt");
 			File info = new File(f.getPath() + "\\info.properties");
 			String[] inputsArray = Files.readArray(inputs);
-			boolean caseSensitive = Boolean.parseBoolean(PropertyReader.read(info, "changing"));
+			boolean caseSensitive = Boolean.parseBoolean(PropertyReader.read(info, "caseSensitive"));
 			String ends = PropertyReader.read(info, "validEnds");
 			String check = caseSensitive ? input : input.toLowerCase();
 			for (String in : inputsArray) {

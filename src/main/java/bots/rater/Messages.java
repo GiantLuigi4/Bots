@@ -20,8 +20,8 @@ public class Messages
         EmbedBuilder builder = new EmbedBuilder();
         builder.setTitle("Help");
         builder.setAuthor(requester);
-        builder.setColor(new Color(requester.length()%255, Math.abs(Objects.hash(requester))%255, Math.abs(Objects.hash(requester.toLowerCase()))%255));
-        builder.addField("**-rater:help**","Get this message, or use `-rater:help {command}` to get help for a specific command.", false);
+        builder.setColor(new Color(((int) Math.abs(requester.length() * 3732.12382f)) % 255, Math.abs(Objects.hash(requester)) % 255, Math.abs(Objects.hash(requester.toLowerCase())) % 255));
+        builder.addField("**-rater:help**", "Get this message, or use `-rater:help {command}` to get help for a specific command.", false);
         builder.addField("**-rate:user**","Rate a user based off activity. You do not need to ping, and the results may be off if you do ping.", false);
         builder.addField("**-rate:image**","Rate an image ~~*somehow*~~.", false);
         builder.setFooter("Bot by: GiantLuigi4", "https://cdn.discordapp.com/avatars/380845972441530368/27de0e038db60752d1e8b7b4fced0f4e.png?size=128");
