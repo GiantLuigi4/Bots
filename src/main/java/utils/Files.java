@@ -2,6 +2,7 @@ package utils;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Files {
@@ -34,5 +35,47 @@ public class Files {
 			}
 		}
 		return false;
+	}
+	
+	public static File get(String file) {
+		File f = new File(dir + "\\" + file);
+		return f;
+	}
+	
+	public static String[] readArray(String file) {
+		File f = new File(dir + "\\" + file);
+		try {
+			Scanner sc = new Scanner(f);
+			ArrayList<String> strings = new ArrayList<>();
+			while (sc.hasNextLine()) {
+				strings.add(sc.nextLine());
+			}
+			sc.close();
+			String[] strings1 = new String[strings.size()];
+			for (int i = 0; i < strings.size(); i++) {
+				strings1[i] = strings.get(i);
+			}
+			return strings1;
+		} catch (Throwable ignored) {
+		}
+		return new String[0];
+	}
+	
+	public static String[] readArray(File file) {
+		try {
+			Scanner sc = new Scanner(file);
+			ArrayList<String> strings = new ArrayList<>();
+			while (sc.hasNextLine()) {
+				strings.add(sc.nextLine());
+			}
+			sc.close();
+			String[] strings1 = new String[strings.size()];
+			for (int i = 0; i < strings.size(); i++) {
+				strings1[i] = strings.get(i);
+			}
+			return strings1;
+		} catch (Throwable ignored) {
+		}
+		return new String[0];
 	}
 }

@@ -57,6 +57,7 @@ public class ConvoBot extends ListenerAdapter {
 				activeConvos.add(event.getAuthor().getId());
 			else if (event.getMessage().getContentRaw().equals("-convo:end"))
 				activeConvos.remove(event.getAuthor().getId());
+			else if (event.getMessage().getContentRaw().startsWith("-convo:ignore")) ;
 			else if (activeConvos.contains(event.getAuthor().getId())) {
 				event.getChannel().sendMessage(AI.respond(code, event.getMessage().getContentRaw())).complete();
 			}

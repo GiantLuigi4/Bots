@@ -2,8 +2,12 @@ package bots.convo;
 
 import com.tfc.openAI.lang.AIInterpreter;
 import groovy.lang.GroovyClassLoader;
+import utils.Files;
+import utils.PropertyReader;
 
+import java.io.File;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.Random;
 
 public class AI {
@@ -16,8 +20,8 @@ public class AI {
 		try {
 			Class<?> clazz = cl.loadClass("bots.convo.AI");
 			clazz.getMethod("testing", String[].class).invoke(null, (Object) args);
-		} catch (Throwable ignored) {
-			ignored.printStackTrace();
+		} catch (Throwable err) {
+			err.printStackTrace();
 		}
 	}
 	
@@ -53,6 +57,7 @@ public class AI {
 					interpreter.exec(code, (out) -> {
 						builder.append(out.substring("key:".length()));
 					}, 0, ints);
+					System.out.println(builder.toString());
 				} catch (Throwable err) {
 					err.printStackTrace();
 				}
@@ -63,6 +68,37 @@ public class AI {
 	}
 	
 	public static String respond(String code, String input) {
+		for (File f : Objects.requireNonNull(Files.get("bots\\convo\\AI").listFiles())) {
+			File inputs = new File(f.getPath() + "\\in.txt");
+			File outputs = new File(f.getPath() + "\\out.txt");
+			File info = new File(f.getPath() + "\\info.properties");
+			String[] inputsArray = Files.readArray(inputs);
+			boolean caseSensitive = Boolean.parseBoolean(PropertyReader.read(info, "changing"));
+			String ends = PropertyReader.read(info, "validEnds");
+			String check = caseSensitive ? input : input.toLowerCase();
+			for (String in : inputsArray) {
+				if (ends.equals("")) {
+					if (in.startsWith(check)) {
+						Random rng = new Random();
+						String[] out = Files.readArray(outputs);
+						return out[rng.nextInt(out.length)];
+					}
+				} else {
+					if (in.startsWith(check)) {
+						Random rng = new Random();
+						String[] out = Files.readArray(outputs);
+						return out[rng.nextInt(out.length)];
+					}
+					for (char c : ends.toCharArray()) {
+						if ((in + c).equals(check)) {
+							Random rng = new Random();
+							String[] out = Files.readArray(outputs);
+							return out[rng.nextInt(out.length)];
+						}
+					}
+				}
+			}
+		}
 		int[][] ints = new int[1][input.length() + 1];
 		for (int i = 0; i < input.length(); i++) {
 			ints[0][i] = (int) (input.charAt(i));

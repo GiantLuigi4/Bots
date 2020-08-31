@@ -22,6 +22,23 @@ public class PropertyReader {
 		return "";
 	}
 	
+	public static String read(File file, String property) {
+		try {
+			Scanner sc = new Scanner(file);
+			String line = "";
+			while (sc.hasNextLine()) {
+				String read = sc.nextLine();
+				if (read.startsWith(property + ":")) {
+					line = read.substring((property + ":").length());
+				}
+			}
+			sc.close();
+			return line;
+		} catch (Throwable ignored) {
+		}
+		return "";
+	}
+	
 	public static boolean contains(String file, String property) {
 		File f = new File(Files.dir + "\\" + file);
 		try {
