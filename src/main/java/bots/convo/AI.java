@@ -23,7 +23,7 @@ public class AI {
 	public static void testing(String[] args) {
 		String input = "";
 		InputStream stream = System.in;
-		String code = (interpreter.interpretFromFile("convo.ai"));
+		String code = (interpreter.interpretFromFile("bots/convo/AI/convo.ai"));
 		System.out.println(code);
 		while (!(
 				input.equals("good bye") ||
