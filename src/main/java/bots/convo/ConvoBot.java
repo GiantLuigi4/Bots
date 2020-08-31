@@ -84,6 +84,8 @@ public class ConvoBot extends ListenerAdapter {
 					builder.addField("**-convo:start**/**convo:begin**", "Start a conversation.", false);
 					builder.addField("**-convo:stop**/**-convo:end**", "End a conversation.", false);
 					builder.addField("**-convo:ignore [text]**", "Use this to talk to people without having me speak to you.", false);
+					builder.addField("**-convo:sayCode [text]**", "I'll tell you the code (in aithon) for a specific programmed response.", false);
+					builder.addField("**-convo:sayPy [text]**", "I'll tell you the code (in python) for a specific programmed response.", false);
 					builder.setFooter("Bot by: GiantLuigi4", "https://cdn.discordapp.com/avatars/380845972441530368/27de0e038db60752d1e8b7b4fced0f4e.png?size=128");
 					event.getChannel().sendMessage(" ").embed(builder.build()).complete();
 				} else if (activeConvos.containsKey(event.getAuthor().getId())) {
