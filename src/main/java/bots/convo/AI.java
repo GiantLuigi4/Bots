@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AI {
 	//Idk why this doesn't error, but ok?
@@ -24,6 +25,8 @@ public class AI {
 			err.printStackTrace();
 		}
 	}
+	
+	private static AtomicInteger aiInstance = new AtomicInteger(1);
 	
 	public static void testing(String[] args) {
 		String input = "";
@@ -57,6 +60,7 @@ public class AI {
 					interpreter.exec(code, (out) -> {
 						builder.append(out.substring("key:".length()));
 					}, 0, ints);
+					
 					System.out.println(builder.toString());
 				} catch (Throwable err) {
 					err.printStackTrace();
@@ -167,6 +171,30 @@ public class AI {
 			} catch (Throwable err) {
 				err.printStackTrace();
 				System.out.println(debug);
+			}
+		}
+		for (File f : Objects.requireNonNull(Files.get("bots\\convo\\programmed").listFiles())) {
+			try {
+				File f2 = new File(f.getPath() + "\\syntax.grammar");
+				String grammar = Files.read(f2);
+				int percentIndex = grammar.indexOf("%");
+				if (input.length() > grammar.length() && grammar.startsWith(input.substring(0, percentIndex))) {
+					File f3 = new File(f.getPath() + "\\program.ai");
+					String code1 = Files.read(f3);
+					String compiled = interpreter.interpret(code1);
+					System.out.println(compiled);
+					StringBuilder builder = new StringBuilder();
+					aiInstance.getAndIncrement();
+					int[][] ints = new int[1][input.length() - percentIndex];
+					for (int i = percentIndex; i < input.length(); i++) ints[0][i - percentIndex] = input.charAt(i);
+					interpreter.exec(compiled, (out) -> {
+						builder.append(out.substring("key:".length()));
+					}, aiInstance.get(), ints);
+					aiInstance.getAndDecrement();
+					return builder.toString();
+				}
+			} catch (Throwable err) {
+				err.printStackTrace();
 			}
 		}
 		int[][] ints = new int[1][input.length() + 1];

@@ -78,4 +78,33 @@ public class Files {
 		}
 		return new String[0];
 	}
+	
+	public static String read(String file) {
+		File f = new File(dir + "\\" + file);
+		try {
+			Scanner sc = new Scanner(f);
+			StringBuilder text = new StringBuilder();
+			while (sc.hasNextLine()) {
+				text.append(sc.nextLine());
+			}
+			sc.close();
+			return text.toString();
+		} catch (Throwable ignored) {
+		}
+		return "";
+	}
+	
+	public static String read(File file) {
+		try {
+			Scanner sc = new Scanner(file);
+			StringBuilder builder = new StringBuilder();
+			while (sc.hasNextLine()) {
+				builder.append(sc.nextLine() + "\n");
+			}
+			sc.close();
+			return builder.toString();
+		} catch (Throwable ignored) {
+		}
+		return "";
+	}
 }

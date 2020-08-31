@@ -1,0 +1,37 @@
+//32 == ' '
+store:space,32
+//10 == '\n'
+store:enter,10
+//array of all words in the sentence
+store:words,[]
+//worker variable for converting an array of integers to words
+store:word,''
+//convert input to array of words instead of an array of integers
+//escaping : because if it's not escaped, it compiles to ('')
+for letter in getPixel[0]\:
+    if:letter=space
+        //add the word to the array of words and clear the word
+        words.append(word)
+        store:word,''
+    else if:letter!\=enter
+        //append the letter to the word
+        store:word,word+str(chr(letter))
+//add the last word to the array of words
+words.append(word)
+//print sentence
+print(words)
+
+store:best,0
+store:bestNum,0
+store:index,0
+for word in words\:
+    store:seed,0
+    for char in word\:
+        store:seed,seed+ord(char)
+    store:rng,Random(seed)
+    store:num,rng.nextInt(256)
+    if:bestNum<\num
+        store:best,index
+        store:bestNum,num
+    store:index,index+1
+k\e\y\P\r\e\s\s\(words[best])
