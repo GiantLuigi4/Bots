@@ -52,9 +52,9 @@ public class ConvoBot extends ListenerAdapter {
 	public void onMessageReceived(MessageReceivedEvent event) {
 		if (event.getJDA().getSelfUser().getId().equals(id)) {
 			if (event.getChannel().getName().contains("bot")) {
-				if (event.getMessage().getContentRaw().equals("-convo:start"))
+				if (event.getMessage().getContentRaw().equals("-convo:start") || event.getMessage().getContentRaw().equals("-convo:begin"))
 					activeConvos.put(event.getAuthor().getId(), new ConvoStats(0, event.getChannel().getIdLong()));
-				else if (event.getMessage().getContentRaw().equals("-convo:end"))
+				else if (event.getMessage().getContentRaw().equals("-convo:end") || event.getMessage().getContentRaw().equals("-convo:stop"))
 					activeConvos.remove(event.getAuthor().getId());
 				else if (event.getMessage().getContentRaw().startsWith("-convo:ignore")) ;
 				else if (event.getMessage().getContentRaw().equals("-convo:help")) {
@@ -63,8 +63,8 @@ public class ConvoBot extends ListenerAdapter {
 					builder.setAuthor(event.getAuthor().getName());
 					builder.setColor(new Color(255, 255, 0));
 					builder.addField("**-convo:help**", "Display the help message.", false);
-					builder.addField("**-convo:start**", "Start a conversation.", false);
-					builder.addField("**-convo:end**", "End a conversation.", false);
+					builder.addField("**-convo:start**/**convo:begin**", "Start a conversation.", false);
+					builder.addField("**-convo:stop**/**-convo:end**", "End a conversation.", false);
 					builder.addField("**-convo:ignore [text]**", "Use this to talk to people without having me speak to you.", false);
 					builder.setFooter("Bot by: GiantLuigi4", "https://cdn.discordapp.com/avatars/380845972441530368/27de0e038db60752d1e8b7b4fced0f4e.png?size=128");
 					event.getChannel().sendMessage(" ").embed(builder.build()).complete();
