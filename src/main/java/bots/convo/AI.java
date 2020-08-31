@@ -153,16 +153,18 @@ public class AI {
 				} catch (Throwable err) {
 					err.printStackTrace();
 				}
-				if (!parsing.substring(0, parsing.length() - 1).equals("")) {
-					StringBuilder parsing1 = new StringBuilder(parsing);
-					if (((input.replace(".", "").replace("!", "").replace("?", "")).toLowerCase() + ' ').equals(parsing1.toString())) {
-						File output = Files.get("bots\\convo\\complex\\response\\" + f.getName());
-						if (output.exists()) {
-							Random rng = new Random();
-							String[] out = Files.readArray(output);
-							return out[rng.nextInt(out.length)].replace("[", "").replace("]", "");
+				if (parsing.length() >= 1) {
+					if (!parsing.substring(0, parsing.length() - 1).equals("")) {
+						StringBuilder parsing1 = new StringBuilder(parsing);
+						if (((input.replace(".", "").replace("!", "").replace("?", "")).toLowerCase() + ' ').equals(parsing1.toString())) {
+							File output = Files.get("bots\\convo\\complex\\response\\" + f.getName());
+							if (output.exists()) {
+								Random rng = new Random();
+								String[] out = Files.readArray(output);
+								return out[rng.nextInt(out.length)].replace("[", "").replace("]", "");
+							}
+							return parsing1.toString();
 						}
-						return parsing1.toString();
 					}
 				}
 //				}
@@ -173,23 +175,31 @@ public class AI {
 		}
 		for (File f : Objects.requireNonNull(Files.get("bots\\convo\\programmed").listFiles())) {
 			try {
-				File f2 = new File(f.getPath() + "\\syntax.grammar");
+				File f2 = new File(f.getPath() + "\\syntax.txt");
 				String grammar = Files.read(f2);
 				int percentIndex = grammar.indexOf("%");
-				if (input.length() > grammar.length() && grammar.startsWith(input.substring(0, percentIndex))) {
-					File f3 = new File(f.getPath() + "\\program.ai");
-					String code1 = Files.read(f3);
-					String compiled = interpreter.interpret(code1);
-					System.out.println(compiled);
-					StringBuilder builder = new StringBuilder();
-					aiInstance.getAndIncrement();
-					int[][] ints = new int[1][input.length() - percentIndex];
-					for (int i = percentIndex; i < input.length(); i++) ints[0][i - percentIndex] = input.charAt(i);
-					interpreter.exec(compiled, (out) -> {
-						builder.append(out.substring("key:".length()));
-					}, aiInstance.get(), ints);
-					aiInstance.getAndDecrement();
-					return builder.toString();
+				System.out.println(percentIndex);
+				grammar = grammar.replace("\n", "");
+				if (input.length() > percentIndex) {
+					System.out.println(grammar);
+					System.out.println(input);
+					boolean matches = (percentIndex == -1 && input.startsWith(grammar)) || (percentIndex > 0 && grammar.startsWith(input.substring(0, percentIndex)));
+					if (input.length() > grammar.length() && matches) {
+						if (percentIndex == -1) percentIndex = 0;
+						File f3 = new File(f.getPath() + "\\program.ai");
+						String code1 = Files.read(f3);
+						String compiled = interpreter.interpret(code1);
+						System.out.println(compiled);
+						StringBuilder builder = new StringBuilder();
+						aiInstance.getAndIncrement();
+						int[][] ints = new int[1][input.length() - percentIndex];
+						for (int i = percentIndex; i < input.length(); i++) ints[0][i - percentIndex] = input.charAt(i);
+						interpreter.exec(compiled, (out) -> {
+							builder.append(out.substring("key:".length()));
+						}, aiInstance.get(), ints);
+						aiInstance.getAndDecrement();
+						return builder.toString();
+					}
 				}
 			} catch (Throwable err) {
 				err.printStackTrace();
@@ -253,11 +263,6 @@ public class AI {
 						substring3 = input.substring(parsing.length());
 					} catch (Throwable ignored) {
 					}
-					System.out.println(parsing);
-					System.out.println(input.substring(parsing.length()));
-					System.out.println(substring3);
-					System.out.println(substring);
-					System.out.println(s1.replace("[", "").replace("]\n", ""));
 					if (substring3.startsWith(s1.replace("[", "").replace("]", "").replace("\n", ""))) {
 						parsing.append(s1, 0, s1.length() - 1).append(' ');
 					}

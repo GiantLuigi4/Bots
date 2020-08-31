@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Files {
@@ -173,5 +174,13 @@ public class Files {
 			dirs.addAll(tempDirs);
 		}
 		return files;
+	}
+	
+	//This is for AIthon, so it won't work the same as the rest
+	public static String getRandomLine(String dir) {
+		File f = new File(dir);
+		String[] strings = readArray(f);
+		Random random = new Random();
+		return strings[random.nextInt(strings.length)].replace("[", "").replace("]", "").replace("\n", "");
 	}
 }
