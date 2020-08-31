@@ -10,6 +10,8 @@ import utils.Files;
 import utils.PropertyReader;
 
 import java.awt.*;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ConvoBot extends ListenerAdapter {
@@ -48,28 +50,56 @@ public class ConvoBot extends ListenerAdapter {
 	}
 	
 	protected static final HashMap<String, ConvoStats> activeConvos = new HashMap<>();
-	
+	protected static String senderID = "";
+	protected static List<String> userList = new ArrayList<>();
+
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
 		if (event.getJDA().getSelfUser().getId().equals(id)) {
 			if (event.getChannel().getName().contains("bot")) {
-				if (event.getMessage().getContentRaw().equals("-convo:start") || event.getMessage().getContentRaw().equals("-convo:begin"))
+				String content = event.getMessage().getContentRaw();
+				if (content.equals("-convo:start") || content.equals("-convo:begin")) {
+					senderID = event.getAuthor().getId();
+					userList.add(0, senderID);
 					activeConvos.put(event.getAuthor().getId(), new ConvoStats(0, event.getChannel().getIdLong()));
-				else if (event.getMessage().getContentRaw().equals("-convo:end") || event.getMessage().getContentRaw().equals("-convo:stop"))
-					activeConvos.remove(event.getAuthor().getId());
-				else if (event.getMessage().getContentRaw().equals("-convo:brain_size"))
+				}
+				else if (content.equals("-convo:end") || content.equals("-convo:stop")) {
+					if (event.getAuthor().getId().equals(senderID)) {
+						activeConvos.remove(event.getAuthor().getId());
+						userList.clear();
+						event.getChannel().sendMessage(event.getAuthor().getAsMention()).append(" ended the conversation!").complete();
+					}
+					else {
+						activeConvos.remove(event.getAuthor().getId());
+						userList.remove(event.getAuthor().getId());
+						event.getChannel().sendMessage(event.getAuthor().getAsMention()).append(" abandoned the conversation.\nWe'll miss him.....maybe.").complete();
+					}
+				}
+				else if (content.equals("-convo:brain_size"))
 					event.getChannel().sendMessage("Brain size:" + Files.listAll("bots\\convo").size()).complete();
-				else if (event.getMessage().getContentRaw().startsWith("-convo:ignore")) ;
-				else if (event.getMessage().getContentRaw().startsWith("-convo:sayCode")) {
-					String name = event.getMessage().getContentRaw().substring("-convo:sayCode ".length());
+				else if (content.startsWith("-convo:ignore")) ;
+				else if (content.startsWith("-convo:train-start")) {
+					event.getChannel().sendMessage("Bot training start").complete();
+					event.getChannel().sendMessage("Not working yet").complete();
+				}
+				else if (content.startsWith("-convo:train-stop")) {
+					event.getChannel().sendMessage("Bot training ended").complete();
+				}
+				else if (content.startsWith("-convo:join")) {
+					event.getChannel().sendMessage("Joining conversation...").complete();
+					userList.add(event.getAuthor().getId());
+					event.getChannel().sendMessage("Joined!").complete();
+				}
+				else if (content.startsWith("-convo:sayCode")) {
+					String name = content.substring("-convo:sayCode ".length());
 					String code = Files.read("bots\\convo\\programmed\\" + name + "\\program.ai");
 					byte[] bytes = new byte[code.length()];
 					for (int i = 0; i < code.length(); i++) {
 						bytes[i] = (byte) code.charAt(i);
 					}
 					event.getChannel().sendFile(bytes, name + ".ai").complete();
-				} else if (event.getMessage().getContentRaw().startsWith("-convo:sayPy")) {
-					String name = event.getMessage().getContentRaw().substring("-convo:sayPy ".length());
+				} else if (content.startsWith("-convo:sayPy")) {
+					String name = content.substring("-convo:sayPy ".length());
 					String code = Files.read("bots\\convo\\programmed\\" + name + "\\program.ai");
 					code = interpreter.interpret(code);
 					byte[] bytes = new byte[code.length()];
@@ -77,7 +107,7 @@ public class ConvoBot extends ListenerAdapter {
 						bytes[i] = (byte) code.charAt(i);
 					}
 					event.getChannel().sendFile(bytes, name + ".ai").complete();
-				} else if (event.getMessage().getContentRaw().equals("-convo:help")) {
+				} else if (content.equals("-convo:help")) {
 					EmbedBuilder builder = new EmbedBuilder();
 					builder.setTitle("Help");
 					builder.setAuthor(event.getAuthor().getName());
@@ -88,15 +118,17 @@ public class ConvoBot extends ListenerAdapter {
 					builder.addField("**-convo:ignore [text]**", "Use this to talk to people without having me speak to you.", false);
 					builder.addField("**-convo:sayCode [text]**", "I'll tell you the code (in aithon) for a specific programmed response.", false);
 					builder.addField("**-convo:sayPy [text]**", "I'll tell you the code (in python) for a specific programmed response.", false);
+					builder.addField("**-convo:train-start**", "Start Bot training.", false);
+					builder.addField("**-convo:train-stop**", "Stops Bot training.", false);
 					builder.setFooter("Bot by: GiantLuigi4", "https://cdn.discordapp.com/avatars/380845972441530368/27de0e038db60752d1e8b7b4fced0f4e.png?size=128");
 					event.getChannel().sendMessage(" ").embed(builder.build()).complete();
-				} else if (activeConvos.containsKey(event.getAuthor().getId())) {
-					if (event.getChannel().getIdLong() == activeConvos.get(event.getAuthor().getId()).channel) {
+				} else if (userList.contains(event.getAuthor().getId())) {
+					if (event.getChannel().getIdLong() == activeConvos.get(senderID).channel) {
 						StringBuilder message = new StringBuilder();
-						for (String s : event.getMessage().getContentRaw().split("\n")) {
+						for (String s : content.split("\n")) {
 							for (String input : s.split("\\. ")) {
-								message.append("> " + AI.respond(code, input, activeConvos.get(event.getAuthor().getId()).sentence)).append("\n");
-								activeConvos.get(event.getAuthor().getId()).sentence++;
+								message.append("> " + AI.respond(code, input, activeConvos.get(senderID).sentence)).append("\n");
+								activeConvos.get(senderID).sentence++;
 							}
 						}
 						message.append("In response to: ").append(event.getAuthor().getAsMention());
