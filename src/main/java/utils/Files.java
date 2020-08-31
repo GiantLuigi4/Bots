@@ -129,4 +129,49 @@ public class Files {
 		}
 		return files;
 	}
+	
+	public static ArrayList<File> listAllFiles(String name) {
+		ArrayList<File> files = new ArrayList<>();
+		ArrayList<String> dirs = new ArrayList<>();
+		dirs.add(dir + "\\" + name);
+		while (!dirs.isEmpty()) {
+			ArrayList<String> tempDirs = new ArrayList<>();
+			for (String s : dirs) {
+				for (File f : Objects.requireNonNull(new File(s).listFiles())) {
+					if (f.isDirectory()) {
+						tempDirs.add(f.toString());
+					} else {
+						files.add(f);
+					}
+				}
+			}
+			dirs.clear();
+			dirs.addAll(tempDirs);
+		}
+		return files;
+	}
+	
+	public static ArrayList<File> listAllFiles(File fi) {
+		ArrayList<File> files = new ArrayList<>();
+		ArrayList<String> dirs = new ArrayList<>();
+		dirs.add(fi.toString());
+		while (!dirs.isEmpty()) {
+			ArrayList<String> tempDirs = new ArrayList<>();
+			for (String s : dirs) {
+				try {
+					for (File f : Objects.requireNonNull(new File(s).listFiles())) {
+						if (f.isDirectory()) {
+							tempDirs.add(f.toString());
+						} else {
+							files.add(f);
+						}
+					}
+				} catch (Throwable ignored) {
+				}
+			}
+			dirs.clear();
+			dirs.addAll(tempDirs);
+		}
+		return files;
+	}
 }

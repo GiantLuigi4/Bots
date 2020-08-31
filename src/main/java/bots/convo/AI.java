@@ -145,29 +145,27 @@ public class AI {
 		for (File f : Objects.requireNonNull(Files.get("bots\\convo\\complex\\inputs").listFiles())) {
 			String debug = "";
 			try {
-				StringBuilder parsing = new StringBuilder();
-				for (String s : Files.readArray(f)) {
-					try {
-						if (parsing.toString().equals("")) {
-							parsing.append(parseGrammar(input, s));
-						} else {
-							break;
+				String s = Files.read(f);
+//				for (String s : Files.readArray(f)) {
+				String parsing = "";
+				try {
+					parsing = (parseGrammar(input, s));
+				} catch (Throwable err) {
+					err.printStackTrace();
+				}
+				if (!parsing.substring(0, parsing.length() - 1).equals("")) {
+					StringBuilder parsing1 = new StringBuilder(parsing);
+					if ((input + ' ').equals(parsing1.toString())) {
+						File output = Files.get("bots\\convo\\complex\\response\\" + f.getName());
+						if (output.exists()) {
+							Random rng = new Random();
+							String[] out = Files.readArray(output);
+							return out[rng.nextInt(out.length)].replace("[", "").replace("]", "");
 						}
-					} catch (Throwable err) {
-						err.printStackTrace();
+						return parsing1.toString();
 					}
 				}
-				if (!parsing.toString().equals("")) {
-					parsing = new StringBuilder(parsing.substring(0, parsing.length() - 1));
-					File output = Files.get("bots\\convo\\complex\\response\\" + f.getName());
-					if (output.exists()) {
-						Random rng = new Random();
-						String[] out = Files.readArray(output);
-						return out[rng.nextInt(out.length)].replace("[", "").replace("]", "");
-					}
-					if (input.equals(parsing.toString()))
-						return parsing.toString();
-				}
+//				}
 			} catch (Throwable err) {
 				err.printStackTrace();
 				System.out.println(debug);
@@ -240,17 +238,29 @@ public class AI {
 					if (substring.equals(substring2))
 						parsing.append(substring2).append(" ");
 				} else if (s1.startsWith("%") && s1.endsWith("%]")) {
-					for (File file : Objects.requireNonNull(Files.get("bots\\convo\\grammar\\" + substring.replace(".", "\\")).listFiles())) {
+					for (File file : Files.listAllFiles(Files.get("bots\\convo\\grammar\\" + substring.replace(".", "\\")))) {
 						for (String s2 : Files.readArray(file)) {
 							if (s2.equals(substring2))
 								parsing.append(s2).append(' ');
 						}
 					}
-				} else if (substring1.startsWith(s1)) {
-					parsing.append(s1, 0, s1.length() - 1).append(' ');
+				} else {
+					String substring3 = input;
+					try {
+						substring3 = input.substring(parsing.length());
+					} catch (Throwable ignored) {
+					}
+					System.out.println(parsing);
+					System.out.println(input.substring(parsing.length()));
+					System.out.println(substring3);
+					System.out.println(substring);
+					System.out.println(s1.replace("[", "").replace("]\n", ""));
+					if (substring3.startsWith(s1.replace("[", "").replace("]", "").replace("\n", ""))) {
+						parsing.append(s1, 0, s1.length() - 1).append(' ');
+					}
 				}
 			}
 		}
-		return parsing.toString();
+		return parsing.toString().replace("]", "");
 	}
 }

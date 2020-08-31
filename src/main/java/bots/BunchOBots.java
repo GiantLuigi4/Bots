@@ -20,10 +20,18 @@ public class BunchOBots {
 				RoleReactionBot.main(args);
 			}
 			if (PropertyReader.contains("bots.properties", "rbPrivate")) {
-				RaterBot.main(args);
+				try {
+					RaterBot.main(args);
+				} catch (Throwable err) {
+					err.printStackTrace();
+				}
 			} else {
 				if (PropertyReader.contains("bots.properties", "rbPublic")) {
-					PublicRaterBot.main(args);
+					try {
+						PublicRaterBot.main(args);
+					} catch (Throwable err) {
+						err.printStackTrace();
+					}
 				}
 			}
 			if (PropertyReader.contains("bots.properties", "idleMaker")) {
