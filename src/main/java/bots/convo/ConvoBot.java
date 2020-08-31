@@ -11,7 +11,7 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import utils.PropertyReader;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ConvoBot extends ListenerAdapter {
 	private static final GroovyClassLoader cl = new GroovyClassLoader();
@@ -48,18 +48,23 @@ public class ConvoBot extends ListenerAdapter {
 		}
 	}
 	
-	private static final ArrayList<String> activeConvos = new ArrayList<>();
+	protected static final HashMap<String, ConvoStats> activeConvos = new HashMap<>();
 	
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
 		if (event.getJDA().getSelfUser().getId().equals(id)) {
-			if (event.getMessage().getContentRaw().equals("-convo:start"))
-				activeConvos.add(event.getAuthor().getId());
-			else if (event.getMessage().getContentRaw().equals("-convo:end"))
-				activeConvos.remove(event.getAuthor().getId());
-			else if (event.getMessage().getContentRaw().startsWith("-convo:ignore")) ;
-			else if (activeConvos.contains(event.getAuthor().getId())) {
-				event.getChannel().sendMessage(AI.respond(code, event.getMessage().getContentRaw())).complete();
+			if (event.getChannel().getName().contains("bot")) {
+				if (event.getMessage().getContentRaw().equals("-convo:start"))
+					activeConvos.put(event.getAuthor().getId(), new ConvoStats(0, event.getChannel().getIdLong()));
+				else if (event.getMessage().getContentRaw().equals("-convo:end"))
+					activeConvos.remove(event.getAuthor().getId());
+				else if (event.getMessage().getContentRaw().startsWith("-convo:ignore")) ;
+				else if (activeConvos.containsKey(event.getAuthor().getId())) {
+					if (event.getChannel().getIdLong() == activeConvos.get(event.getAuthor().getId()).channel) {
+						event.getChannel().sendMessage(AI.respond(code, event.getMessage().getContentRaw(), activeConvos.get(event.getAuthor().getId()).sentence)).complete();
+						activeConvos.get(event.getAuthor().getId()).sentence++;
+					}
+				}
 			}
 		}
 		super.onMessageReceived(event);

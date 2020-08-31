@@ -67,7 +67,33 @@ public class AI {
 		}
 	}
 	
-	public static String respond(String code, String input) {
+	public static String respond(String code, String input, int sentenceNumber) {
+		if (input.toLowerCase().equals("what are you doing?")) {
+			switch (ConvoBot.activeConvos.size()) {
+				case 1:
+					return "Having a conversation.";
+				case 2:
+					return "Having two conversations.";
+				case 3:
+					return "Having three conversations.";
+				case 4:
+					return "Having four conversations.";
+				case 5:
+					return "Having five conversations.";
+				case 6:
+					return "Having six conversations.";
+				case 7:
+					return "Having seven conversations.";
+				case 8:
+					return "Having eight conversations.";
+				case 9:
+					return "Having nine conversations.";
+				case 10:
+					return "Having ten conversations.";
+				default:
+					return "Having " + ConvoBot.activeConvos.size() + " conversations at once";
+			}
+		}
 		for (File f : Objects.requireNonNull(Files.get("bots\\convo\\AI").listFiles())) {
 			File inputs = new File(f.getPath() + "\\in.txt");
 			File outputs = new File(f.getPath() + "\\out.txt");
@@ -76,33 +102,44 @@ public class AI {
 			boolean caseSensitive = Boolean.parseBoolean(PropertyReader.read(info, "caseSensitive"));
 			String ends = PropertyReader.read(info, "validEnds");
 			String check = caseSensitive ? input : input.toLowerCase();
+			String msg = "";
 			for (String in : inputsArray) {
 				if (ends.equals("")) {
 					if (in.startsWith(check)) {
 						Random rng = new Random();
 						String[] out = Files.readArray(outputs);
-						return out[rng.nextInt(out.length)];
+						msg = out[rng.nextInt(out.length)];
+						break;
 					}
 				} else {
 					if (in.startsWith(check)) {
 						Random rng = new Random();
 						String[] out = Files.readArray(outputs);
-						return out[rng.nextInt(out.length)];
+						msg = out[rng.nextInt(out.length)];
+						break;
 					}
 					for (char c : ends.toCharArray()) {
 						if ((in + c).equals(check)) {
 							Random rng = new Random();
 							String[] out = Files.readArray(outputs);
-							return out[rng.nextInt(out.length)];
+							msg = out[rng.nextInt(out.length)];
+							break;
 						}
 					}
 				}
+				if (!msg.equals("")) break;
+			}
+			if (msg != null && !msg.equals("")) {
+				if (sentenceNumber == 0) {
+					Random rng = new Random();
+					String[] out = Files.readArray("bots\\convo\\grammar\\ask_doing.grammar");
+					msg += "\n" + out[rng.nextInt(out.length)];
+				}
+				return msg;
 			}
 		}
 		int[][] ints = new int[1][input.length() + 1];
-		for (int i = 0; i < input.length(); i++) {
-			ints[0][i] = (int) (input.charAt(i));
-		}
+		for (int i = 0; i < input.length(); i++) ints[0][i] = input.charAt(i);
 		StringBuilder builder = new StringBuilder();
 		try {
 			interpreter.exec(code, (out) -> {
