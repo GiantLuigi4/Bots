@@ -85,7 +85,7 @@ public class Files {
 			Scanner sc = new Scanner(f);
 			StringBuilder text = new StringBuilder();
 			while (sc.hasNextLine()) {
-				text.append(sc.nextLine());
+				text.append(sc.nextLine()).append("\n");
 			}
 			sc.close();
 			return text.toString();
@@ -99,7 +99,7 @@ public class Files {
 			Scanner sc = new Scanner(file);
 			StringBuilder builder = new StringBuilder();
 			while (sc.hasNextLine()) {
-				builder.append(sc.nextLine() + "\n");
+				builder.append(sc.nextLine()).append("\n");
 			}
 			sc.close();
 			return builder.toString();

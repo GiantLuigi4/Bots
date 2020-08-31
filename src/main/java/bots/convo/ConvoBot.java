@@ -6,6 +6,7 @@ import net.dv8tion.jda.core.*;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import utils.Files;
 import utils.PropertyReader;
 
 import java.awt.*;
@@ -57,7 +58,24 @@ public class ConvoBot extends ListenerAdapter {
 				else if (event.getMessage().getContentRaw().equals("-convo:end") || event.getMessage().getContentRaw().equals("-convo:stop"))
 					activeConvos.remove(event.getAuthor().getId());
 				else if (event.getMessage().getContentRaw().startsWith("-convo:ignore")) ;
-				else if (event.getMessage().getContentRaw().equals("-convo:help")) {
+				else if (event.getMessage().getContentRaw().startsWith("-convo:sayCode")) {
+					String name = event.getMessage().getContentRaw().substring("-convo:sayCode ".length());
+					String code = Files.read("bots\\convo\\programmed\\" + name + "\\program.ai");
+					byte[] bytes = new byte[code.length()];
+					for (int i = 0; i < code.length(); i++) {
+						bytes[i] = (byte) code.charAt(i);
+					}
+					event.getChannel().sendFile(bytes, name + ".ai").complete();
+				} else if (event.getMessage().getContentRaw().startsWith("-convo:sayPy")) {
+					String name = event.getMessage().getContentRaw().substring("-convo:sayPy ".length());
+					String code = Files.read("bots\\convo\\programmed\\" + name + "\\program.ai");
+					code = interpreter.interpret(code);
+					byte[] bytes = new byte[code.length()];
+					for (int i = 0; i < code.length(); i++) {
+						bytes[i] = (byte) code.charAt(i);
+					}
+					event.getChannel().sendFile(bytes, name + ".ai").complete();
+				} else if (event.getMessage().getContentRaw().equals("-convo:help")) {
 					EmbedBuilder builder = new EmbedBuilder();
 					builder.setTitle("Help");
 					builder.setAuthor(event.getAuthor().getName());
