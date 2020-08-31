@@ -105,21 +105,21 @@ public class AI {
 			String msg = "";
 			for (String in : inputsArray) {
 				if (ends.equals("")) {
-					if (in.startsWith(check)) {
+					if (check.startsWith(in)) {
 						Random rng = new Random();
 						String[] out = Files.readArray(outputs);
 						msg = out[rng.nextInt(out.length)];
 						break;
 					}
 				} else {
-					if (in.startsWith(check)) {
+					if (check.startsWith(in)) {
 						Random rng = new Random();
 						String[] out = Files.readArray(outputs);
 						msg = out[rng.nextInt(out.length)];
 						break;
 					}
 					for (char c : ends.toCharArray()) {
-						if ((in + c).equals(check)) {
+						if (check.equals(in + c)) {
 							Random rng = new Random();
 							String[] out = Files.readArray(outputs);
 							msg = out[rng.nextInt(out.length)];
