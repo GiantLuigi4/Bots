@@ -95,8 +95,8 @@ public class AI {
 			}
 		}
 		for (File f : Objects.requireNonNull(Files.get("bots\\convo\\AI").listFiles())) {
-			File inputs = new File(f.getPath() + "\\in.txt");
-			File outputs = new File(f.getPath() + "\\out.txt");
+			File inputs = new File(f.getPath() + "\\in.list");
+			File outputs = new File(f.getPath() + "\\out.list");
 			File info = new File(f.getPath() + "\\info.properties");
 			String[] inputsArray = Files.readArray(inputs);
 			boolean caseSensitive = Boolean.parseBoolean(PropertyReader.read(info, "caseSensitive"));

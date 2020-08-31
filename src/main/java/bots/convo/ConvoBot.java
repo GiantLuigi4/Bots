@@ -61,8 +61,14 @@ public class ConvoBot extends ListenerAdapter {
 				else if (event.getMessage().getContentRaw().startsWith("-convo:ignore")) ;
 				else if (activeConvos.containsKey(event.getAuthor().getId())) {
 					if (event.getChannel().getIdLong() == activeConvos.get(event.getAuthor().getId()).channel) {
-						event.getChannel().sendMessage(AI.respond(code, event.getMessage().getContentRaw(), activeConvos.get(event.getAuthor().getId()).sentence)).complete();
-						activeConvos.get(event.getAuthor().getId()).sentence++;
+						StringBuilder message = new StringBuilder();
+						for (String s : event.getMessage().getContentRaw().split("\n")) {
+							for (String input : s.split("\\.")) {
+								message.append(AI.respond(code, input, activeConvos.get(event.getAuthor().getId()).sentence)).append("\n");
+								activeConvos.get(event.getAuthor().getId()).sentence++;
+							}
+						}
+						event.getChannel().sendMessage(message.toString()).complete();
 					}
 				}
 			}
