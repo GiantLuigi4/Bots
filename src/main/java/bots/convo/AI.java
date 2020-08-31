@@ -7,7 +7,7 @@ import java.io.InputStream;
 
 public class AI {
 	//Idk why this doesn't error, but ok?
-	private static final AIInterpreter interpreter = new AIInterpreter();
+	protected static final AIInterpreter interpreter = new AIInterpreter();
 	//AI Lang is written in groovy, and thus does not work unless loaded on a groovy classloader
 	private static final GroovyClassLoader cl = new GroovyClassLoader();
 	

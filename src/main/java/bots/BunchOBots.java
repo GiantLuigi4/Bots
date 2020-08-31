@@ -1,5 +1,6 @@
 package bots;
 
+import bots.convo.ConvoBot;
 import bots.idle_maker.IdleMkr;
 import bots.rater.PublicRaterBot;
 import bots.rater.RaterBot;
@@ -27,6 +28,9 @@ public class BunchOBots {
 			}
 			if (PropertyReader.contains("bots.properties", "idleMaker")) {
 				IdleMkr.main(args);
+			}
+			if (PropertyReader.contains("bots.properties", "convo")) {
+				ConvoBot.main(args);
 			}
 		}
 	}
