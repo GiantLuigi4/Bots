@@ -20,3 +20,5 @@ for letter in getPixel[0]\:
 words.append(word)
 //print sentence
 print(words)
+
+//TODO:Figure out how to make machine learning using AI Lang
