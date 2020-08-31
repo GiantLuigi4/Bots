@@ -2,15 +2,13 @@ package bots.convo;
 
 import com.tfc.openAI.lang.AIInterpreter;
 import groovy.lang.GroovyClassLoader;
-import net.dv8tion.jda.core.AccountType;
-import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.OnlineStatus;
+import net.dv8tion.jda.core.*;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import utils.PropertyReader;
 
+import java.awt.*;
 import java.util.HashMap;
 
 public class ConvoBot extends ListenerAdapter {
@@ -59,15 +57,27 @@ public class ConvoBot extends ListenerAdapter {
 				else if (event.getMessage().getContentRaw().equals("-convo:end"))
 					activeConvos.remove(event.getAuthor().getId());
 				else if (event.getMessage().getContentRaw().startsWith("-convo:ignore")) ;
-				else if (activeConvos.containsKey(event.getAuthor().getId())) {
+				else if (event.getMessage().getContentRaw().equals("-convo:help")) {
+					EmbedBuilder builder = new EmbedBuilder();
+					builder.setTitle("Help");
+					builder.setAuthor(event.getAuthor().getName());
+					builder.setColor(new Color(255, 255, 0));
+					builder.addField("**-convo:help**", "Display the help message.", false);
+					builder.addField("**-convo:start**", "Start a conversation.", false);
+					builder.addField("**-convo:end**", "End a conversation.", false);
+					builder.addField("**-convo:ignore [text]**", "Use this to talk to people without having me speak to you.", false);
+					builder.setFooter("Bot by: GiantLuigi4", "https://cdn.discordapp.com/avatars/380845972441530368/27de0e038db60752d1e8b7b4fced0f4e.png?size=128");
+					event.getChannel().sendMessage(" ").embed(builder.build()).complete();
+				} else if (activeConvos.containsKey(event.getAuthor().getId())) {
 					if (event.getChannel().getIdLong() == activeConvos.get(event.getAuthor().getId()).channel) {
 						StringBuilder message = new StringBuilder();
 						for (String s : event.getMessage().getContentRaw().split("\n")) {
-							for (String input : s.split("\\.")) {
-								message.append(AI.respond(code, input, activeConvos.get(event.getAuthor().getId()).sentence)).append("\n");
+							for (String input : s.split("\\. ")) {
+								message.append("> " + AI.respond(code, input, activeConvos.get(event.getAuthor().getId()).sentence)).append("\n");
 								activeConvos.get(event.getAuthor().getId()).sentence++;
 							}
 						}
+						message.append("In response to: ").append(event.getAuthor().getAsMention());
 						event.getChannel().sendMessage(message.toString()).complete();
 					}
 				}

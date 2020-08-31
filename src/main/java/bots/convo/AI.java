@@ -133,7 +133,7 @@ public class AI {
 				if (sentenceNumber == 0) {
 					Random rng = new Random();
 					String[] out = Files.readArray("bots\\convo\\grammar\\ask_doing.grammar");
-					msg += "\n" + out[rng.nextInt(out.length)];
+					msg += "\n> " + out[rng.nextInt(out.length)];
 				}
 				return msg;
 			}
