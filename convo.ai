@@ -7,6 +7,7 @@ store:words,[]
 //worker variable for converting an array of integers to words
 store:word,''
 //convert input to array of words instead of an array of integers
+//escaping : because if it's not escaped, it compiles to ('')
 for letter in getPixel[0]\:
     if:letter=space
         //add the word to the array of words and clear the word
