@@ -155,7 +155,7 @@ public class AI {
 				}
 				if (!parsing.substring(0, parsing.length() - 1).equals("")) {
 					StringBuilder parsing1 = new StringBuilder(parsing);
-					if ((input + ' ').equals(parsing1.toString())) {
+					if (((input.replace(".", "").replace("!", "").replace("?", "")).toLowerCase() + ' ').equals(parsing1.toString())) {
 						File output = Files.get("bots\\convo\\complex\\response\\" + f.getName());
 						if (output.exists()) {
 							Random rng = new Random();
@@ -218,6 +218,9 @@ public class AI {
 	}
 	
 	public static String parseGrammar(String input, String s) {
+		s = s.replace("\n", "");
+		s = s.toLowerCase();
+		input = input.replace(".", "").replace("!", "").replace("?", "").toLowerCase();
 		StringBuilder parsing = new StringBuilder();
 		for (String s1 : s.split("\\[")) {
 			if (!s1.equals("")) {
