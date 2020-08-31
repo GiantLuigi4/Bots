@@ -28,7 +28,7 @@ public class AI {
 	public static void testing(String[] args) {
 		String input = "";
 		InputStream stream = System.in;
-		String code = (interpreter.interpretFromFile("bots/convo/AI/convo.ai"));
+		String code = (interpreter.interpretFromFile("bots/convo/convo.ai"));
 		System.out.println(code);
 		while (!(
 				input.equals("good bye") ||
@@ -94,7 +94,7 @@ public class AI {
 					return "Having " + ConvoBot.activeConvos.size() + " conversations at once";
 			}
 		}
-		for (File f : Objects.requireNonNull(Files.get("bots\\convo\\AI").listFiles())) {
+		for (File f : Objects.requireNonNull(Files.get("bots\\convo\\simple").listFiles())) {
 			File inputs = new File(f.getPath() + "\\in.list");
 			File outputs = new File(f.getPath() + "\\out.list");
 			File info = new File(f.getPath() + "\\info.properties");
@@ -132,7 +132,7 @@ public class AI {
 			if (msg != null && !msg.equals("")) {
 				if (sentenceNumber == 0) {
 					Random rng = new Random();
-					String[] out = Files.readArray("bots\\convo\\grammar\\ask_doing.grammar");
+					String[] out = Files.readArray("bots\\convo\\grammar\\outputs\\ask_doing.grammar");
 					msg += "\n> " + out[rng.nextInt(out.length)];
 				}
 				return msg;

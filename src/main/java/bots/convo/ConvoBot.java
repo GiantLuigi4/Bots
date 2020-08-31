@@ -18,7 +18,7 @@ public class ConvoBot extends ListenerAdapter {
 	private static String id = "749811547659829258";
 	private static Class<?> ai;
 	private static AIInterpreter interpreter = AI.interpreter;
-	private static String code = (interpreter.interpretFromFile("bots/convo/AI/convo.ai"));
+	private static String code = (interpreter.interpretFromFile("bots/convo/convo.ai"));
 	
 	public static void main(String[] args) {
 		try {
