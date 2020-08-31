@@ -184,7 +184,7 @@ public class RaterBot extends ListenerAdapter {
             }
         };
     
-        if (PropertyReader.contains("bots.properties","rbPublic"))
+        if (PropertyReader.contains("bots.properties", "rbPublic"))
             PublicRaterBot.main(a);
         
         //functions.getPath();
@@ -198,7 +198,8 @@ public class RaterBot extends ListenerAdapter {
         botBuilt = builder.buildAsync();
         try {
             Thread.sleep(1000);
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
         id = botBuilt.getSelfUser().getId();
         frame.addWindowListener(new WindowListener() {
             @Override
@@ -302,12 +303,13 @@ public class RaterBot extends ListenerAdapter {
         //frameIMG.setUndecorated(true);
         frame.validate();
         try {
-            if (Boolean.parseBoolean(PropertyReader.read("Settings.properties","debugLog"))) {
+            if (Boolean.parseBoolean(PropertyReader.read("Settings.properties", "debugLog"))) {
                 frameIMG.setVisible(true);
                 frame.setVisible(true);
                 confg.setVisible(true);
             }
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
         
         Thread thread = new Thread(() -> {
             while (open) {

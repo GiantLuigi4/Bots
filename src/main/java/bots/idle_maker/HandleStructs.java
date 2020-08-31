@@ -23,8 +23,8 @@ public class HandleStructs {
         //System.out.println(formatter2.format(date));
         //System.out.println(formatter3.format(date));
     
-        File fi = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid + "\\" + "lastupdated.txt");
-        File fi2 = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid + "\\" + "totalcoins.txt");
+        File fi = new File(BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + userid + "\\" + "lastupdated.txt");
+        File fi2 = new File(BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + userid + "\\" + "totalcoins.txt");
     
         BigInteger[] data = new BigInteger[2];
         data[0] = new BigInteger("0");
@@ -34,7 +34,7 @@ public class HandleStructs {
         //System.out.println(time);
     
         BigInteger currency = new BigInteger("0");
-        BigInteger coins = new BigInteger("0");
+        BigInteger coins;
         try {
             Scanner sc = new Scanner(fi);
             Scanner sc2 = new Scanner(fi2);
@@ -46,7 +46,7 @@ public class HandleStructs {
             coins = new BigInteger("" + Long.parseLong(sc2.nextLine()));
     
             //System.out.println(time2);
-            Long seconds = (time - time2);
+            long seconds = (time - time2);
     
             //System.out.println(seconds);
             try {
@@ -62,7 +62,7 @@ public class HandleStructs {
                 righter2.write("" + coins);
                 righter.close();
                 righter2.close();
-            } catch (IOException err) {
+            } catch (IOException ignored) {
             }
         } catch (FileNotFoundException err) {
             //System.out.println("Err:FileNotFound");
@@ -81,14 +81,14 @@ public class HandleStructs {
         //System.out.println(fi);
         
         try {
-            int i = 0;
-            File fi = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid);
+            int i;
+            File fi = new File(BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + userid);
             for (i = 0; i < IdleMkr.structures.size(); i++) {
                 Structure struct = IdleMkr.structures.get(i);
                 Scanner sc = new Scanner(new File(fi.getPath() + "\\purchases\\" + struct.getID() + ".txt"));
                 counts.add(new BigInteger(sc.nextLine()));
                 String cps = struct.cps;
-                String structCPS = "";
+                String structCPS;
                 if (cps.contains("rand(")) {
                     String test = cps.substring(cps.indexOf("rand("));
                     test = test.substring(0, test.indexOf(")"));
@@ -119,30 +119,30 @@ public class HandleStructs {
     public static ArrayList<Structure> getStructs() {
         ArrayList<Structure> structs = new ArrayList<>();
         
-        File fi = new File(Files.dir+"\\bots\\idlemk\\structures");
+        File fi = new File(Files.dir + "\\bots\\idlemk\\structures");
         
         if (!fi.exists()) {
             fi.mkdirs();
         }
         
-        for (File fi2 : fi.listFiles()) {
+        for (File fi2 : Objects.requireNonNull(fi.listFiles())) {
             try {
                 Scanner sc = new Scanner(fi2);
-                String name = "";
-                String afterdot = "";
+                StringBuilder name = new StringBuilder();
+                StringBuilder afterdot = new StringBuilder();
                 boolean reacheddot = false;
                 for (int i = 0; i <= fi2.getName().length() - 5; i++) {
                     if (("" + fi2.getName().charAt(i)).equals(".") && !reacheddot) {
                         reacheddot = true;
                     } else if (("" + fi2.getName().charAt(i)).equals(".") && reacheddot) {
-                        name += "." + afterdot;
+                        name.append(".").append(afterdot);
                     } else if (!reacheddot) {
-                        name += fi2.getName().charAt(i);
+                        name.append(fi2.getName().charAt(i));
                     } else {
-                        afterdot += fi2.getName().charAt(i);
+                        afterdot.append(fi2.getName().charAt(i));
                     }
                     if (i == 0) {
-                        name = name.toUpperCase();
+                        name = new StringBuilder(name.toString().toUpperCase());
                     }
                 }
                 sc.nextLine();
@@ -152,7 +152,7 @@ public class HandleStructs {
                 sc.nextLine();
                 int baseCost = Integer.parseInt(sc.nextLine());
     
-                Structure struct = new Structure(name, descriptor, "" + cps, baseCost);
+                Structure struct = new Structure(name.toString(), descriptor, "" + cps, baseCost);
                 structs.add(struct);
     
                 sc.close();
@@ -161,7 +161,7 @@ public class HandleStructs {
                 //System.out.println(cps);
                 //System.out.println(baseCost);
     
-            } catch (IOException err) {
+            } catch (IOException ignored) {
             }
         }
         
@@ -193,15 +193,14 @@ public class HandleStructs {
         return number;
     }
     
-    public static EmbedBuilder buyStruct(String userid, String mention, Structure struct, File fi, File fi2, Long count, String username) {
-        ArrayList<String> purchases = new ArrayList<>();
-        
+    public static EmbedBuilder buyStruct(String userid, Structure struct, File fi, File fi2, Long count, String username) {
+    
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setAuthor(username);
         embedBuilder.setTitle("purchased");
         embedBuilder.setColor(new Color(8, 124, 250));
         
-        Long countDone = 0L;
+        long countDone = 0L;
         
         fi = new File(fi.getPath() + "\\purchases\\" + struct.getID() + ".txt");
         
@@ -221,7 +220,7 @@ public class HandleStructs {
             BigInteger num = new BigInteger(strong).add(new BigInteger("" + countDone));
             
             BigInteger costfor1 = (new BigInteger("" + struct.cost).add(num.multiply(num)).add(new BigInteger("" + struct.cost)));
-            if (currency.compareTo(costfor1) == 1) {
+            if (currency.compareTo(costfor1) > 0) {
                 while (countDone <= count && canBuyMore) {
                     num = new BigInteger(strong).add(new BigInteger("" + countDone));
                     BigInteger cost = (new BigInteger("" + struct.cost).add(num.multiply(num)).add(new BigInteger("" + struct.cost)));
@@ -230,7 +229,7 @@ public class HandleStructs {
                     //System.out.println("Curr:"+currency);
                     //System.out.println("Cost:"+cost);
     
-                    if (currency.compareTo(cost) == 1) {
+                    if (currency.compareTo(cost) > 0) {
                         boughtanything = true;
         
                         Long[] data = new Long[2];
@@ -240,6 +239,7 @@ public class HandleStructs {
                         Scanner sc2 = new Scanner(fi2);
                         while (!sc2.hasNextLine()) {
                             try {
+                                //Sleep so that it doesn't just spam new scanners
                                 Thread.sleep(100);
                                 sc2.close();
                             } catch (Throwable ignored) {

@@ -47,7 +47,7 @@ public class RoleReactionBot extends ListenerAdapter {
     
     @Override
     public void onReady(ReadyEvent event) {
-        Thread td = new Thread(()->{
+        Thread td = new Thread(() -> {
             if (event.getJDA().getSelfUser().getId().equals(id)) {
                 for (Guild g : botBuilt.getGuilds()) {
                     //System.out.println("b");
@@ -246,9 +246,9 @@ public class RoleReactionBot extends ListenerAdapter {
                 String requester = event.getAuthor().getName();
                 builder.setAuthor(requester);
                 builder.setTitle("Help");
-                builder.setColor(new Color(requester.length()%255, Math.abs(Objects.hash(requester))%255, Math.abs(Objects.hash(requester.toLowerCase()))%255));
-                builder.addField("**-rrb:help**","Display this message.", false);
-                builder.addField("**-rrb:addrr `message id` `emote id` `role id`**","Add a role reaction.", false);
+                builder.setColor(new Color(requester.length() % 255, Math.abs(Objects.hash(requester)) % 255, Math.abs(Objects.hash(requester.toLowerCase())) % 255));
+                builder.addField("**-rrb:help**", "Display this message.", false);
+                builder.addField("**-rrb:addrr `message id` `emote id` `role id`**", "Add a role reaction.", false);
                 builder.setFooter("Bot by: GiantLuigi4", "https://cdn.discordapp.com/avatars/380845972441530368/27de0e038db60752d1e8b7b4fced0f4e.png?size=128");
                 event.getChannel().sendMessage(" ").embed(builder.build()).complete();
             }

@@ -26,27 +26,24 @@ public class Functions {
         
         File root = new File(path);
         File[] list = root.listFiles();
-        ArrayList<BufferedImage> x = new ArrayList<BufferedImage>();
-        ArrayList<BufferedImage> p = new ArrayList<BufferedImage>();
-        ArrayList<BufferedImage> c = new ArrayList<BufferedImage>();
+        ArrayList<BufferedImage> x = new ArrayList<>();
+        ArrayList<BufferedImage> p = new ArrayList<>();
+        ArrayList<BufferedImage> c = new ArrayList<>();
         
         if (!includePreFixInList) {
             System.out.println(preFix + "----------Read Dir: " + path);
         }
         
+        assert list != null;
         for (File f : list) {
             if (f.isDirectory()) {
                 p = walk(f.getAbsolutePath(), preFix + "|   ", includePreFixInList);
                 //System.out.println( "Dir:" + f.getAbsoluteFile() );
                 if (includePreFixInList) {
-                    for (BufferedImage nan : p) {
-                        c.add(nan);
-                    }
+                    c.addAll(p);
                 }
     
-                for (BufferedImage nan : p) {
-                    x.add(nan);
-                }
+                x.addAll(p);
     
                 //p.clear();
             } else {
@@ -60,7 +57,7 @@ public class Functions {
                             bimig.getGraphics().drawImage(img, 0, 0, null);
                             //System.out.println("b");
                             p.add(bimig);
-                        } catch (IOException err) {
+                        } catch (IOException ignored) {
                         }
                     }
                 }
@@ -81,9 +78,9 @@ public class Functions {
         //System.out.println(cols[0]);
         //System.out.println(cols[1]);
         
-        float colR = 0;
-        float colB = 0;
-        float colG = 0;
+        float colR;
+        float colB;
+        float colG;
         
         String color1 = cols[0].toString();
         String color2 = cols[1].toString();
@@ -134,83 +131,71 @@ public class Functions {
         if (priorityRed.getBlue() == colorIgnore.getBlue()) {
             //System.out.println("ignored");
         } else if (priorityRed.getBlue() == colorHigh.getBlue()) {
-            if ((colB) >= 1) ;
-            {
+            if ((colB) >= 1) {
                 percentCorrect += (bimig.getHeight() * bimig.getWidth());
                 //System.out.println("high");
             }
         } else if (priorityRed.getBlue() == colorMid.getBlue()) {
-            if ((colB) >= 0.75) ;
-            {
-                percentCorrect += (bimig.getHeight() * bimig.getWidth()) / 2;
+            if ((colB) >= 0.75) {
+                percentCorrect += (bimig.getHeight() * bimig.getWidth()) / 2f;
                 //System.out.println("mid");
             }
         } else if (priorityRed.getBlue() == colorLow1.getBlue()) {
-            if ((colB) >= 0.5) ;
-            {
-                percentCorrect += (bimig.getHeight() * bimig.getWidth()) / 3;
+            if ((colB) >= 0.5) {
+                percentCorrect += (bimig.getHeight() * bimig.getWidth()) / 3f;
                 //System.out.println("low1");
             }
         } else if (priorityRed.getBlue() == colorLow2.getBlue()) {
-            if ((colB) >= 0.125) ;
-            {
-                percentCorrect += (bimig.getHeight() * bimig.getWidth()) / 4;
+            if ((colB) >= 0.125) {
+                percentCorrect += (bimig.getHeight() * bimig.getWidth()) / 4f;
                 //System.out.println("low2");
             }
         }
         
         if (priorityRed.getGreen() == colorIgnore.getGreen()) {
         } else if (priorityRed.getGreen() == colorHigh.getGreen()) {
-            if ((colG) >= 1) ;
-            {
+            if ((colG) >= 1) {
                 percentCorrect += (bimig.getHeight() * bimig.getWidth());
                 //System.out.println("high");
             }
         } else if (priorityRed.getGreen() == colorMid.getGreen()) {
-            if ((colG) / 255 >= 0.75) ;
-            {
-                percentCorrect += (bimig.getHeight() * bimig.getWidth()) / 2;
+            if ((colG) / 255 >= 0.75) {
+                percentCorrect += (bimig.getHeight() * bimig.getWidth()) / 2f;
                 //System.out.println("mid");
             }
         } else if (priorityRed.getGreen() == colorLow1.getGreen()) {
-            if ((colG) / 255 >= 0.5) ;
-            {
-                percentCorrect += (bimig.getHeight() * bimig.getWidth()) / 3;
+            if ((colG) / 255 >= 0.5) {
+                percentCorrect += (bimig.getHeight() * bimig.getWidth()) / 3f;
                 //System.out.println("low1");
             }
         } else if (priorityRed.getGreen() == colorLow2.getGreen()) {
-            if ((colG) / 255 >= 0.125) ;
-            {
-                percentCorrect += (bimig.getHeight() * bimig.getWidth()) / 4;
+            if ((colG) / 255 >= 0.125) {
+                percentCorrect += (bimig.getHeight() * bimig.getWidth()) / 4f;
                 //System.out.println("low2");
             }
         }
         
         if (priorityRed.getRed() == colorIgnore.getRed()) {
         } else if (priorityRed.getRed() == colorHigh.getRed()) {
-            if ((colR) >= 1) ;
-            {
+            if ((colR) >= 1) {
                 //percentCorrect += (bimig.getHeight() * bimig.getWidth());
                 percentCorrect += colR / 2;
                 //System.out.println("high");
             }
         } else if (priorityRed.getRed() == colorMid.getRed()) {
-            if ((colR) >= 0.75) ;
-            {
+            if ((colR) >= 0.75) {
                 //percentCorrect += (bimig.getHeight() * bimig.getWidth()) / 2;
                 percentCorrect += colR / 2;
                 //System.out.println("mid");
             }
         } else if (priorityRed.getRed() == colorLow1.getRed()) {
-            if ((colR) >= 0.5) ;
-            {
+            if ((colR) >= 0.5) {
                 //percentCorrect += (bimig.getHeight() * bimig.getWidth()) / 3;
                 percentCorrect += colR / 2;
                 //System.out.println("low1");
             }
         } else if (priorityRed.getRed() == colorLow2.getRed()) {
-            if ((colR) >= 0.125) ;
-            {
+            if ((colR) >= 0.125) {
                 //percentCorrect += (bimig.getHeight() * bimig.getWidth()) / 4;
                 percentCorrect += colR / 2;
                 //System.out.println("low2");

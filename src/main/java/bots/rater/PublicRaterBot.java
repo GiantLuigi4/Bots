@@ -93,7 +93,8 @@ public class PublicRaterBot extends ListenerAdapter {
         botBuilt = builder.buildAsync();
         try {
             Thread.sleep(1000);
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
         id = botBuilt.getSelfUser().getId();
     }
     
@@ -129,18 +130,18 @@ public class PublicRaterBot extends ListenerAdapter {
                                     List<Message> msgs = chn.getHistory().retrievePast(100).complete();
                                     for (Message msg : msgs) {
                                         String sender = msg.getAuthor().getName();
-        
+    
                                         String usernameWithoutLastFourChars = username.substring(0, username.length() - 4);
-        
+    
                                         if (debug)
                                             textArea.append(usernameWithoutLastFourChars + "\n");
-        
+    
                                         if (usernameWithoutLastFourChars.endsWith("#"))
                                             sender += "#" + msg.getAuthor().getDiscriminator();
-        
+    
                                         if (debug)
                                             textArea.append(username + ":" + sender + "\n");
-        
+    
                                         if (sender.equals(username)) {
                                             activity += 1f;
                                             if (messageText.toLowerCase().contains("bruh"))

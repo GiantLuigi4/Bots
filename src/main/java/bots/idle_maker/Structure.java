@@ -3,7 +3,7 @@ package bots.idle_maker;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-public class Structure implements Comparable {
+public class Structure implements Comparable<Structure> {
     protected String name = "";
     protected String description = "";
     protected String cps = "0";
@@ -50,13 +50,10 @@ public class Structure implements Comparable {
         return new BigInteger(number.toString());
     }
     
-    public int compareTo(Object o) {
-        if (!(o instanceof Structure))
-            throw new ClassCastException();
-        
-        Structure e = (Structure) o;
-        
-        return this.compare(this, o);
+    @Override
+    public int compareTo(Structure o) {
+        if (o != null) return this.compare(this, o);
+        throw new NullPointerException();
     }
     
     //http://www.java2s.com/Code/Java/Collections-Data-Structure/UseCollectionssorttosortcustomclassanduserdefinedComparator.htm
@@ -67,6 +64,6 @@ public class Structure implements Comparable {
         Structure e1 = (Structure) o1;
         Structure e2 = (Structure) o2;
     
-        return (int) (e1.cost - e2.cost);
+        return e1.cost - e2.cost;
     }
 }

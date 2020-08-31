@@ -10,7 +10,6 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.requests.restaction.MessageAction;
 import utils.PropertyReader;
 
-import javax.security.auth.login.LoginException;
 import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
@@ -22,6 +21,7 @@ import java.util.Date;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
+//TODO: minimize warnings on this
 public class IdleMkr extends ListenerAdapter {
     public static ArrayList<Structure> structures = new ArrayList<>();
     
@@ -64,7 +64,7 @@ public class IdleMkr extends ListenerAdapter {
     
             try {
                 String userid = message.getAuthor().getId();
-                File fi = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid + "\\" + "personalprefix.txt");
+                File fi = new File(BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + userid + "\\" + "personalprefix.txt");
                 Scanner sc = new Scanner(fi);
                 prefix = sc.nextLine();
                 sc.close();
@@ -72,8 +72,8 @@ public class IdleMkr extends ListenerAdapter {
                 prefix = "-idle:";
             }
     
-            Boolean hasSave = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + message.getAuthor().getId()).exists();
-            Boolean oldpurchases = !(new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + message.getAuthor().getId() + "\\purchases").exists());
+            Boolean hasSave = new File(BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + message.getAuthor().getId()).exists();
+            Boolean oldpurchases = !(new File(BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + message.getAuthor().getId() + "\\purchases").exists());
             //System.out.println(hasSave);
             //System.out.println(oldpurchases);
             if (hasSave) {
@@ -82,14 +82,14 @@ public class IdleMkr extends ListenerAdapter {
     
                 if (oldpurchases) {
                     try {
-                        sc = new Scanner(new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid + "\\purchases.txt"));
+                        sc = new Scanner(new File(BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + userid + "\\purchases.txt"));
                     } catch (IOException err) {
                         //System.out.println("err");
                     }
                 }
     
                 for (int i = 0; i < structures.size(); i++) {
-                    String file = BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid + "\\purchases\\" + structures.get(i).getID() + ".txt";
+                    String file = BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + userid + "\\purchases\\" + structures.get(i).getID() + ".txt";
                     File fistruct = new File(file);
                     fistruct.getParentFile().mkdirs();
                     if (sc != null) {
@@ -156,7 +156,7 @@ public class IdleMkr extends ListenerAdapter {
                     }
                     if (messageText.startsWith(prefix + "prefix")) {
                         String userid = message.getAuthor().getId();
-                        File fi = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid + "\\" + "personalprefix.txt");
+                        File fi = new File(BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + userid + "\\" + "personalprefix.txt");
     
                         String arg = messageText.substring((prefix + "prefix ").length());
                         //System.out.println(arg);
@@ -258,8 +258,8 @@ public class IdleMkr extends ListenerAdapter {
                             //System.out.println("err");
                         }
         
-                        File fi = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid + "\\");
-                        File fi2 = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid + "\\" + "lastupdated.txt");
+                        File fi = new File(BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + userid + "\\");
+                        File fi2 = new File(BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + userid + "\\" + "lastupdated.txt");
         
                         Structure struct = null;
                         int num = -1;
@@ -274,7 +274,7 @@ public class IdleMkr extends ListenerAdapter {
     
                                 //System.out.println("name:"+struct.name);
     
-                                event.getChannel().sendMessage(" ").embed(HandleStructs.buyStruct(userid, mention, struct, fi, fi2, count, name).build()).complete();
+                                event.getChannel().sendMessage(" ").embed(HandleStructs.buyStruct(userid, struct, fi, fi2, count, name).build()).complete();
     
                             } else {
                                 try {
@@ -289,7 +289,7 @@ public class IdleMkr extends ListenerAdapter {
     
                                     Structure finalStruct = struct;
                                     Long finalCount = count;
-                                    Thread buyThread = new Thread(() -> event.getChannel().sendMessage(" ").embed(HandleStructs.buyStruct(userid, mention, finalStruct, fi, fi2, finalCount, name).build()).complete());
+                                    Thread buyThread = new Thread(() -> event.getChannel().sendMessage(" ").embed(HandleStructs.buyStruct(userid, finalStruct, fi, fi2, finalCount, name).build()).complete());
                                     buyThread.start();
                                 } catch (NullPointerException err) {
                                     //System.out.println(err.getMessage());
@@ -327,7 +327,7 @@ public class IdleMkr extends ListenerAdapter {
                         embedBuilder.setTitle(name + "'s structures");
                         embedBuilder.setColor(new Color(8, 124, 250));
     
-                        File fi = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid + "\\");
+                        File fi = new File(BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + userid + "\\");
                         try {
                             for (int i = 0; i < IdleMkr.structures.size(); i++) {
                                 Structure struct = structures.get(i);
@@ -379,16 +379,16 @@ public class IdleMkr extends ListenerAdapter {
                         String userid = message.getAuthor().getId();
                         String mention = message.getAuthor().getAsMention();
     
-                        File fi = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid);
-                        File fi2 = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid + "\\" + "lastupdated.txt");
+                        File fi = new File(BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + userid);
+                        File fi2 = new File(BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + userid + "\\" + "lastupdated.txt");
                         //File fi3 = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\"+userid+"\\"+"purchases.txt");
-                        File fi4 = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid + "\\" + "totalcoins.txt");
-                        File fi5 = new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid + "\\" + "personalprefix.txt");
+                        File fi4 = new File(BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + userid + "\\" + "totalcoins.txt");
+                        File fi5 = new File(BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + userid + "\\" + "personalprefix.txt");
     
                         fi.mkdirs();
     
                         for (int i = 0; i < structures.size(); i++) {
-                            String file = BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid + "\\purchases\\" + structures.get(i).getID() + ".txt";
+                            String file = BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + userid + "\\purchases\\" + structures.get(i).getID() + ".txt";
                             File fistruct = new File(file);
                             if (!fistruct.exists()) {
                                 try {
@@ -470,7 +470,7 @@ public class IdleMkr extends ListenerAdapter {
                             String cps = "" + HandleStructs.getCPS(userid);
                             String totalcoins = "";
                             try {
-                                Scanner sc = new Scanner(new File(BunchOBots.drive+":\\bot\\idlemk\\userdata\\" + userid + "\\" + "totalcoins.txt"));
+                                Scanner sc = new Scanner(new File(BunchOBots.drive + ":\\bot\\idlemk\\userdata\\" + userid + "\\" + "totalcoins.txt"));
                                 totalcoins = "" + sc.nextLine();
                                 sc.close();
                             } catch (IOException err) {
@@ -531,8 +531,8 @@ public class IdleMkr extends ListenerAdapter {
                                         basecost + "\n"
                         );*/
     
-                            File fi = new File(BunchOBots.drive+":\\bot\\idlemk\\awatingconf\\" + args[2].substring(0, args[2].length() - 1) + "\\" + args[3].substring(0, args[3].length() - 1));
-                            File fi2 = new File(BunchOBots.drive+":\\bot\\idlemk\\awatingconf\\" + args[2].substring(0, args[2].length() - 1) + "\\" + args[3].substring(0, args[3].length() - 1) + "\\suggestion.txt");
+                            File fi = new File(BunchOBots.drive + ":\\bot\\idlemk\\awatingconf\\" + args[2].substring(0, args[2].length() - 1) + "\\" + args[3].substring(0, args[3].length() - 1));
+                            File fi2 = new File(BunchOBots.drive + ":\\bot\\idlemk\\awatingconf\\" + args[2].substring(0, args[2].length() - 1) + "\\" + args[3].substring(0, args[3].length() - 1) + "\\suggestion.txt");
                             fi2.getParentFile().mkdirs();
                             Message msg = event.getChannel().sendMessage("Adding suggestion.").complete();
                             event.getChannel().sendMessage(msg);
