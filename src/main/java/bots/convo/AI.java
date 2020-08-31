@@ -171,7 +171,7 @@ public class AI {
 									}
 								}
 							} else {
-								parsing.append(s1.substring(0, s1.length() - 1)).append(' ');
+								parsing.append(s1, 0, s1.length() - 1).append(' ');
 							}
 						}
 					}
