@@ -132,10 +132,57 @@ public class AI {
 			if (msg != null && !msg.equals("")) {
 				if (sentenceNumber == 0) {
 					Random rng = new Random();
-					String[] out = Files.readArray("bots\\convo\\grammar\\outputs\\ask_doing.grammar");
-					msg += "\n> " + out[rng.nextInt(out.length)];
+					String[] out = Files.readArray("bots\\convo\\complex\\outputs\\ask_doing.grammar");
+					msg += "\n> " + out[rng.nextInt(out.length)].replace("[", "").replace("]", "");
 				}
 				return msg;
+			}
+		}
+		for (File f : Objects.requireNonNull(Files.get("bots\\convo\\complex\\inputs").listFiles())) {
+			String debug = "";
+			try {
+				StringBuilder parsing = new StringBuilder();
+				for (String s : Files.readArray(f)) {
+					for (String s1 : s.split("\\[")) {
+						if (!s1.equals("")) {
+							debug = s1;
+							String substring = s1.substring(1, s1.length() - 2);
+							String substring1 = input;
+							try {
+								substring1 = input.substring(parsing.length());
+							} catch (Throwable ignored) {
+							}
+							try {
+								substring1 = input.substring(Math.abs(parsing.length()));
+							} catch (Throwable ignored) {
+							}
+							String substring2 = substring1;
+							if (substring1.indexOf(' ') != -1)
+								substring2 = substring1.substring(0, substring1.indexOf(' '));
+							if (s1.startsWith("-") && s1.endsWith("-]")) {
+								if (substring.equals(substring2)) {
+									parsing.append(substring2).append(" ");
+								}
+							} else if (s1.startsWith("%") && s1.endsWith("%]")) {
+								for (File file : Objects.requireNonNull(Files.get("bots\\convo\\grammar\\" + substring.replace(".", "\\")).listFiles())) {
+									for (String s2 : Files.readArray(file)) {
+										if (s2.equals(substring2))
+											parsing.append(s2).append(' ');
+									}
+								}
+							} else {
+								parsing.append(s1.substring(0, s1.length() - 1)).append(' ');
+							}
+						}
+					}
+				}
+				parsing = new StringBuilder(parsing.substring(0, parsing.length() - 1));
+				if (input.startsWith(parsing.toString())) {
+					return parsing.toString();
+				}
+			} catch (Throwable err) {
+				err.printStackTrace();
+				System.out.println(debug);
 			}
 		}
 		int[][] ints = new int[1][input.length() + 1];
