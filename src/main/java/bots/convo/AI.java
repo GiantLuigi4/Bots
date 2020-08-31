@@ -4,6 +4,7 @@ import com.tfc.openAI.lang.AIInterpreter;
 import groovy.lang.GroovyClassLoader;
 
 import java.io.InputStream;
+import java.util.Random;
 
 public class AI {
 	//Idk why this doesn't error, but ok?
@@ -59,5 +60,30 @@ public class AI {
 				err.printStackTrace();
 			}
 		}
+	}
+	
+	public static String respond(String code, String input) {
+		int[][] ints = new int[1][input.length() + 1];
+		for (int i = 0; i < input.length(); i++) {
+			ints[0][i] = (int) (input.charAt(i));
+		}
+		StringBuilder builder = new StringBuilder();
+		try {
+			interpreter.exec(code, (out) -> {
+				builder.append(out.substring("key:".length()));
+			}, 0, ints);
+		} catch (Throwable ignored) {
+		}
+		if (builder.toString().equals("")) {
+			double response = new Random().nextDouble();
+			if (response <= 0.3f) {
+				return "I do not know how to respond to that.";
+			} else if (response <= 0.6f) {
+				return "`" + input + "`?";
+			} else {
+				return "What does `" + input + "` mean?";
+			}
+		}
+		return builder.toString();
 	}
 }
