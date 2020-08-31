@@ -15,9 +15,11 @@ sourceCompatibility = 1.8
 repositories {
     mavenCentral()
     jcenter()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile 'net.dv8tion:JDA:3.5.0_329'
+    implementation 'com.github.GiantLuigi4:OpenAILang:1.0.2'
 }

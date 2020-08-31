@@ -1,0 +1,22 @@
+//32 == ' '
+store:space,32
+//10 == '\n'
+store:enter,10
+//array of all words in the sentence
+store:words,[]
+//worker variable for converting an array of integers to words
+store:word,''
+//convert input to array of words instead of an array of integers
+for array in getPixel\:
+    for letter in array\:
+        if:letter=space
+            //add the word to the array of words and clear the word
+            words.append(word)
+            store:word,''
+        else if:letter!\=enter
+            //append the letter to the word
+            store:word,word+str(chr(letter))
+//add the last word to the array of words
+words.append(word)
+//print sentence
+print(words)
