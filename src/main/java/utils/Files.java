@@ -3,6 +3,7 @@ package utils;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class Files {
@@ -106,5 +107,26 @@ public class Files {
 		} catch (Throwable ignored) {
 		}
 		return "";
+	}
+	
+	public static ArrayList<String> listAll(String name) {
+		ArrayList<String> files = new ArrayList<>();
+		ArrayList<String> dirs = new ArrayList<>();
+		dirs.add(dir + "\\" + name);
+		while (!dirs.isEmpty()) {
+			ArrayList<String> tempDirs = new ArrayList<>();
+			for (String s : dirs) {
+				for (File f : Objects.requireNonNull(new File(s).listFiles())) {
+					if (f.isDirectory()) {
+						tempDirs.add(f.toString());
+					} else {
+						files.add(f.toString());
+					}
+				}
+			}
+			dirs.clear();
+			dirs.addAll(tempDirs);
+		}
+		return files;
 	}
 }

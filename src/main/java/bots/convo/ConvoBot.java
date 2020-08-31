@@ -57,6 +57,8 @@ public class ConvoBot extends ListenerAdapter {
 					activeConvos.put(event.getAuthor().getId(), new ConvoStats(0, event.getChannel().getIdLong()));
 				else if (event.getMessage().getContentRaw().equals("-convo:end") || event.getMessage().getContentRaw().equals("-convo:stop"))
 					activeConvos.remove(event.getAuthor().getId());
+				else if (event.getMessage().getContentRaw().equals("-convo:brain_size"))
+					event.getChannel().sendMessage("Brain size:" + Files.listAll("bots\\convo").size()).complete();
 				else if (event.getMessage().getContentRaw().startsWith("-convo:ignore")) ;
 				else if (event.getMessage().getContentRaw().startsWith("-convo:sayCode")) {
 					String name = event.getMessage().getContentRaw().substring("-convo:sayCode ".length());
