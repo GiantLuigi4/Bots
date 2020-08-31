@@ -143,42 +143,26 @@ public class AI {
 			try {
 				StringBuilder parsing = new StringBuilder();
 				for (String s : Files.readArray(f)) {
-					for (String s1 : s.split("\\[")) {
-						if (!s1.equals("")) {
-							debug = s1;
-							String substring = s1.substring(1, s1.length() - 2);
-							String substring1 = input;
-							try {
-								substring1 = input.substring(parsing.length());
-							} catch (Throwable ignored) {
-							}
-							try {
-								substring1 = input.substring(Math.abs(parsing.length()));
-							} catch (Throwable ignored) {
-							}
-							String substring2 = substring1;
-							if (substring1.indexOf(' ') != -1)
-								substring2 = substring1.substring(0, substring1.indexOf(' '));
-							if (s1.startsWith("-") && s1.endsWith("-]")) {
-								if (substring.equals(substring2)) {
-									parsing.append(substring2).append(" ");
-								}
-							} else if (s1.startsWith("%") && s1.endsWith("%]")) {
-								for (File file : Objects.requireNonNull(Files.get("bots\\convo\\grammar\\" + substring.replace(".", "\\")).listFiles())) {
-									for (String s2 : Files.readArray(file)) {
-										if (s2.equals(substring2))
-											parsing.append(s2).append(' ');
-									}
-								}
-							} else {
-								parsing.append(s1, 0, s1.length() - 1).append(' ');
-							}
+					try {
+						if (parsing.toString().equals("")) {
+							parsing.append(parseGrammar(input, s));
+						} else {
+							break;
 						}
+					} catch (Throwable err) {
+						err.printStackTrace();
 					}
 				}
-				parsing = new StringBuilder(parsing.substring(0, parsing.length() - 1));
-				if (input.startsWith(parsing.toString())) {
-					return parsing.toString();
+				if (!parsing.toString().equals("")) {
+					parsing = new StringBuilder(parsing.substring(0, parsing.length() - 1));
+					File output = Files.get("bots\\convo\\complex\\response\\" + f.getName());
+					if (output.exists()) {
+						Random rng = new Random();
+						String[] out = Files.readArray(output);
+						return out[rng.nextInt(out.length)].replace("[", "").replace("]", "");
+					}
+					if (input.equals(parsing.toString()))
+						return parsing.toString();
 				}
 			} catch (Throwable err) {
 				err.printStackTrace();
@@ -205,5 +189,40 @@ public class AI {
 			}
 		}
 		return builder.toString();
+	}
+	
+	public static String parseGrammar(String input, String s) {
+		StringBuilder parsing = new StringBuilder();
+		for (String s1 : s.split("\\[")) {
+			if (!s1.equals("")) {
+				String substring = s1.substring(1, s1.length() - 2);
+				String substring1 = input;
+				try {
+					substring1 = input.substring(parsing.length());
+				} catch (Throwable ignored) {
+				}
+				try {
+					substring1 = input.substring(Math.abs(parsing.length()));
+				} catch (Throwable ignored) {
+				}
+				String substring2 = substring1;
+				if (substring1.indexOf(' ') != -1)
+					substring2 = substring1.substring(0, substring1.indexOf(' '));
+				if (s1.startsWith("-") && s1.endsWith("-]")) {
+					if (substring.equals(substring2))
+						parsing.append(substring2).append(" ");
+				} else if (s1.startsWith("%") && s1.endsWith("%]")) {
+					for (File file : Objects.requireNonNull(Files.get("bots\\convo\\grammar\\" + substring.replace(".", "\\")).listFiles())) {
+						for (String s2 : Files.readArray(file)) {
+							if (s2.equals(substring2))
+								parsing.append(s2).append(' ');
+						}
+					}
+				} else if (substring1.startsWith(s1)) {
+					parsing.append(s1, 0, s1.length() - 1).append(' ');
+				}
+			}
+		}
+		return parsing.toString();
 	}
 }
