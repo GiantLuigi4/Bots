@@ -9,10 +9,10 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import utils.Files;
 import utils.PropertyReader;
 
-import java.awt.*;
-import java.util.List;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class ConvoBot extends ListenerAdapter {
 	private static final GroovyClassLoader cl = new GroovyClassLoader();
@@ -48,30 +48,39 @@ public class ConvoBot extends ListenerAdapter {
 		} catch (Throwable ignored) {
 		}
 	}
-	
+
 	protected static final HashMap<String, ConvoStats> activeConvos = new HashMap<>();
-	protected static String senderID = "";
-	protected static List<String> userList = new ArrayList<>();
+	//TODO make a list of senderIDs for multiple conversations
+	protected static String lastSenderID = null;
+	protected static final HashMap<String, List<String>> sendersToUsersMap = new HashMap<>();
 
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
 		if (event.getJDA().getSelfUser().getId().equals(id)) {
 			if (event.getChannel().getName().contains("bot")) {
+				String authorId = event.getAuthor().getId();
 				String content = event.getMessage().getContentRaw();
 				if (content.equals("-convo:start") || content.equals("-convo:begin")) {
-					senderID = event.getAuthor().getId();
-					userList.add(0, senderID);
-					activeConvos.put(event.getAuthor().getId(), new ConvoStats(0, event.getChannel().getIdLong()));
+					if (!activeConvos.containsKey(authorId)) {
+						if (lastSenderID != null && activeConvos.get(lastSenderID).users.contains(authorId))
+							event.getChannel().sendMessage(event.getAuthor().getAsMention() + ", you are already part of a conversation!").complete();
+						else {
+							lastSenderID = authorId;
+							activeConvos.put(authorId, new ConvoStats(0, event.getChannel().getIdLong(), new ArrayList<>()));
+							sendersToUsersMap.put(lastSenderID, activeConvos.get(lastSenderID).users);
+						}
+					} else if (authorId.equals(lastSenderID)) {
+						event.getChannel().sendMessage(event.getAuthor().getAsMention() + ", this conversation was started from you lmao").complete();
+					}
 				}
 				else if (content.equals("-convo:end") || content.equals("-convo:stop")) {
-					if (event.getAuthor().getId().equals(senderID)) {
-						activeConvos.remove(event.getAuthor().getId());
-						userList.clear();
+					if (authorId.equals(lastSenderID)) {
+						activeConvos.get(lastSenderID).users.clear();
+						activeConvos.remove(authorId);
 						event.getChannel().sendMessage(event.getAuthor().getAsMention()).append(" ended the conversation!").complete();
 					}
 					else {
-						activeConvos.remove(event.getAuthor().getId());
-						userList.remove(event.getAuthor().getId());
+						activeConvos.get(lastSenderID).users.remove(authorId);
 						event.getChannel().sendMessage(event.getAuthor().getAsMention()).append(" abandoned the conversation.\nWe'll miss him.....maybe.").complete();
 					}
 				}
@@ -86,9 +95,17 @@ public class ConvoBot extends ListenerAdapter {
 					event.getChannel().sendMessage("Bot training ended").complete();
 				}
 				else if (content.startsWith("-convo:join")) {
-					event.getChannel().sendMessage("Joining conversation...").complete();
-					userList.add(event.getAuthor().getId());
-					event.getChannel().sendMessage("Joined!").complete();
+					if (!authorId.equals(lastSenderID)) {
+						if (activeConvos.containsKey(lastSenderID)) {
+							event.getChannel().sendMessage("Joining conversation...").complete();
+							activeConvos.get(lastSenderID).users.add(authorId);
+							event.getChannel().sendMessage("Joined!").complete();
+						} else {
+							event.getChannel().sendMessage("No conversation active! Use '-convo:start' to start one").complete();
+						}
+					} else {
+						event.getChannel().sendMessage("You are already in a conversation!!").complete();
+					}
 				}
 				else if (content.startsWith("-convo:sayCode")) {
 					String name = content.substring("-convo:sayCode ".length());
@@ -122,17 +139,20 @@ public class ConvoBot extends ListenerAdapter {
 					builder.addField("**-convo:train-stop**", "Stops Bot training.", false);
 					builder.setFooter("Bot by: GiantLuigi4", "https://cdn.discordapp.com/avatars/380845972441530368/27de0e038db60752d1e8b7b4fced0f4e.png?size=128");
 					event.getChannel().sendMessage(" ").embed(builder.build()).complete();
-				} else if (userList.contains(event.getAuthor().getId())) {
-					if (event.getChannel().getIdLong() == activeConvos.get(senderID).channel) {
-						StringBuilder message = new StringBuilder();
-						for (String s : content.split("\n")) {
-							for (String input : s.split("\\. ")) {
-								message.append("> " + AI.respond(code, input, activeConvos.get(senderID).sentence)).append("\n");
-								activeConvos.get(senderID).sentence++;
+				} else if (!authorId.equals(id) && activeConvos.containsKey(lastSenderID)) {
+					ConvoStats currentStats = activeConvos.get(lastSenderID);
+					if (event.getChannel().getIdLong() == currentStats.channel) {
+						if (currentStats.users.contains(authorId) || authorId.equals(lastSenderID)) {
+							StringBuilder message = new StringBuilder();
+							for (String s : content.split("\n")) {
+								for (String input : s.split("\\. ")) {
+									message.append("> " + AI.respond(code, input, activeConvos.get(lastSenderID).sentence)).append("\n");
+									activeConvos.get(lastSenderID).sentence++;
+								}
 							}
+							message.append("In response to: ").append(event.getAuthor().getAsMention());
+							event.getChannel().sendMessage(message.toString()).complete();
 						}
-						message.append("In response to: ").append(event.getAuthor().getAsMention());
-						event.getChannel().sendMessage(message.toString()).complete();
 					}
 				}
 			}
