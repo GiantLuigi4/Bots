@@ -1,6 +1,5 @@
 from utils import Files
 from java.io import File
-store:file,'bots\\\\convo\\\\grammar\\\\pronouns\\\\lang\\\\human\\\\recognized\\\\list.txt'
+store:file,'bots\\\\convo\\\\grammar\\\\pronouns\\\\lang\\\\human\\\\recognized\\\\list.list'
 store:text,Files.readAI(file)
-//TODO: remove the last comma, replace the second to last comma with ", and"
-keyPre\ss('I know ' + text.replace('\|', ','))
+keyPre\ss('I know ' + text.replace('\|', ', ').replace('.,','.'))
