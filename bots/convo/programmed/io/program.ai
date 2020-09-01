@@ -21,6 +21,18 @@ store:io,[
     {
         'in'\:'pushy',
         'out'\:'push poosh'
+    },
+    {
+        'in'\:'the world',
+        'out'\:'ZA WARUDO'
+    },
+    {
+        'in'\:'SONO CHI NO SADAME',
+        'out'\:'JOOOOOOOOOOOOOOOOOOOOOOOOOOOOJO'
+    },
+    {
+        'in'\:'Korega...',
+        'out'\:'requiem....da\nMUDA MUDA MUDA MUDA MUDA'
     }
 ]
 for dictionary in io\:
