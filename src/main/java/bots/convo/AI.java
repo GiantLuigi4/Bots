@@ -151,6 +151,7 @@ public class AI {
 					return msg;
 				}
 			}
+		}
 		for (File f : Objects.requireNonNull(Files.get("bots\\convo\\complex\\inputs").listFiles())) {
 			String debug = "";
 			try {
