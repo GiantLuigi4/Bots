@@ -69,36 +69,12 @@ public class ConvoBot extends ListenerAdapter {
 						event.getChannel().sendMessage(event.getAuthor().getAsMention() + ", this conversation was started from you lmao").complete();
 					}
 				} else if (content.equals("-convo:end") || content.equals("-convo:stop")) {
-<<<<<<< Updated upstream
-					if (authorId.equals(lastSenderID)) {
-						EmbedBuilder convoInfo = new EmbedBuilder();
-						convoInfo.setAuthor(event.getAuthor().getName());
-						ConvoStats stats = activeConvos.get(lastSenderID);
-						convoInfo.setColor(new Color(
-								(int) (stats.users.size() % 255),
-								(int) (Math.abs(stats.sentence) % 255),
-								(int) (Math.abs(stats.channel) % 255)
-						));
-						convoInfo.setTitle("Convo stats:");
-						convoInfo.addField("Lasted", stats.sentence + " messages", false);
-						convoInfo.addField("Ended with", stats.users.size() + " users", false);
-						convoInfo.addField("Peak user count", stats.maxUsers + " users", false);
-						convoInfo.addField("In", event.getGuild().getTextChannelById(stats.channel).getName(), false);
-						activeConvos.get(lastSenderID).users.clear();
-						activeConvos.remove(authorId);
-						lastSenderID = null;
-						event.getChannel().sendMessage(" ").embed(convoInfo.build()).complete();
-					} else {
-						activeConvos.get(lastSenderID).removeUser(authorId);
-						event.getChannel().sendMessage(event.getAuthor().getAsMention()).append(" abandoned the conversation.\nWe'll miss him.....maybe.").complete();
-=======
 					if (activeConvos.containsKey(authorId)) {
 						activeConvos.remove(authorId);
 						senders.remove(author);
 						event.getChannel().sendMessage(event.getAuthor().getAsMention()).append(" ended the conversation!").complete();
 					} else {
 						event.getChannel().sendMessage(event.getAuthor().getAsMention()).append(", you haven't started any conversation! Do -convo:start.").complete();
->>>>>>> Stashed changes
 					}
 				} else if (content.equals("-convo:brain_size"))
 					event.getChannel().sendMessage("Brain size:" + Files.listAll("bots\\convo").size()).complete();
@@ -108,21 +84,6 @@ public class ConvoBot extends ListenerAdapter {
 					event.getChannel().sendMessage("Not working yet").complete();
 				} else if (content.startsWith("-convo:train-stop")) {
 					event.getChannel().sendMessage("Bot training ended").complete();
-<<<<<<< Updated upstream
-				} else if (content.startsWith("-convo:join")) {
-					if (!authorId.equals(lastSenderID)) {
-						if (activeConvos.containsKey(lastSenderID)) {
-							event.getChannel().sendMessage("Joining conversation...").complete();
-							activeConvos.get(lastSenderID).addUser(authorId);
-							event.getChannel().sendMessage("Joined!").complete();
-						} else {
-							event.getChannel().sendMessage("No conversation active! Use '-convo:start' to start one").complete();
-						}
-					} else {
-						event.getChannel().sendMessage("You are already in a conversation!!").complete();
-					}
-=======
->>>>>>> Stashed changes
 				} else if (content.startsWith("-convo:sayCode")) {
 					String name = content.substring("-convo:sayCode ".length());
 					String code = Files.read("bots\\convo\\programmed\\" + name + "\\program.ai");
