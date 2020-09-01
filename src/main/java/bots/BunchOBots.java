@@ -8,37 +8,45 @@ import bots.role_reaction.RoleReactionBot;
 import utils.Files;
 import utils.PropertyReader;
 
-import javax.security.auth.login.LoginException;
-
 public class BunchOBots {
 	public static final String drive = PropertyReader.read("settings.properties", "drive");
 	
-	public static void main(String[] args) throws LoginException {
+	public static void main(String[] args) {
 		Files.create("Settings.properties", "drive:C");
 		if (!Files.create("bots.properties")) {
 			if (PropertyReader.contains("bots.properties", "roleReaction")) {
-				RoleReactionBot.main(args);
+				new Thread(() -> {
+					RoleReactionBot.main(args);
+				}).start();
 			}
 			if (PropertyReader.contains("bots.properties", "rbPrivate")) {
-				try {
-					RaterBot.main(args);
-				} catch (Throwable err) {
-					err.printStackTrace();
-				}
-			} else {
-				if (PropertyReader.contains("bots.properties", "rbPublic")) {
+				new Thread(() -> {
 					try {
-						PublicRaterBot.main(args);
+						RaterBot.main(args);
 					} catch (Throwable err) {
 						err.printStackTrace();
 					}
+				}).start();
+			} else {
+				if (PropertyReader.contains("bots.properties", "rbPublic")) {
+					new Thread(() -> {
+						try {
+							PublicRaterBot.main(args);
+						} catch (Throwable err) {
+							err.printStackTrace();
+						}
+					}).start();
 				}
 			}
 			if (PropertyReader.contains("bots.properties", "idleMaker")) {
-				IdleMkr.main(args);
+				new Thread(() -> {
+					IdleMkr.main(args);
+				}).start();
 			}
 			if (PropertyReader.contains("bots.properties", "convo")) {
-				ConvoBot.main(args);
+				new Thread(() -> {
+					ConvoBot.main(args);
+				}).start();
 			}
 		}
 	}
