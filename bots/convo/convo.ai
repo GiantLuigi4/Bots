@@ -1,3 +1,9 @@
+from utils import Files
+from utils import PropertyReader
+from java.io import File
+from java.lang import Boolean
+
+
 //32 == ' '
 store:space,32
 //10 == '\n'
@@ -6,12 +12,14 @@ store:enter,10
 store:words,[]
 //worker variable for converting an array of integers to words
 store:word,''
+store:input,''
 //convert input to array of words instead of an array of integers
 //escaping : because if it's not escaped, it compiles to ('')
 for letter in getPixel[0]\:
     if:letter=space
         //add the word to the array of words and clear the word
         words.append(word)
+        store:input,input+word+' '
         store:word,''
     else if:letter!\=enter
         //append the letter to the word
@@ -22,3 +30,52 @@ words.append(word)
 print(words)
 
 //TODO:Figure out how to make machine learning using AI Lang
+
+for f in Files.listAllFolders(Files.get("bots\\\\convo\\\\simple"))\:
+    store:inputs,File(f.getPath() + "\\\\in.list")
+    store:outputs,File(f.getPath() + "\\\\out.list")
+    store:info,File(f.getPath() + "\\\\info.properties")
+    store:inputsArray,Files.readArray(inputs)
+    store:caseSensitive,Boolean.parseBoolean(PropertyReader.read(info, "caseSensitive"))
+    store:ends,PropertyReader.read(info, "validEnds")
+    store:check,input.lower()
+    if:caseSensitive
+        store:check,input
+    store:msg,""
+    for inp in inputsArray\:
+        if:ends=""
+            if:check.startswith(inp)
+                store:rng,Random()
+                store:out,Files.readArray(outputs)
+                store:msg,msg+out[rng.nextInt(out.length)]
+                break
+        else:
+            if:check.startswith(inp)
+                store:rng,Random()
+                store:out,Files.readArray(outputs)
+                store:msg,msg+out[rng.nextInt(out.length)]
+                break
+            for c in ends\:
+                if:check=(inp + c)
+                    store:rng,Random()
+                    store:out,Files.readArray(outputs)
+                    store:msg,msg+out[rng.nextInt(out.length)]
+                    break
+        if:not msg=""
+            break
+    print(msg)
+    if:msg \!\= 'null' and not msg=""
+//        store:rng,Random()
+//        switch (sentenceNumber) {
+//            case 0:
+//                String[] out1 = Files.readArray("bots\\convo\\complex\\outputs\\ask_doing.grammar")
+//                msg += "\n> " + out1[rng.nextInt(out1.length)].replace("[", "").replace("]", "")
+//                break
+//            case 1:
+//                String[] out2 = Files.readArray("bots\\convo\\complex\\outputs\\ask_up_to.grammar")
+//                msg += "\n> " + out2[rng.nextInt(out2.length)].replace("[", "").replace("]", "")
+//                break
+//            default:
+//                break
+//        }
+        keyPre\ss(msg)

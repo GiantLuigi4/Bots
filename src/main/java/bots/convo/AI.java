@@ -98,58 +98,59 @@ public class AI {
 					return "Having " + ConvoBot.activeConvos.size() + " conversations at once";
 			}
 		}
-		for (File f : Objects.requireNonNull(Files.listAllFolders(Files.get("bots\\convo\\simple")))) {
-			File inputs = new File(f.getPath() + "\\in.list");
-			File outputs = new File(f.getPath() + "\\out.list");
-			File info = new File(f.getPath() + "\\info.properties");
-			String[] inputsArray = Files.readArray(inputs);
-			boolean caseSensitive = Boolean.parseBoolean(PropertyReader.read(info, "caseSensitive"));
-			String ends = PropertyReader.read(info, "validEnds");
-			String check = caseSensitive ? input : input.toLowerCase();
-			String msg = "";
-			for (String in : inputsArray) {
-				if (ends.equals("")) {
-					if (check.startsWith(in)) {
-						Random rng = new Random();
-						String[] out = Files.readArray(outputs);
-						msg = out[rng.nextInt(out.length)];
-						break;
-					}
-				} else {
-					if (check.startsWith(in)) {
-						Random rng = new Random();
-						String[] out = Files.readArray(outputs);
-						msg = out[rng.nextInt(out.length)];
-						break;
-					}
-					for (char c : ends.toCharArray()) {
-						if (check.equals(in + c)) {
+		if (true) {
+			for (File f : Objects.requireNonNull(Files.listAllFolders(Files.get("bots\\convo\\simple")))) {
+				File inputs = new File(f.getPath() + "\\in.list");
+				File outputs = new File(f.getPath() + "\\out.list");
+				File info = new File(f.getPath() + "\\info.properties");
+				String[] inputsArray = Files.readArray(inputs);
+				boolean caseSensitive = Boolean.parseBoolean(PropertyReader.read(info, "caseSensitive"));
+				String ends = PropertyReader.read(info, "validEnds");
+				String check = caseSensitive ? input : input.toLowerCase();
+				String msg = "";
+				for (String in : inputsArray) {
+					if (ends.equals("")) {
+						if (check.startsWith(in)) {
 							Random rng = new Random();
 							String[] out = Files.readArray(outputs);
 							msg = out[rng.nextInt(out.length)];
 							break;
 						}
+					} else {
+						if (check.startsWith(in)) {
+							Random rng = new Random();
+							String[] out = Files.readArray(outputs);
+							msg = out[rng.nextInt(out.length)];
+							break;
+						}
+						for (char c : ends.toCharArray()) {
+							if (check.equals(in + c)) {
+								Random rng = new Random();
+								String[] out = Files.readArray(outputs);
+								msg = out[rng.nextInt(out.length)];
+								break;
+							}
+						}
 					}
+					if (!msg.equals("")) break;
 				}
-				if (!msg.equals("")) break;
-			}
-			if (msg != null && !msg.equals("")) {
-				Random rng = new Random();
-				switch (sentenceNumber) {
-					case 0:
-						String[] out1 = Files.readArray("bots\\convo\\complex\\outputs\\ask_doing.grammar");
-						msg += "\n> " + out1[rng.nextInt(out1.length)].replace("[", "").replace("]", "");
-						break;
-					case 1:
-						String[] out2 = Files.readArray("bots\\convo\\complex\\outputs\\ask_up_to.grammar");
-						msg += "\n> " + out2[rng.nextInt(out2.length)].replace("[", "").replace("]", "");
-						break;
-					default:
-						break;
+				if (msg != null && !msg.equals("")) {
+					Random rng = new Random();
+					switch (sentenceNumber) {
+						case 0:
+							String[] out1 = Files.readArray("bots\\convo\\complex\\outputs\\ask_doing.grammar");
+							msg += "\n> " + out1[rng.nextInt(out1.length)].replace("[", "").replace("]", "");
+							break;
+						case 1:
+							String[] out2 = Files.readArray("bots\\convo\\complex\\outputs\\ask_up_to.grammar");
+							msg += "\n> " + out2[rng.nextInt(out2.length)].replace("[", "").replace("]", "");
+							break;
+						default:
+							break;
+					}
+					return msg;
 				}
-				return msg;
 			}
-		}
 		for (File f : Objects.requireNonNull(Files.get("bots\\convo\\complex\\inputs").listFiles())) {
 			String debug = "";
 			try {
@@ -226,7 +227,13 @@ public class AI {
 			interpreter.exec(code, (out) -> {
 				builder.append(out.substring("key:".length()));
 			}, 0, ints);
-		} catch (Throwable ignored) {
+		} catch (Throwable err) {
+			System.out.println(code);
+			try {
+				Thread.sleep(1000);
+			} catch (Throwable ignored) {
+			}
+			err.printStackTrace();
 		}
 		if (builder.toString().equals("")) {
 			double response = new Random().nextDouble();

@@ -233,6 +233,13 @@ public class Files {
 	}
 	
 	//This is for AIthon, so it won't work the same as the rest
+	public static String getRandomLine_(String dir) {
+		String[] strings = readArray(dir);
+		Random random = new Random();
+		return strings[random.nextInt(strings.length)].replace("[", "").replace("]", "").replace("\n", "");
+	}
+	
+	//This is for AIthon, so it won't work the same as the rest
 	public static String readAI(String file) {
 		File f = new File(dir + "\\" + file);
 		String strings = read(f);
