@@ -21,8 +21,8 @@ public class ConvoBot extends ListenerAdapter {
 	public static JDA botBuilt;
 	private static String id = "749811547659829258";
 	private static Class<?> ai;
-	private static AIInterpreter interpreter = AI.interpreter;
-	private static String code = (interpreter.interpretFromFile("bots/convo/convo.ai"));
+	private static final AIInterpreter interpreter = AI.interpreter;
+	private static final String code = (interpreter.interpretFromFile("bots/convo/convo.ai"));
 
 	public static void main(String[] args) {
 		try {
@@ -65,7 +65,7 @@ public class ConvoBot extends ListenerAdapter {
 					if (!activeConvos.containsKey(authorId)) {
 						activeConvos.put(authorId, new ConvoStats(0, event.getChannel().getIdLong()));
 						senders.add(author);
-					} else if (senders.contains(authorId)) {
+					} else if (senders.contains(author)) {
 						event.getChannel().sendMessage(event.getAuthor().getAsMention() + ", this conversation was started from you lmao").complete();
 					}
 				} else if (content.equals("-convo:end") || content.equals("-convo:stop")) {
@@ -118,7 +118,7 @@ public class ConvoBot extends ListenerAdapter {
 					event.getChannel().sendMessage(" ").embed(builder.build()).complete();
 				} else if (!authorId.equals(id)) {
 					for (User sender : senders) {
-						ConvoStats currentStats = activeConvos.get(sender);
+						ConvoStats currentStats = activeConvos.get(sender.getId());
 						if (event.getChannel().getIdLong() == currentStats.channel && author.equals(sender)) {
 							StringBuilder message = new StringBuilder();
 								for (String s : content.split("\n")) {
