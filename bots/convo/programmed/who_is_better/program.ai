@@ -21,6 +21,7 @@ words.append(word)
 //print sentence
 print(words)
 
+//the program
 store:best,0
 store:bestNum,0
 store:index,0
@@ -34,4 +35,4 @@ for word in words\:
         store:best,index
         store:bestNum,num
     store:index,index+1
-k\e\y\P\r\e\s\s\(words[best])
+keyPre\ss(words[best])

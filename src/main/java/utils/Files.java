@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Files {
@@ -151,6 +152,54 @@ public class Files {
 		return files;
 	}
 	
+	public static ArrayList<File> listAllFolders(String name) {
+		ArrayList<File> files = new ArrayList<>();
+		ArrayList<String> dirs = new ArrayList<>();
+		dirs.add(dir + "\\" + name);
+		while (!dirs.isEmpty()) {
+			ArrayList<String> tempDirs = new ArrayList<>();
+			for (String s : dirs) {
+				boolean hasFolder = false;
+				for (File f : Objects.requireNonNull(new File(s).listFiles())) {
+					if (f.isDirectory()) {
+						tempDirs.add(f.toString());
+						hasFolder = true;
+					}
+				}
+				if (!hasFolder) {
+					files.add(new File(s));
+				}
+			}
+			dirs.clear();
+			dirs.addAll(tempDirs);
+		}
+		return files;
+	}
+	
+	public static ArrayList<File> listAllFolders(File file) {
+		ArrayList<File> files = new ArrayList<>();
+		ArrayList<String> dirs = new ArrayList<>();
+		dirs.add(file.toString());
+		while (!dirs.isEmpty()) {
+			ArrayList<String> tempDirs = new ArrayList<>();
+			for (String s : dirs) {
+				boolean hasFolder = false;
+				for (File f : Objects.requireNonNull(new File(s).listFiles())) {
+					if (f.isDirectory()) {
+						tempDirs.add(f.toString());
+						hasFolder = true;
+					}
+				}
+				if (!hasFolder) {
+					files.add(new File(s));
+				}
+			}
+			dirs.clear();
+			dirs.addAll(tempDirs);
+		}
+		return files;
+	}
+	
 	public static ArrayList<File> listAllFiles(File fi) {
 		ArrayList<File> files = new ArrayList<>();
 		ArrayList<String> dirs = new ArrayList<>();
@@ -173,5 +222,20 @@ public class Files {
 			dirs.addAll(tempDirs);
 		}
 		return files;
+	}
+	
+	//This is for AIthon, so it won't work the same as the rest
+	public static String getRandomLine(String dir) {
+		File f = new File(dir);
+		String[] strings = readArray(f);
+		Random random = new Random();
+		return strings[random.nextInt(strings.length)].replace("[", "").replace("]", "").replace("\n", "");
+	}
+	
+	//This is for AIthon, so it won't work the same as the rest
+	public static String readAI(String file) {
+		File f = new File(dir + "\\" + file);
+		String strings = read(f);
+		return strings.replace("\n", "|");
 	}
 }

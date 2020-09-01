@@ -98,7 +98,7 @@ public class AI {
 					return "Having " + ConvoBot.activeConvos.size() + " conversations at once";
 			}
 		}
-		for (File f : Objects.requireNonNull(Files.get("bots\\convo\\simple").listFiles())) {
+		for (File f : Objects.requireNonNull(Files.listAllFolders(Files.get("bots\\convo\\simple")))) {
 			File inputs = new File(f.getPath() + "\\in.list");
 			File outputs = new File(f.getPath() + "\\out.list");
 			File info = new File(f.getPath() + "\\info.properties");
@@ -134,10 +134,18 @@ public class AI {
 				if (!msg.equals("")) break;
 			}
 			if (msg != null && !msg.equals("")) {
-				if (sentenceNumber == 0) {
-					Random rng = new Random();
-					String[] out = Files.readArray("bots\\convo\\complex\\outputs\\ask_doing.grammar");
-					msg += "\n> " + out[rng.nextInt(out.length)].replace("[", "").replace("]", "");
+				Random rng = new Random();
+				switch (sentenceNumber) {
+					case 0:
+						String[] out1 = Files.readArray("bots\\convo\\complex\\outputs\\ask_doing.grammar");
+						msg += "\n> " + out1[rng.nextInt(out1.length)].replace("[", "").replace("]", "");
+						break;
+					case 1:
+						String[] out2 = Files.readArray("bots\\convo\\complex\\outputs\\ask_up_to.grammar");
+						msg += "\n> " + out2[rng.nextInt(out2.length)].replace("[", "").replace("]", "");
+						break;
+					default:
+						break;
 				}
 				return msg;
 			}
@@ -153,16 +161,24 @@ public class AI {
 				} catch (Throwable err) {
 					err.printStackTrace();
 				}
-				if (!parsing.substring(0, parsing.length() - 1).equals("")) {
-					StringBuilder parsing1 = new StringBuilder(parsing);
-					if ((input + ' ').equals(parsing1.toString())) {
-						File output = Files.get("bots\\convo\\complex\\response\\" + f.getName());
-						if (output.exists()) {
-							Random rng = new Random();
-							String[] out = Files.readArray(output);
-							return out[rng.nextInt(out.length)].replace("[", "").replace("]", "");
+				if (parsing.length() >= 1) {
+					String message = "";
+					if (!parsing.substring(0, parsing.length() - 1).equals("")) {
+						StringBuilder parsing1 = new StringBuilder(parsing);
+						if (((input.replace(".", "").replace("!", "").replace("?", "")).toLowerCase() + ' ').equals(parsing1.toString())) {
+							File output = Files.get("bots\\convo\\complex\\response\\" + f.getName());
+							if (output.exists()) {
+								Random rng = new Random();
+								String[] out = Files.readArray(output);
+								message = out[rng.nextInt(out.length)].replace("[", "").replace("]", "");
+								if (sentenceNumber == 1) {
+									String[] out2 = Files.readArray("bots\\convo\\complex\\outputs\\ask_up_to.grammar");
+									message += "\n> " + out2[rng.nextInt(out2.length)].replace("[", "").replace("]", "");
+								}
+								return message;
+							}
+							message = parsing1.toString();
 						}
-						return parsing1.toString();
 					}
 				}
 //				}
@@ -173,23 +189,31 @@ public class AI {
 		}
 		for (File f : Objects.requireNonNull(Files.get("bots\\convo\\programmed").listFiles())) {
 			try {
-				File f2 = new File(f.getPath() + "\\syntax.grammar");
+				File f2 = new File(f.getPath() + "\\syntax.txt");
 				String grammar = Files.read(f2);
 				int percentIndex = grammar.indexOf("%");
-				if (input.length() > grammar.length() && grammar.startsWith(input.substring(0, percentIndex))) {
-					File f3 = new File(f.getPath() + "\\program.ai");
-					String code1 = Files.read(f3);
-					String compiled = interpreter.interpret(code1);
-					System.out.println(compiled);
-					StringBuilder builder = new StringBuilder();
-					aiInstance.getAndIncrement();
-					int[][] ints = new int[1][input.length() - percentIndex];
-					for (int i = percentIndex; i < input.length(); i++) ints[0][i - percentIndex] = input.charAt(i);
-					interpreter.exec(compiled, (out) -> {
-						builder.append(out.substring("key:".length()));
-					}, aiInstance.get(), ints);
-					aiInstance.getAndDecrement();
-					return builder.toString();
+				System.out.println(percentIndex);
+				grammar = grammar.replace("\n", "");
+				if (input.length() > percentIndex) {
+					System.out.println(grammar);
+					System.out.println(input);
+					boolean matches = (percentIndex == -1 && input.startsWith(grammar)) || (percentIndex > 0 && grammar.startsWith(input.substring(0, percentIndex)));
+					if (input.length() >= grammar.length() && matches) {
+						if (percentIndex == -1) percentIndex = 0;
+						File f3 = new File(f.getPath() + "\\program.ai");
+						String code1 = Files.read(f3);
+						String compiled = interpreter.interpret(code1);
+						System.out.println(compiled);
+						StringBuilder builder = new StringBuilder();
+						aiInstance.getAndIncrement();
+						int[][] ints = new int[1][input.length() - percentIndex];
+						for (int i = percentIndex; i < input.length(); i++) ints[0][i - percentIndex] = input.charAt(i);
+						interpreter.exec(compiled, (out) -> {
+							builder.append(out.substring("key:".length()));
+						}, aiInstance.get(), ints);
+						aiInstance.getAndDecrement();
+						return builder.toString();
+					}
 				}
 			} catch (Throwable err) {
 				err.printStackTrace();
@@ -218,6 +242,9 @@ public class AI {
 	}
 	
 	public static String parseGrammar(String input, String s) {
+		s = s.replace("\n", "");
+		s = s.toLowerCase();
+		input = input.replace(".", "").replace("!", "").replace("?", "").toLowerCase();
 		StringBuilder parsing = new StringBuilder();
 		for (String s1 : s.split("\\[")) {
 			if (!s1.equals("")) {
@@ -250,11 +277,6 @@ public class AI {
 						substring3 = input.substring(parsing.length());
 					} catch (Throwable ignored) {
 					}
-					System.out.println(parsing);
-					System.out.println(input.substring(parsing.length()));
-					System.out.println(substring3);
-					System.out.println(substring);
-					System.out.println(s1.replace("[", "").replace("]\n", ""));
 					if (substring3.startsWith(s1.replace("[", "").replace("]", "").replace("\n", ""))) {
 						parsing.append(s1, 0, s1.length() - 1).append(' ');
 					}

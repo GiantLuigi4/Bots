@@ -1,0 +1,5 @@
+from utils import Files
+from java.io import File
+store:file,'bots\\\\convo\\\\grammar\\\\pronouns\\\\lang\\\\recognized\\\\list.list'
+store:text,Files.readAI(file)
+keyPre\ss('I know ' + text.replace('\|', ', ').replace('_,',''))
