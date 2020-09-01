@@ -5,6 +5,7 @@ import java.util.List;
 public class ConvoStats {
 	final long channel;
 	int sentence = 0;
+<<<<<<< Updated upstream
 	final List<String> users;
 	int maxUsers = 1;
 	
@@ -22,5 +23,11 @@ public class ConvoStats {
 	
 	public void removeUser(String user) {
 		users.remove(user);
+=======
+
+	public ConvoStats(int sentence, long channel) {
+		this.sentence = sentence;
+		this.channel = channel;
+>>>>>>> Stashed changes
 	}
 }
