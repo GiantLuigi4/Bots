@@ -192,27 +192,27 @@ public class AI {
 				File f2 = new File(f.getPath() + "\\syntax.txt");
 				String grammar = Files.read(f2);
 				int percentIndex = grammar.indexOf("%");
-//				System.out.println(percentIndex);
 				grammar = grammar.replace("\n", "");
 				if (input.length() > percentIndex) {
-//					System.out.println(grammar);
-//					System.out.println(input);
 					boolean matches = (percentIndex == -1 && input.startsWith(grammar)) || (percentIndex > 0 && grammar.startsWith(input.substring(0, percentIndex)));
 					if (input.length() >= grammar.length() && matches) {
 						if (percentIndex == -1) percentIndex = 0;
 						File f3 = new File(f.getPath() + "\\program.ai");
 						String code1 = Files.read(f3);
 						String compiled = interpreter.interpret(code1);
-						System.out.println(compiled);
+//						System.out.println(compiled);
 						StringBuilder builder = new StringBuilder();
 						aiInstance.getAndIncrement();
 						int[][] ints = new int[1][input.length() - percentIndex];
 						for (int i = percentIndex; i < input.length(); i++) ints[0][i - percentIndex] = input.charAt(i);
-						interpreter.exec(compiled, (out) -> {
-							builder.append(out.substring("key:".length()));
-						}, aiInstance.get(), ints);
+						try {
+							interpreter.exec(compiled, (out) -> builder.append(out.substring("key:".length())), aiInstance.get(), ints);
+						} catch (Throwable ignored) {
+						}
 						aiInstance.getAndDecrement();
-						return builder.toString();
+						if (!builder.toString().equals(" ")) {
+							return builder.toString();
+						}
 					}
 				}
 			} catch (Throwable err) {

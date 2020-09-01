@@ -1,12 +1,8 @@
-//32 == ' '
 //10 == '\n'
-store:space,32
 store:enter,10
 store:word,''
 for letter in getPixel[0]\:
-    if:letter=space
-        words.append(word)
-    else if:letter!\=enter
+    if:letter!\=enter
         store:word,word+str(chr(letter))
 
 store:io,[
@@ -32,7 +28,7 @@ store:io,[
     },
     {
         'in'\:'Korega...',
-        'out'\:'requiem....da\nMUDA MUDA MUDA MUDA MUDA'
+        'out'\:'requiem....da\\n> MUDA MUDA MUDA MUDA MUDA'
     }
 ]
 for dictionary in io\:
