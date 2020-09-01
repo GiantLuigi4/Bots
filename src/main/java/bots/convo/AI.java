@@ -210,7 +210,7 @@ public class AI {
 						} catch (Throwable ignored) {
 						}
 						aiInstance.getAndDecrement();
-						if (!builder.toString().equals(" ")) {
+						if (!builder.toString().equals("")) {
 							return builder.toString();
 						}
 					}
