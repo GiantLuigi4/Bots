@@ -17,6 +17,10 @@ store:io,[
     {
         'in'\:'pong',
         'out'\:'ping'
+    },
+    {
+        'in'\:'pushy',
+        'out'\:'push poosh'
     }
 ]
 for dictionary in io\:
