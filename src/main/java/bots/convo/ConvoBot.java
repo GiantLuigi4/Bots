@@ -74,7 +74,6 @@ public class ConvoBot extends ListenerAdapter {
 					}
 				} else if (content.equals("-convo:end") || content.equals("-convo:stop")) {
 					if (authorId.equals(lastSenderID)) {
-//						event.getChannel().sendMessage(event.getAuthor().getAsMention()).append(" ended the conversation!").complete();
 						EmbedBuilder convoInfo = new EmbedBuilder();
 						convoInfo.setAuthor(event.getAuthor().getName());
 						ConvoStats stats = activeConvos.get(lastSenderID);
@@ -90,6 +89,7 @@ public class ConvoBot extends ListenerAdapter {
 						convoInfo.addField("In", event.getGuild().getTextChannelById(stats.channel).getName(), false);
 						activeConvos.get(lastSenderID).users.clear();
 						activeConvos.remove(authorId);
+						lastSenderID = null;
 						event.getChannel().sendMessage(" ").embed(convoInfo.build()).complete();
 					} else {
 						activeConvos.get(lastSenderID).removeUser(authorId);
