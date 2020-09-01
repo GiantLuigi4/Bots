@@ -101,7 +101,7 @@ public class ConvoBot extends ListenerAdapter {
 					for (int i = 0; i < code.length(); i++) {
 						bytes[i] = (byte) code.charAt(i);
 					}
-					event.getChannel().sendFile(bytes, name + ".ai").complete();
+					event.getChannel().sendFile(bytes, name + ".py").complete();
 				} else if (content.equals("-convo:help")) {
 					Random rand = new Random();
 					EmbedBuilder builder = new EmbedBuilder();
