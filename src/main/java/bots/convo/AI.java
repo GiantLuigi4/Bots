@@ -98,7 +98,7 @@ public class AI {
 					return "Having " + ConvoBot.activeConvos.size() + " conversations at once";
 			}
 		}
-		for (File f : Objects.requireNonNull(Files.get("bots\\convo\\simple").listFiles())) {
+		for (File f : Objects.requireNonNull(Files.listAllFolders(Files.get("bots\\convo\\simple")))) {
 			File inputs = new File(f.getPath() + "\\in.list");
 			File outputs = new File(f.getPath() + "\\out.list");
 			File info = new File(f.getPath() + "\\info.properties");
@@ -134,10 +134,18 @@ public class AI {
 				if (!msg.equals("")) break;
 			}
 			if (msg != null && !msg.equals("")) {
-				if (sentenceNumber == 0) {
-					Random rng = new Random();
-					String[] out = Files.readArray("bots\\convo\\complex\\outputs\\ask_doing.grammar");
-					msg += "\n> " + out[rng.nextInt(out.length)].replace("[", "").replace("]", "");
+				Random rng = new Random();
+				switch (sentenceNumber) {
+					case 0:
+						String[] out1 = Files.readArray("bots\\convo\\complex\\outputs\\ask_doing.grammar");
+						msg += "\n> " + out1[rng.nextInt(out1.length)].replace("[", "").replace("]", "");
+						break;
+					case 1:
+						String[] out2 = Files.readArray("bots\\convo\\complex\\outputs\\ask_up_to.grammar");
+						msg += "\n> " + out2[rng.nextInt(out2.length)].replace("[", "").replace("]", "");
+						break;
+					default:
+						break;
 				}
 				return msg;
 			}
@@ -154,6 +162,7 @@ public class AI {
 					err.printStackTrace();
 				}
 				if (parsing.length() >= 1) {
+					String message = "";
 					if (!parsing.substring(0, parsing.length() - 1).equals("")) {
 						StringBuilder parsing1 = new StringBuilder(parsing);
 						if (((input.replace(".", "").replace("!", "").replace("?", "")).toLowerCase() + ' ').equals(parsing1.toString())) {
@@ -161,9 +170,14 @@ public class AI {
 							if (output.exists()) {
 								Random rng = new Random();
 								String[] out = Files.readArray(output);
-								return out[rng.nextInt(out.length)].replace("[", "").replace("]", "");
+								message = out[rng.nextInt(out.length)].replace("[", "").replace("]", "");
+								if (sentenceNumber == 1) {
+									String[] out2 = Files.readArray("bots\\convo\\complex\\outputs\\ask_up_to.grammar");
+									message += "\n> " + out2[rng.nextInt(out2.length)].replace("[", "").replace("]", "");
+								}
+								return message;
 							}
-							return parsing1.toString();
+							message = parsing1.toString();
 						}
 					}
 				}
