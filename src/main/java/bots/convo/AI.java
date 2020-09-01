@@ -184,7 +184,7 @@ public class AI {
 					System.out.println(grammar);
 					System.out.println(input);
 					boolean matches = (percentIndex == -1 && input.startsWith(grammar)) || (percentIndex > 0 && grammar.startsWith(input.substring(0, percentIndex)));
-					if (input.length() > grammar.length() && matches) {
+					if (input.length() >= grammar.length() && matches) {
 						if (percentIndex == -1) percentIndex = 0;
 						File f3 = new File(f.getPath() + "\\program.ai");
 						String code1 = Files.read(f3);

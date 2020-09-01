@@ -1,5 +1,3 @@
 from utils import Files
 store:files,Files.listAll("bots\\convo\\complex\\outputs\\\\")
-print('hello')
-print(files.size())
 k\e\y\P\r\e\s\s\(Files.getRandomLine(files.get(rand:0,files.size()|)))
