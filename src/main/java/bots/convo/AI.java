@@ -225,9 +225,7 @@ public class AI {
 		for (int i = 0; i < input.length(); i++) ints[0][i] = input.charAt(i);
 		StringBuilder builder = new StringBuilder();
 		try {
-			interpreter.exec(code, (out) -> {
-				builder.append(out.substring("key:".length()));
-			}, 0, ints);
+			interpreter.exec(code, (out) -> builder.append(out.substring("key:".length())), 0, ints);
 		} catch (Throwable err) {
 			System.out.println(code);
 			try {

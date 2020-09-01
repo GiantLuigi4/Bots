@@ -29,6 +29,38 @@ store:io,[
     {
         'in'\:'Korega...',
         'out'\:'requiem....da\\n> MUDA MUDA MUDA MUDA MUDA'
+    },
+    {
+        'in'\:'I have a dream',
+        'out'\:'Kono Giorno Giovanna ni wa yu me ga aru\\n> I Giorno Giovanna have a dream'
+    },
+    {
+        'in'\:'Star Platinum\:',
+        'out'\:'THE WORLD!'
+    },
+    {
+        'in'\:'Star Platinum',
+        'out'\:'ORAA!'
+    },
+    {
+        'in'\:'Jotaro',
+        'out'\:'The punchy boy!'
+    },
+    {
+        'in'\:'Jonathan',
+        'out'\:'The magic sunlight overdrive boy!'
+    },
+    {
+        'in'\:'Joseph',
+        'out'\:'***The t e q u i l a boy***'
+    },
+    {
+        'in'\:'Josuke',
+        'out'\:'The punchy anti-entropy boy!'
+    },
+    {
+        'in'\:'Giorno',
+        'out'\:'The literal ***god.***'
     }
 ]
 for dictionary in io\:

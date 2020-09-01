@@ -14,6 +14,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 public class ConvoBot extends ListenerAdapter {
 	private static final GroovyClassLoader cl = new GroovyClassLoader();
@@ -102,10 +103,11 @@ public class ConvoBot extends ListenerAdapter {
 					}
 					event.getChannel().sendFile(bytes, name + ".ai").complete();
 				} else if (content.equals("-convo:help")) {
+					Random rand = new Random();
 					EmbedBuilder builder = new EmbedBuilder();
 					builder.setTitle("Help");
-					builder.setAuthor(event.getAuthor().getName());
-					builder.setColor(new Color(255, 255, 0));
+					builder.setAuthor(author.getName());
+					builder.setColor(new Color(rand.nextInt(256), rand.nextInt(256), 0));
 					builder.addField("**-convo:help**", "Display the help message.", false);
 					builder.addField("**-convo:start**/**convo:begin**", "Start a conversation.", false);
 					builder.addField("**-convo:stop**/**-convo:end**", "End a conversation.", false);
