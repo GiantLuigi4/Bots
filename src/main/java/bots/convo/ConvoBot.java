@@ -74,11 +74,25 @@ public class ConvoBot extends ListenerAdapter {
 					}
 				} else if (content.equals("-convo:end") || content.equals("-convo:stop")) {
 					if (authorId.equals(lastSenderID)) {
+						EmbedBuilder convoInfo = new EmbedBuilder();
+						convoInfo.setAuthor(event.getAuthor().getName());
+						ConvoStats stats = activeConvos.get(lastSenderID);
+						convoInfo.setColor(new Color(
+								(int) (stats.users.size() % 255),
+								(int) (Math.abs(stats.sentence) % 255),
+								(int) (Math.abs(stats.channel) % 255)
+						));
+						convoInfo.setTitle("Convo stats:");
+						convoInfo.addField("Lasted", stats.sentence + " messages", false);
+						convoInfo.addField("Ended with", stats.users.size() + " users", false);
+						convoInfo.addField("Peak user count", stats.maxUsers + " users", false);
+						convoInfo.addField("In", event.getGuild().getTextChannelById(stats.channel).getName(), false);
 						activeConvos.get(lastSenderID).users.clear();
 						activeConvos.remove(authorId);
-						event.getChannel().sendMessage(event.getAuthor().getAsMention()).append(" ended the conversation!").complete();
+						lastSenderID = null;
+						event.getChannel().sendMessage(" ").embed(convoInfo.build()).complete();
 					} else {
-						activeConvos.get(lastSenderID).users.remove(authorId);
+						activeConvos.get(lastSenderID).removeUser(authorId);
 						event.getChannel().sendMessage(event.getAuthor().getAsMention()).append(" abandoned the conversation.\nWe'll miss him.....maybe.").complete();
 					}
 				} else if (content.equals("-convo:brain_size"))
@@ -93,7 +107,7 @@ public class ConvoBot extends ListenerAdapter {
 					if (!authorId.equals(lastSenderID)) {
 						if (activeConvos.containsKey(lastSenderID)) {
 							event.getChannel().sendMessage("Joining conversation...").complete();
-							activeConvos.get(lastSenderID).users.add(authorId);
+							activeConvos.get(lastSenderID).addUser(authorId);
 							event.getChannel().sendMessage("Joined!").complete();
 						} else {
 							event.getChannel().sendMessage("No conversation active! Use '-convo:start' to start one").complete();
