@@ -192,11 +192,11 @@ public class AI {
 				File f2 = new File(f.getPath() + "\\syntax.txt");
 				String grammar = Files.read(f2);
 				int percentIndex = grammar.indexOf("%");
-				System.out.println(percentIndex);
+//				System.out.println(percentIndex);
 				grammar = grammar.replace("\n", "");
 				if (input.length() > percentIndex) {
-					System.out.println(grammar);
-					System.out.println(input);
+//					System.out.println(grammar);
+//					System.out.println(input);
 					boolean matches = (percentIndex == -1 && input.startsWith(grammar)) || (percentIndex > 0 && grammar.startsWith(input.substring(0, percentIndex)));
 					if (input.length() >= grammar.length() && matches) {
 						if (percentIndex == -1) percentIndex = 0;
@@ -244,7 +244,7 @@ public class AI {
 	public static String parseGrammar(String input, String s) {
 		s = s.replace("\n", "");
 		s = s.toLowerCase();
-		input = input.replace(".", "").replace("!", "").replace("?", "").toLowerCase();
+		input = input.replace(".", "").replace(",", "").replace("!", "").replace("?", "").toLowerCase();
 		StringBuilder parsing = new StringBuilder();
 		for (String s1 : s.split("\\[")) {
 			if (!s1.equals("")) {

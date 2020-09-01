@@ -1,0 +1,24 @@
+//32 == ' '
+//10 == '\n'
+store:space,32
+store:enter,10
+store:word,''
+for letter in getPixel[0]\:
+    if:letter=space
+        words.append(word)
+    else if:letter!\=enter
+        store:word,word+str(chr(letter))
+
+store:io,[
+    {
+        'in'\:'ping',
+        'out'\:'pong'
+    },
+    {
+        'in'\:'pong',
+        'out'\:'ping'
+    }
+]
+for dictionary in io\:
+    if:(word.startswith(dictionary['in']))
+        keyPre\ss(dictionary['out'])
