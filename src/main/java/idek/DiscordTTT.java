@@ -12,18 +12,18 @@ public class DiscordTTT {
     static ArrayList<Integer> playerPositions;
     static ArrayList<Integer> systemPositions;
     public static boolean twoP = false;
-    static char c = '^';
-    static char[][] model;
-    static char[][] board;
+    //static char c = "^";
+    static String[][] model;
+    static String[][] board;
 
     public DiscordTTT() {
         playerPositions = new ArrayList<>();
         systemPositions = new ArrayList<>();
         twoP = false;
-        model = new char[][]{
-            {c, '|', c, '|', c},
-            {c, '|', c, '|', c},
-            {c, '|', c, '|', c}
+        model = new String[][]{
+            {"1", "|", "2", "|", "3"},
+            {"4", "|", "5", "|", "6"},
+            {"7", "|", "8", "|", "9"}
         };
         board = model;
     }
@@ -89,7 +89,7 @@ public class DiscordTTT {
     }
     /*public static void game(MessageChannel channel) {
         if (!twoP) {
-            System.out.println("It's YOU (X) against COMPUTER (0)");
+            System.out.println("It"s YOU (X) against COMPUTER (0)");
 
             while (true) {
                 System.out.println("Write a number from 1 (left-upper corner) to 9 (right-down corner)");
@@ -128,7 +128,7 @@ public class DiscordTTT {
                 }
             }
         } else {
-            System.out.println("It's YOU (X) against A FRIEND (0)");
+            System.out.println("It"s YOU (X) against A FRIEND (0)");
 
             while (true) {
                 System.out.println("P1: Write a number from 1 (left-upper corner) to 9 (right-down corner)");
@@ -170,10 +170,10 @@ public class DiscordTTT {
     }*/
 
 
-    public static void printBoard(char[][] gameBoard, MessageReceivedEvent event) {
+    public static void printBoard(String[][] gameBoard, MessageReceivedEvent event) {
         StringBuilder builder = new StringBuilder();
-        for (char[] row : gameBoard) {
-            for (char c : row) {
+        for (String[] row : gameBoard) {
+            for (String c : row) {
                 builder.append(c);
             }
             builder.append("\n");
@@ -181,14 +181,14 @@ public class DiscordTTT {
         event.getChannel().sendMessage(builder).complete();
     }
 
-    public static void placePiece(char[][] gameBoard, int pos, String user, MessageReceivedEvent event) {
-        char symbol = ' ';
+    public static void placePiece(String[][] gameBoard, int pos, String user, MessageReceivedEvent event) {
+        String symbol = " ";
 
         if (user.toLowerCase().equals("player")) {
-            symbol = 'X';
+            symbol = "**X**";
             playerPositions.add(pos);
         } else if (user.toLowerCase().equals("system")) {
-            symbol = '0';
+            symbol = "**0**";
             systemPositions.add(pos);
         }
 
