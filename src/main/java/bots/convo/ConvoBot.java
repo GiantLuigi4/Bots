@@ -4,6 +4,7 @@ import com.tfc.openAI.lang.AIInterpreter;
 import groovy.lang.GroovyClassLoader;
 import net.dv8tion.jda.core.*;
 import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -58,33 +59,33 @@ public class ConvoBot extends ListenerAdapter {
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
 		if (event.getJDA().getSelfUser().getId().equals(id)) {
-			if (event.getChannel().getName().contains("bot")) {
+			MessageChannel channel = event.getChannel();
+			if (channel.getName().contains("bot")) {
 				User author = event.getAuthor();
 				String authorId = author.getId();
 				String content = event.getMessage().getContentRaw();
 				if (content.equals("-convo:start") || content.equals("-convo:begin")) {
 					if (!activeConvos.containsKey(authorId)) {
-						activeConvos.put(authorId, new ConvoStats(0, event.getChannel().getIdLong()));
+						activeConvos.put(authorId, new ConvoStats(0, channel.getIdLong()));
 						senders.add(author);
 					} else if (senders.contains(author)) {
-						event.getChannel().sendMessage(event.getAuthor().getAsMention() + ", this conversation was started from you lmao").complete();
+						channel.sendMessage(author.getAsMention() + ", this conversation was started from you lmao").complete();
 					}
 				} else if (content.equals("-convo:end") || content.equals("-convo:stop")) {
 					if (activeConvos.containsKey(authorId)) {
 						activeConvos.remove(authorId);
 						senders.remove(author);
-						event.getChannel().sendMessage(event.getAuthor().getAsMention()).append(" ended the conversation!").complete();
+						channel.sendMessage(author.getAsMention()).append(" ended the conversation!").complete();
 					} else {
-						event.getChannel().sendMessage(event.getAuthor().getAsMention()).append(", you haven't started any conversation! Do -convo:start.").complete();
+						channel.sendMessage(author.getAsMention()).append(", you haven't started any conversation! Do -convo:start.").complete();
 					}
 				} else if (content.equals("-convo:brain_size"))
-					event.getChannel().sendMessage("Brain size:" + Files.listAll("bots\\convo").size()).complete();
-				else if (content.startsWith("-convo:ignore")) ;
+					channel.sendMessage("Brain size:" + Files.listAll("bots\\convo").size()).complete();
 				else if (content.startsWith("-convo:train-start")) {
-					event.getChannel().sendMessage("Bot training start").complete();
-					event.getChannel().sendMessage("Not working yet").complete();
+					channel.sendMessage("Bot training start").complete();
+					channel.sendMessage("Not working yet").complete();
 				} else if (content.startsWith("-convo:train-stop")) {
-					event.getChannel().sendMessage("Bot training ended").complete();
+					channel.sendMessage("Bot training ended").complete();
 				} else if (content.startsWith("-convo:sayCode")) {
 					String name = content.substring("-convo:sayCode ".length());
 					String code = Files.read("bots\\convo\\programmed\\" + name + "\\program.ai");
@@ -92,36 +93,36 @@ public class ConvoBot extends ListenerAdapter {
 					for (int i = 0; i < code.length(); i++) {
 						bytes[i] = (byte) code.charAt(i);
 					}
-					event.getChannel().sendFile(bytes, name + ".ai").complete();
+					channel.sendFile(bytes, name + ".ai").complete();
 				} else if (content.startsWith("-convo:sayPy")) {
 					String name = content.substring("-convo:sayPy ".length());
-					String code = Files.read("bots\\convo\\programmed\\" + name + "\\program.ai");
+					String code = Files.read("bots\\convo\\programmed\\" + name + "\\program.py");
 					code = interpreter.interpret(code);
 					byte[] bytes = new byte[code.length()];
 					for (int i = 0; i < code.length(); i++) {
 						bytes[i] = (byte) code.charAt(i);
 					}
-					event.getChannel().sendFile(bytes, name + ".py").complete();
+					channel.sendFile(bytes, name + ".py").complete();
 				} else if (content.equals("-convo:help")) {
 					Random rand = new Random();
 					EmbedBuilder builder = new EmbedBuilder();
 					builder.setTitle("Help");
 					builder.setAuthor(author.getName());
 					builder.setColor(new Color(rand.nextInt(256), rand.nextInt(256), 0));
-					builder.addField("**-convo:help**", "Display the help message.", false);
-					builder.addField("**-convo:start**/**convo:begin**", "Start a conversation.", false);
-					builder.addField("**-convo:stop**/**-convo:end**", "End a conversation.", false);
-					builder.addField("**-convo:ignore [text]**", "Use this to talk to people without having me speak to you.", false);
-					builder.addField("**-convo:sayCode [text]**", "I'll tell you the code (in aithon) for a specific programmed response.", false);
-					builder.addField("**-convo:sayPy [text]**", "I'll tell you the code (in python) for a specific programmed response.", false);
-					builder.addField("**-convo:train-start**", "Start Bot training.", false);
-					builder.addField("**-convo:train-stop**", "Stops Bot training.", false);
+					builder.addField("**-convo:help**", "Display the help message.", true);
+					builder.addField("**-convo:start**/**convo:begin**", "Start a conversation.", true);
+					builder.addField("**-convo:stop**/**-convo:end**", "End a conversation.", true);
+					builder.addField("**-convo:ignore [text]**", "Use this to talk to people without having me speak to you.", true);
+					builder.addField("**-convo:sayCode [text]**", "I'll tell you the code (in aithon) for a specific programmed response.", true);
+					builder.addField("**-convo:sayPy [text]**", "I'll tell you the code (in python) for a specific programmed response.", true);
+					builder.addField("**-convo:train-start**", "Start Bot training.", true);
+					builder.addField("**-convo:train-stop**", "Stops Bot training.", true);
 					builder.setFooter("Bot by: GiantLuigi4", "https://cdn.discordapp.com/avatars/380845972441530368/27de0e038db60752d1e8b7b4fced0f4e.png?size=128");
-					event.getChannel().sendMessage(" ").embed(builder.build()).complete();
-				} else if (!authorId.equals(id)) {
+					channel.sendMessage(" ").embed(builder.build()).complete();
+				} else if (!authorId.equals(id) && !content.startsWith("-convo:ignore")) {
 					for (User sender : senders) {
 						ConvoStats currentStats = activeConvos.get(sender.getId());
-						if (event.getChannel().getIdLong() == currentStats.channel && author.equals(sender)) {
+						if (channel.getIdLong() == currentStats.channel && author.equals(sender)) {
 							StringBuilder message = new StringBuilder();
 								for (String s : content.split("\n")) {
 									for (String input : s.split("\\. ")) {
@@ -129,9 +130,8 @@ public class ConvoBot extends ListenerAdapter {
 									activeConvos.get(sender.getId()).sentence++;
 								}
 							}
-							message.append("In response to: ").append(event.getAuthor().getAsMention());
-							event.getChannel().sendMessage(message.toString()).complete();
-
+							message.append("In response to: ").append(author.getAsMention());
+							channel.sendMessage(message.toString()).complete();
 						}
 					}
 				}
@@ -141,23 +141,22 @@ public class ConvoBot extends ListenerAdapter {
 	}
 }
 
-
 			/*
 			} else if (content.startsWith("-convo:join")) {
 				if (content.length() == 11) {
 					if (!authorId.equals(lastSenderID)) {
 						if (activeConvos.size() == 1) {
 							if (activeConvos.containsKey(lastSenderID)) {
-								event.getChannel().sendMessage("Joining conversation...").complete();
+								channel.sendMessage("Joining conversation...").complete();
 								activeConvos.get(lastSenderID).users.add(authorId);
-								event.getChannel().sendMessage("Joined!").complete();
+								channel.sendMessage("Joined!").complete();
 							} else {
-								event.getChannel().sendMessage("No conversation active! Use '-convo:start' to start one").complete();
+								channel.sendMessage("No conversation active! Use '-convo:start' to start one").complete();
 							}
 						} else {
 							EmbedBuilder builder = new EmbedBuilder();
 							builder.setTitle("Choose Conversation");
-							builder.setAuthor(event.getAuthor().getName());
+							builder.setAuthor(author.getName());
 							builder.setColor(new Color(255, 255, 0));
 							builder.addField("", "There are " + activeConvos.size() + " active. (> 1)", true);
 							builder.addField("", "Choose conversation to Join by writing '-convo:join conversationName'", true);
@@ -166,11 +165,11 @@ public class ConvoBot extends ListenerAdapter {
 								builder.addField("**Conversation number " + count + "**", "Started by " + sender.getAsMention(), true);
 							}
 							builder.setFooter("Bot by: GiantLuigi4", "https://cdn.discordapp.com/avatars/380845972441530368/27de0e038db60752d1e8b7b4fced0f4e.png?size=128");
-							event.getChannel().sendMessage(" ").embed(builder.build()).complete();
+							channel.sendMessage(" ").embed(builder.build()).complete();
 						}
 					} else {
-						event.getChannel().sendMessage("You are already in a conversation!!").complete();
+						channel.sendMessage("You are already in a conversation!!").complete();
 					}
 				} else {
-					event.getChannel().sendMessage("test").complete();
+					channel.sendMessage("test").complete();
 				}*/
