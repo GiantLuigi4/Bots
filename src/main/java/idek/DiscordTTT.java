@@ -1,6 +1,7 @@
 package idek;
 
 import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -8,28 +9,85 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class DiscordTTT {
 
-    static ArrayList<Integer> playerPositions = new ArrayList<>();
-    static ArrayList<Integer> systemPositions = new ArrayList<>();
-    static boolean twoP = false;
+    static ArrayList<Integer> playerPositions;
+    static ArrayList<Integer> systemPositions;
+    public static boolean twoP = false;
+    static char c = '^';
+    static char[][] model;
+    static char[][] board;
 
-    public static void game(MessageChannel channel) {
-        char[][] board = {
-            { ' ', '|', ' ', '|', ' '},
-            { '-', '+', '-', '+', '-'},
-            { ' ', '|', ' ', '|', ' '},
-            { '-', '+', '-', '+', '-'},
-            { ' ', '|', ' ', '|', ' '}
+    public DiscordTTT() {
+        playerPositions = new ArrayList<>();
+        systemPositions = new ArrayList<>();
+        twoP = false;
+        model = new char[][]{
+            {c, '|', c, '|', c},
+            {c, '|', c, '|', c},
+            {c, '|', c, '|', c}
         };
-        printBoard(board, channel);
+        board = model;
+    }
 
+    public void initialize(MessageReceivedEvent event) {
+        MessageChannel channel = event.getChannel();
+        channel.sendMessage("Let's play Tic Tac Toe!").complete();
+        printBoard(board, event);
         channel.sendMessage("Wanna play with a real friend? Write true or false.").complete();
-        Scanner sc = new Scanner(System.in);
-        String stringBool = sc.next();
-        while (!isBoolean(stringBool)) {
-            System.err.println("I've said TRUE or FALSE, not " + stringBool + "!!");
-            stringBool = sc.next();
+    }
+
+    public static class Stats {
+        public int phase;
+        public boolean started;
+
+        public Stats(int phase, boolean started) {
+            this.phase = phase;
+            this.started = started;
         }
-        twoP = Boolean.parseBoolean(stringBool);
+    }
+
+    public static void turn1P(MessageReceivedEvent event, String mess, Stats stats) {
+        MessageChannel channel = event.getChannel();
+        int playerPos = rightPosition(mess, event).intValue();
+
+        if (playerPos > 9 || playerPos <= 0) {
+            return;
+        }
+
+        if (playerPositions.contains(playerPos) || systemPositions.contains(playerPos)) {
+            channel.sendMessage("Position Taken! Choose another one you dumb.").complete();
+            return;
+        }
+
+        placePiece(board, playerPos, "player", event);
+
+        printBoard(board, event);
+
+        String winner = checkWinner();
+        if (!winner.equals("")) {
+            channel.sendMessage(winner).complete();
+            stats.started = false;
+            board = model;
+        }
+
+        channel.sendMessage("System turn!").complete();
+        int systemPos = systemAI();
+
+        while (playerPositions.contains(systemPos) || systemPositions.contains(systemPos)) {
+            channel.sendMessage("Position Taken! System is dumb.").complete();
+            systemPos = systemAI();
+        }
+        placePiece(board, systemPos, "system", event);
+
+        printBoard(board, event);
+
+        String winner2 = checkWinner();
+        if (!winner2.equals("")) {
+            channel.sendMessage(winner2).complete();
+            stats.started = false;
+            board = model;
+        }
+    }
+    /*public static void game(MessageChannel channel) {
         if (!twoP) {
             System.out.println("It's YOU (X) against COMPUTER (0)");
 
@@ -109,10 +167,10 @@ public class DiscordTTT {
                 }
             }
         }
-    }
+    }*/
 
 
-    public static void printBoard(char[][] gameBoard, MessageChannel channel) {
+    public static void printBoard(char[][] gameBoard, MessageReceivedEvent event) {
         StringBuilder builder = new StringBuilder();
         for (char[] row : gameBoard) {
             for (char c : row) {
@@ -120,10 +178,10 @@ public class DiscordTTT {
             }
             builder.append("\n");
         }
-        channel.sendMessage(builder).complete();
+        event.getChannel().sendMessage(builder).complete();
     }
 
-    public static void placePiece(char[][] gameBoard, int pos, String user) {
+    public static void placePiece(char[][] gameBoard, int pos, String user, MessageReceivedEvent event) {
         char symbol = ' ';
 
         if (user.toLowerCase().equals("player")) {
@@ -145,30 +203,25 @@ public class DiscordTTT {
                 gameBoard[0][4] = symbol;
                 break;
             case 4:
-                gameBoard[2][0] = symbol;
+                gameBoard[1][0] = symbol;
                 break;
             case 5:
-                gameBoard[2][2] = symbol;
+                gameBoard[1][2] = symbol;
                 break;
             case 6:
-                gameBoard[2][4] = symbol;
+                gameBoard[1][4] = symbol;
                 break;
             case 7:
-                gameBoard[4][0] = symbol;
+                gameBoard[2][0] = symbol;
                 break;
             case 8:
-                gameBoard[4][2] = symbol;
+                gameBoard[2][2] = symbol;
                 break;
             case 9:
-                gameBoard[4][4] = symbol;
+                gameBoard[2][4] = symbol;
                 break;
             default:
-                System.out.println("Invalid position! Choose from 1 to 9!");
-                Scanner sc = new Scanner(System.in);
-                int newPos = rightPosition(sc);
-                placePiece(gameBoard, newPos, user);
-                /*if (newPos < 10 && newPos > 0)
-                    printBoard(gameBoard);*/
+                event.getChannel().sendMessage("Invalid position! Choose from 1 to 9!").complete();
                 break;
         }
     }
@@ -284,13 +337,12 @@ public class DiscordTTT {
         return true;
     }
 
-    public static int rightPosition(Scanner sc) {
-        String stringPos = sc.next();
-        while (!isNumeric(stringPos)) {
-            System.err.println("I've said a NUMBER, not " + stringPos + "!!");
-            stringPos = sc.next();
-        }
-        return Integer.parseInt(stringPos);
+    public static Number rightPosition(String stringPos, MessageReceivedEvent event) {
+        if (!isNumeric(stringPos)) {
+            event.getChannel().sendMessage("I've said a NUMBER, not " + stringPos + "!!").complete();
+            return null;
+        } else
+            return Integer.parseInt(stringPos);
     }
 
     public static boolean isBoolean(String strBool) {

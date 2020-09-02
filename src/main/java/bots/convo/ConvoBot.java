@@ -2,6 +2,7 @@ package bots.convo;
 
 import com.tfc.openAI.lang.AIInterpreter;
 import groovy.lang.GroovyClassLoader;
+import idek.DiscordTTT;
 import net.dv8tion.jda.core.*;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.MessageChannel;
@@ -41,7 +42,7 @@ public class ConvoBot extends ListenerAdapter {
 		String token = PropertyReader.read("bots.properties", "convo");
 		builder.setToken(token);
 		builder.setStatus(OnlineStatus.ONLINE);
-		builder.setGame(Game.watching("for -convo:help"));
+		builder.setGame(Game.listening("-convo:help, GiantLuigi4, 10MLD downloads"));
 		bot = new ConvoBot();
 		builder.addEventListener(bot);
 		try {
@@ -53,7 +54,7 @@ public class ConvoBot extends ListenerAdapter {
 	}
 
 	protected static final HashMap<String, ConvoStats> activeConvos = new HashMap<>();
-	//TODO make a list of senderIDs for multiple conversations
+	protected static final HashMap<String, DiscordTTT.Stats> activeGames = new HashMap<>();
 	protected static final List<User> senders = new ArrayList<>();
 
 	@Override
@@ -94,6 +95,10 @@ public class ConvoBot extends ListenerAdapter {
 						bytes[i] = (byte) code.charAt(i);
 					}
 					channel.sendFile(bytes, name + ".ai").complete();
+				} else if (content.equals("-convo:game")) {
+					DiscordTTT ttt = new DiscordTTT();
+					ttt.initialize(event);
+					activeGames.put(authorId, new DiscordTTT.Stats(0, true));
 				} else if (content.startsWith("-convo:sayPy")) {
 					String name = content.substring("-convo:sayPy ".length());
 					String code = Files.read("bots\\convo\\programmed\\" + name + "\\program.py");
@@ -119,7 +124,7 @@ public class ConvoBot extends ListenerAdapter {
 					builder.addField("**-convo:train-stop**", "Stops Bot training.", false);
 					builder.setFooter("Bot by: GiantLuigi4", "https://cdn.discordapp.com/avatars/380845972441530368/27de0e038db60752d1e8b7b4fced0f4e.png?size=128");
 					channel.sendMessage(" ").embed(builder.build()).complete();
-				} else if (!authorId.equals(id) && !content.startsWith("-convo:ignore")) {
+				} else if (!authorId.equals(id) && !content.startsWith("-convo:ignore") && !activeGames.containsKey(authorId)) {
 					for (User sender : senders) {
 						ConvoStats currentStats = activeConvos.get(sender.getId());
 						if (channel.getIdLong() == currentStats.channel && author.equals(sender)) {
@@ -133,6 +138,30 @@ public class ConvoBot extends ListenerAdapter {
 							message.append("In response to: ").append(author.getAsMention());
 							channel.sendMessage(message.toString()).complete();
 						}
+					}
+				} else if (activeGames.containsKey(authorId)) {
+					if (activeGames.get(authorId).started) {
+						int phase = activeGames.get(authorId).phase;
+						if (phase == 0) {
+							if (!DiscordTTT.isBoolean(content)) {
+								event.getChannel().sendMessage("I've said TRUE or FALSE, not " + content + "!!").complete();
+								return;
+							} else {
+								DiscordTTT.twoP = Boolean.parseBoolean(content);
+								activeGames.get(authorId).phase++;
+							}
+							if (!DiscordTTT.twoP)
+								channel.sendMessage("It's YOU (X) against COMPUTER (0)").complete();
+							else
+								channel.sendMessage("It's YOU (X) against A FRIEND (0)").complete();
+
+						} else {
+							DiscordTTT.turn1P(event, content, activeGames.get(authorId));
+						}
+						if (activeGames.get(authorId).started)
+							channel.sendMessage("Write a number from 1 (left-upper corner) to 9 (right-down corner)").complete();
+					} else {
+						activeGames.remove(authorId);
 					}
 				}
 			}
