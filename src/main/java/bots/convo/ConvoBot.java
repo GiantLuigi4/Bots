@@ -109,14 +109,14 @@ public class ConvoBot extends ListenerAdapter {
 					builder.setTitle("Help");
 					builder.setAuthor(author.getName());
 					builder.setColor(new Color(rand.nextInt(256), rand.nextInt(256), 0));
-					builder.addField("**-convo:help**", "Display the help message.", true);
-					builder.addField("**-convo:start**/**convo:begin**", "Start a conversation.", true);
-					builder.addField("**-convo:stop**/**-convo:end**", "End a conversation.", true);
-					builder.addField("**-convo:ignore [text]**", "Use this to talk to people without having me speak to you.", true);
-					builder.addField("**-convo:sayCode [text]**", "I'll tell you the code (in aithon) for a specific programmed response.", true);
-					builder.addField("**-convo:sayPy [text]**", "I'll tell you the code (in python) for a specific programmed response.", true);
-					builder.addField("**-convo:train-start**", "Start Bot training.", true);
-					builder.addField("**-convo:train-stop**", "Stops Bot training.", true);
+					builder.addField("**-convo:help**", "Display the help message.", false);
+					builder.addField("**-convo:start**/**convo:begin**", "Start a conversation.", false);
+					builder.addField("**-convo:stop**/**-convo:end**", "End a conversation.", false);
+					builder.addField("**-convo:ignore [text]**", "Use this to talk to people without having me speak to you.", false);
+					builder.addField("**-convo:sayCode [text]**", "I'll tell you the code (in aithon) for a specific programmed response.", false);
+					builder.addField("**-convo:sayPy [text]**", "I'll tell you the code (in python) for a specific programmed response.", false);
+					builder.addField("**-convo:train-start**", "Start Bot training.", false);
+					builder.addField("**-convo:train-stop**", "Stops Bot training.", false);
 					builder.setFooter("Bot by: GiantLuigi4", "https://cdn.discordapp.com/avatars/380845972441530368/27de0e038db60752d1e8b7b4fced0f4e.png?size=128");
 					channel.sendMessage(" ").embed(builder.build()).complete();
 				} else if (!authorId.equals(id) && !content.startsWith("-convo:ignore")) {
