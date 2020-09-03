@@ -247,6 +247,31 @@ public class Files {
 		return files;
 	}
 	
+	public static ArrayList<File> listAllFilesAndDirs(File fi) {
+		ArrayList<File> files = new ArrayList<>();
+		ArrayList<String> dirs = new ArrayList<>();
+		dirs.add(fi.toString());
+		while (!dirs.isEmpty()) {
+			ArrayList<String> tempDirs = new ArrayList<>();
+			for (String s : dirs) {
+				try {
+					for (File f : Objects.requireNonNull(new File(s).listFiles())) {
+						if (f.isDirectory()) {
+							tempDirs.add(f.toString());
+							files.add(f);
+						} else {
+							files.add(f);
+						}
+					}
+				} catch (Throwable ignored) {
+				}
+			}
+			dirs.clear();
+			dirs.addAll(tempDirs);
+		}
+		return files;
+	}
+	
 	//This is for AIthon, so it won't work the same as the rest
 	public static String getRandomLine(String dir) {
 		File f = new File(dir);
