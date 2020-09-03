@@ -64,6 +64,7 @@ public class ConvoBot extends ListenerAdapter {
 			if (channel.getName().contains("bot")) {
 				User author = event.getAuthor();
 				String authorId = author.getId();
+
 				String content = event.getMessage().getContentRaw();
 				if (content.equals("-convo:start") || content.equals("-convo:begin")) {
 					if (!activeConvos.containsKey(authorId)) {
@@ -99,6 +100,9 @@ public class ConvoBot extends ListenerAdapter {
 					DiscordTTT ttt = new DiscordTTT();
 					ttt.initialize(event);
 					activeGames.put(authorId, new DiscordTTT.Stats(0, true));
+				} else if (content.equals("-convo:game-end")) {
+					channel.sendMessage("Game cancelled!").complete();
+					activeGames.remove(authorId);
 				} else if (content.startsWith("-convo:sayPy")) {
 					String name = content.substring("-convo:sayPy ".length());
 					String code = Files.read("bots\\convo\\programmed\\" + name + "\\program.py");
@@ -152,13 +156,20 @@ public class ConvoBot extends ListenerAdapter {
 							}
 							if (!DiscordTTT.twoP)
 								channel.sendMessage("It's YOU (X) against COMPUTER (0)").complete();
-							else
-								channel.sendMessage("It's YOU (X) against A FRIEND (0)").complete();
+							//else
+								//channel.sendMessage("It's YOU (X) against A FRIEND (0), write the name of your friend.").complete();
 
+						//} else if (!DiscordTTT.twoP) {
+							//DiscordTTT.turn1P(event, content, activeGames.get(authorId));
+						/*} else if (activeGames.get(authorId).secondPlayer == null) {
+							activeGames.get(authorId).secondPlayer = DiscordTTT.getMemberFromUsername(event, content);
+							if (activeGames.get(authorId).secondPlayer == null) {
+								channel.sendMessage("Write a valid username!!").complete();
+							}
 						} else {
-							DiscordTTT.turn1P(event, content, activeGames.get(authorId));
+*/
 						}
-						if (activeGames.get(authorId).started)
+						if (activeGames.get(authorId).started && !DiscordTTT.twoP)
 							channel.sendMessage("Write a number from 1 (left-upper corner) to 9 (right-down corner)").complete();
 					} else {
 						activeGames.remove(authorId);

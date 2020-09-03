@@ -1,5 +1,8 @@
 package idek;
 
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.ISnowflake;
+import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
@@ -38,6 +41,7 @@ public class DiscordTTT {
     public static class Stats {
         public int phase;
         public boolean started;
+        public Member secondPlayer = null;
 
         public Stats(int phase, boolean started) {
             this.phase = phase;
@@ -88,46 +92,6 @@ public class DiscordTTT {
         }
     }
     /*public static void game(MessageChannel channel) {
-        if (!twoP) {
-            System.out.println("It"s YOU (X) against COMPUTER (0)");
-
-            while (true) {
-                System.out.println("Write a number from 1 (left-upper corner) to 9 (right-down corner)");
-                int playerPos = rightPosition(sc);
-
-                while (playerPositions.contains(playerPos) || systemPositions.contains(playerPos)) {
-                    System.out.println("Position Taken! Choose another one you dumb.");
-                    playerPos = rightPosition(sc);
-                }
-
-                placePiece(board, playerPos, "player");
-
-                printBoard(board, channel);
-
-                String winner = checkWinner();
-                if (!winner.equals("")) {
-                    System.out.println(winner);
-                    System.exit(0);
-                }
-
-                System.out.println("System turn!");
-                int systemPos = systemAI();
-
-                while (playerPositions.contains(systemPos) || systemPositions.contains(systemPos)) {
-                    System.out.println("Position Taken! System is dumb.");
-                    systemPos = systemAI();
-                }
-                placePiece(board, systemPos, "system");
-
-                printBoard(board, channel);
-
-                String winner2 = checkWinner();
-                if (!winner2.equals("")) {
-                    System.out.println(winner2);
-                    System.exit(0);
-                }
-            }
-        } else {
             System.out.println("It"s YOU (X) against A FRIEND (0)");
 
             while (true) {
@@ -351,4 +315,15 @@ public class DiscordTTT {
         }
         return strBool.equalsIgnoreCase("true") || (strBool.equalsIgnoreCase("false"));
     }
+
+    public static Member getMemberFromUsername(MessageReceivedEvent event, String username) {
+        Guild guild = event.getGuild();
+        String newUsername = username.split("@")[1].split(">")[0];
+        try {
+            return guild.getMemberById(newUsername);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
 }
+
