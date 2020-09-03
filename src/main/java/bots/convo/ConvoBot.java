@@ -9,9 +9,13 @@ import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import utils.Files;
+import utils.ListImaging;
 import utils.PropertyReader;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -86,6 +90,16 @@ public class ConvoBot extends ListenerAdapter {
 					channel.sendMessage("Not working yet").complete();
 				} else if (content.startsWith("-convo:train-stop")) {
 					channel.sendMessage("Bot training ended").complete();
+				} else if (content.startsWith("-convo:tree-image")) {
+					try {
+						BufferedImage image = ListImaging.image("bots\\convo");
+						ByteArrayOutputStream stream = new ByteArrayOutputStream();
+						ImageIO.write(image, "png", stream);
+						channel.sendMessage(" ").addFile(stream.toByteArray(), "image.png").complete();
+						stream.close();
+					} catch (Throwable err) {
+						channel.sendMessage("Imaging failed.").complete();
+					}
 				} else if (content.startsWith("-convo:sayCode")) {
 					String name = content.substring("-convo:sayCode ".length());
 					String code = Files.read("bots\\convo\\programmed\\" + name + "\\program.ai");
@@ -117,6 +131,7 @@ public class ConvoBot extends ListenerAdapter {
 					builder.addField("**-convo:sayPy [text]**", "I'll tell you the code (in python) for a specific programmed response.", false);
 					builder.addField("**-convo:train-start**", "Start Bot training.", false);
 					builder.addField("**-convo:train-stop**", "Stops Bot training.", false);
+					builder.addField("**-convo:tree-image**", "Create an image of the file list of my \"brain\".", false);
 					builder.setFooter("Bot by: GiantLuigi4", "https://cdn.discordapp.com/avatars/380845972441530368/27de0e038db60752d1e8b7b4fced0f4e.png?size=128");
 					channel.sendMessage(" ").embed(builder.build()).complete();
 				} else if (!authorId.equals(id) && !content.startsWith("-convo:ignore")) {

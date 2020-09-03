@@ -5,12 +5,12 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-public class Imaging {
+public class GourceLikeImaging {
 	
 	public static void main(String[] args) {
 		BufferedImage bimig = imageFiles(Files.get("bots\\convo\\"));
 		try {
-			File f = Files.get("test\\out.png");
+			File f = Files.get("test\\out_gource_like.png");
 			if (!f.exists()) {
 				f.getParentFile().mkdirs();
 				f.createNewFile();
