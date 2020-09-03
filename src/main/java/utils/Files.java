@@ -39,6 +39,29 @@ public class Files {
 		return false;
 	}
 	
+	public static boolean write(String file, String text) {
+		File f = new File(dir + "\\" + file);
+		try {
+			FileWriter writer = new FileWriter(f);
+			writer.write(text);
+			writer.close();
+			return true;
+		} catch (Throwable ignored) {
+		}
+		return false;
+	}
+	
+	public static boolean write(File file, String text) {
+		try {
+			FileWriter writer = new FileWriter(file);
+			writer.write(text);
+			writer.close();
+			return true;
+		} catch (Throwable ignored) {
+		}
+		return false;
+	}
+	
 	public static File get(String file) {
 		File f = new File(dir + "\\" + file);
 		return f;
