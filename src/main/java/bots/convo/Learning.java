@@ -7,20 +7,32 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Learning {
-	public static String[] convoTest = new String[]{
-			"when did you start learning",
-			"Since <https://github.com/GiantLuigi4/Bots/commit/aece72ae19d95b175e19c4e3e083a62ea0955d76>.",
-			"when did you start learning",
-			"Before 0.1.",
-			"when did you start learning",
-			"Before the betas.",
-			"how do you learn",
-			"I watch conversations, and try to find patterns.",
-			"how does your learning work",
-			"I watch conversations, and try to find patterns.",
-			"how do you learn things",
-			"I watch conversations, and try to find patterns.",
-	};
+	public static String[] convoTest = generateConvoFeed(new String[]{
+					"how do you learn",
+					"how do you learn things",
+					"how does your learning work",
+			}, new String[]{
+					"I watch conversations, and try to find patterns.",
+					"I find patterns in conversations, and follow them.",
+					"I have an interesting grammatical syntax format, kindly created by my creator, which allows me to figure out what the user means using only two files.",
+					":hello;:how;:are;:-you-;:-you?-;",
+			}
+	);
+	
+	public static String[] generateConvoFeed(String[] inputs, String[] outputs) {
+		ArrayList<String> strings = new ArrayList<>();
+		for (String s : outputs) {
+			for (String s1 : inputs) {
+				strings.add(s1);
+				strings.add(s);
+			}
+		}
+		String[] strings1 = new String[strings.size()];
+		for (int i = 0; i < strings.size(); i++) {
+			strings1[i] = strings.get(i);
+		}
+		return strings1;
+	}
 	
 	public static void main(String[] args) {
 		String prompt = "";
