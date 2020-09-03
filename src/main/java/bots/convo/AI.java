@@ -164,7 +164,7 @@ public class AI {
 					err.printStackTrace();
 				}
 				if (parsing.length() >= 1) {
-					String message = "";
+					String message;
 					if (!parsing.substring(0, parsing.length() - 1).equals("")) {
 						StringBuilder parsing1 = new StringBuilder(parsing);
 						if (((input.replace(".", "").replace("!", "").replace("?", "")).toLowerCase() + ' ').equals(parsing1.toString())) {
