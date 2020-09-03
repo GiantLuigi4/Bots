@@ -92,19 +92,23 @@ public class ConvoBot extends ListenerAdapter {
 					channel.sendMessage("Not working yet").complete();
 				} else if (content.startsWith("-convo:train-stop")) {
 					channel.sendMessage("Bot training ended").complete();
-				} else if (content.startsWith("-convo:tree-image")) {
+				} else if (content.startsWith("-convo:list-image")) {
 					try {
 						BufferedImage image = ListImaging.image("bots\\convo");
 						ByteArrayOutputStream stream = new ByteArrayOutputStream();
 						ImageIO.write(image, "png", stream);
-						ByteArrayOutputStream zip = new ByteArrayOutputStream();
-						ZipOutputStream stream1 = new ZipOutputStream(zip);
-						stream1.putNextEntry(new ZipEntry("image.png"));
-						stream1.write(stream.toByteArray());
-						stream1.closeEntry();
-						stream1.finish();
-						channel.sendMessage(" ").addFile(zip.toByteArray(), "image.zip").complete();
-						stream1.close();
+						if (content.contains("png")) {
+							channel.sendMessage(" ").addFile(stream.toByteArray(), "image.png").complete();
+						} else {
+							ByteArrayOutputStream zip = new ByteArrayOutputStream();
+							ZipOutputStream stream1 = new ZipOutputStream(zip);
+							stream1.putNextEntry(new ZipEntry("image.png"));
+							stream1.write(stream.toByteArray());
+							stream1.closeEntry();
+							stream1.finish();
+							channel.sendMessage(" ").addFile(zip.toByteArray(), "image.zip").complete();
+							stream1.close();
+						}
 						stream.close();
 					} catch (Throwable err) {
 						channel.sendMessage("Imaging failed.").complete();
@@ -140,7 +144,7 @@ public class ConvoBot extends ListenerAdapter {
 					builder.addField("**-convo:sayPy [text]**", "I'll tell you the code (in python) for a specific programmed response.", false);
 					builder.addField("**-convo:train-start**", "Start Bot training.", false);
 					builder.addField("**-convo:train-stop**", "Stops Bot training.", false);
-					builder.addField("**-convo:tree-image**", "Create an image of the file list of my \"brain\".", false);
+					builder.addField("**-convo:list-image [png/zip]**", "Create an image of the file list of my \"brain\".", false);
 					builder.setFooter("Bot by: GiantLuigi4", "https://cdn.discordapp.com/avatars/380845972441530368/27de0e038db60752d1e8b7b4fced0f4e.png?size=128");
 					channel.sendMessage(" ").embed(builder.build()).complete();
 				} else if (!authorId.equals(id) && !content.startsWith("-convo:ignore")) {

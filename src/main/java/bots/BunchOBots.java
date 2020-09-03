@@ -15,9 +15,7 @@ public class BunchOBots {
 		Files.create("Settings.properties", "drive:C");
 		if (!Files.create("bots.properties")) {
 			if (PropertyReader.contains("bots.properties", "roleReaction")) {
-				new Thread(() -> {
-					RoleReactionBot.main(args);
-				}).start();
+				new Thread(() -> RoleReactionBot.main(args)).start();
 			}
 			if (PropertyReader.contains("bots.properties", "rbPrivate")) {
 				new Thread(() -> {
@@ -39,14 +37,10 @@ public class BunchOBots {
 				}
 			}
 			if (PropertyReader.contains("bots.properties", "idleMaker")) {
-				new Thread(() -> {
-					IdleMkr.main(args);
-				}).start();
+				new Thread(() -> IdleMkr.main(args)).start();
 			}
 			if (PropertyReader.contains("bots.properties", "convo")) {
-				new Thread(() -> {
-					ConvoBot.main(args);
-				}).start();
+				new Thread(() -> ConvoBot.main(args)).start();
 			}
 		}
 	}
