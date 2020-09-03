@@ -45,8 +45,21 @@ public class ListImaging {
 			image.drawLine(x, yPos, x, yPos + 14);
 			image.drawLine(x + 1, yPos, x + 1, yPos + 14);
 			image.drawLine(x + 2, yPos, x + 2, yPos + 14);
-			y += 14;
 			image.drawText(x + 10, y + 12, fi.getName());
+			if (fi.isDirectory()) {
+				int color = 0;
+				image.setColor(new Color(16777215 - color));
+			} else {
+				try {
+					int color = Math.abs(f.getName().substring(f.getName().lastIndexOf(".")).hashCode()) % 16777215;
+					image.setColor(new Color(16777215 - color));
+				} catch (Throwable ignored) {
+					int color = Math.abs(f.getName().hashCode()) % 16777215;
+					image.setColor(new Color(16777215 - color));
+				}
+			}
+			image.drawRect(0, y, 256, y + 14);
+			y += 14;
 			if (fi.isDirectory()) {
 				int lastY = y;
 				y = imageTree(fi, x + 10, y, image);

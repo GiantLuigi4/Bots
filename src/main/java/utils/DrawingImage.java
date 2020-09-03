@@ -9,6 +9,8 @@ public class DrawingImage {
 	
 	//<color,<<x,y>,<x,y>>>
 	private final ArrayList<BiObject<Color, BiObject<BiObject<Integer, Integer>, BiObject<Integer, Integer>>>> lines = new ArrayList<>();
+	//<color,<<x,y>,<x,y>>>
+	private final ArrayList<BiObject<Color, BiObject<BiObject<Integer, Integer>, BiObject<Integer, Integer>>>> rects = new ArrayList<>();
 	//<color,<x,y>>
 	private final ArrayList<BiObject<Color, BiObject<Integer, Integer>>> dots = new ArrayList<>();
 	//<color,<<x,y>,text>>
@@ -36,6 +38,14 @@ public class DrawingImage {
 		strings.add(new BiObject<>(c, new BiObject<>(new BiObject<>(x, y), text)));
 	}
 	
+	public void drawRect(int minX, int minY, int maxX, int maxY) {
+		rects.add(new BiObject<>(
+				c, new BiObject<>(new BiObject<>(
+				minX, minY), new BiObject<>(
+				maxX, maxY)))
+		);
+	}
+	
 	public BufferedImage render() {
 		AtomicInteger minX = new AtomicInteger();
 		AtomicInteger minY = new AtomicInteger();
@@ -47,6 +57,12 @@ public class DrawingImage {
 			minY.set(Math.min(line.getObj2().getObj1().getObj2(), minY.get()));
 			maxY.set(Math.max(line.getObj2().getObj2().getObj2(), maxY.get()));
 		});
+		rects.forEach(rect -> {
+			minX.set(Math.min(rect.getObj2().getObj1().getObj1(), minX.get()));
+			maxX.set(Math.max(rect.getObj2().getObj2().getObj1(), maxX.get()));
+			minY.set(Math.min(rect.getObj2().getObj1().getObj2(), minY.get()));
+			maxY.set(Math.max(rect.getObj2().getObj2().getObj2(), maxY.get()));
+		});
 		dots.forEach(dot -> {
 			minX.set(Math.min(dot.getObj2().getObj1(), minX.get()));
 			maxX.set(Math.max(dot.getObj2().getObj1(), maxX.get()));
@@ -56,10 +72,10 @@ public class DrawingImage {
 		BufferedImage image1 = new BufferedImage(10, 10, BufferedImage.TYPE_INT_BGR);
 		image1.getGraphics().setFont(Font.getFont(Font.MONOSPACED));
 		FontMetrics metrics = image1.getGraphics().getFontMetrics();
-		strings.forEach(dot -> {
-			int x = dot.getObj2().getObj1().getObj1();
-			int y = dot.getObj2().getObj1().getObj2();
-			int width = metrics.stringWidth(dot.getObj2().getObj2());
+		strings.forEach(str -> {
+			int x = str.getObj2().getObj1().getObj1();
+			int y = str.getObj2().getObj1().getObj2();
+			int width = metrics.stringWidth(str.getObj2().getObj2());
 			int height = metrics.getHeight();
 			minX.set(Math.min(x, minX.get()));
 			maxX.set(Math.max(x + width, maxX.get()));
@@ -91,6 +107,17 @@ public class DrawingImage {
 					pos.getObj1() + minX.get() - offset,
 					pos.getObj2() + minY.get() - offset,
 					10, 10, 0, 360
+			);
+		});
+		rects.forEach(rect -> {
+			g.setColor(rect.getObj1());
+			BiObject<Integer, Integer> min = rect.getObj2().getObj1();
+			BiObject<Integer, Integer> max = rect.getObj2().getObj2();
+			g.fillRect(
+					min.getObj1() + minX.get() - offset,
+					min.getObj2() + minY.get() - offset,
+					max.getObj1() + minX.get() - offset,
+					max.getObj2() + minY.get() - offset
 			);
 		});
 		strings.forEach(string -> {

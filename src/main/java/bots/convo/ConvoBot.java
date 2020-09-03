@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class ConvoBot extends ListenerAdapter {
 	private static final GroovyClassLoader cl = new GroovyClassLoader();
@@ -95,7 +97,14 @@ public class ConvoBot extends ListenerAdapter {
 						BufferedImage image = ListImaging.image("bots\\convo");
 						ByteArrayOutputStream stream = new ByteArrayOutputStream();
 						ImageIO.write(image, "png", stream);
-						channel.sendMessage(" ").addFile(stream.toByteArray(), "image.png").complete();
+						ByteArrayOutputStream zip = new ByteArrayOutputStream();
+						ZipOutputStream stream1 = new ZipOutputStream(zip);
+						stream1.putNextEntry(new ZipEntry("image.png"));
+						stream1.write(stream.toByteArray());
+						stream1.closeEntry();
+						stream1.finish();
+						channel.sendMessage(" ").addFile(zip.toByteArray(), "image.zip").complete();
+						stream1.close();
 						stream.close();
 					} catch (Throwable err) {
 						channel.sendMessage("Imaging failed.").complete();
