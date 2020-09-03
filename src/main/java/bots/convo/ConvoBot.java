@@ -25,7 +25,7 @@ public class ConvoBot extends ListenerAdapter {
 	private static Class<?> ai;
 	private static final AIInterpreter interpreter = AI.interpreter;
 	private static final String code = (interpreter.interpretFromFile("bots/convo/convo.ai"));
-
+	
 	public static void main(String[] args) {
 		try {
 			cl.loadClass("bots.convo.ConvoBot")
@@ -35,7 +35,7 @@ public class ConvoBot extends ListenerAdapter {
 			err.printStackTrace();
 		}
 	}
-
+	
 	public static void run(String[] args) {
 		JDABuilder builder = new JDABuilder(AccountType.BOT);
 		String token = PropertyReader.read("bots.properties", "convo");
@@ -51,11 +51,11 @@ public class ConvoBot extends ListenerAdapter {
 		} catch (Throwable ignored) {
 		}
 	}
-
+	
 	protected static final HashMap<String, ConvoStats> activeConvos = new HashMap<>();
 	//TODO make a list of senderIDs for multiple conversations
 	protected static final List<User> senders = new ArrayList<>();
-
+	
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
 		if (event.getJDA().getSelfUser().getId().equals(id)) {
@@ -124,8 +124,8 @@ public class ConvoBot extends ListenerAdapter {
 						ConvoStats currentStats = activeConvos.get(sender.getId());
 						if (channel.getIdLong() == currentStats.channel && author.equals(sender)) {
 							StringBuilder message = new StringBuilder();
-								for (String s : content.split("\n")) {
-									for (String input : s.split("\\. ")) {
+							for (String s : content.split("\n")) {
+								for (String input : s.split("\\. ")) {
 									message.append("> " + AI.respond(code, input, activeConvos.get(sender.getId()).sentence)).append("\n");
 									activeConvos.get(sender.getId()).sentence++;
 								}
@@ -139,8 +139,7 @@ public class ConvoBot extends ListenerAdapter {
 		}
 		super.onMessageReceived(event);
 	}
-}
-
+	
 			/*
 			} else if (content.startsWith("-convo:join")) {
 				if (content.length() == 11) {
@@ -173,3 +172,6 @@ public class ConvoBot extends ListenerAdapter {
 				} else {
 					channel.sendMessage("test").complete();
 				}*/
+
+//I like having the last curly at the bottom of the file, because it gives me an easy way to activate intelliJ's file formatter
+}

@@ -8,22 +8,18 @@ import java.util.HashMap;
 
 public class Learning {
 	public static String[] convoTest = new String[]{
-			"hello",
-			"How are you?",
-			"good",
-			"What are you doing?",
-			"not much",
-			"There's stuff you could be doing.",
-			"not much",
-			"There's a lot you could be doing.",
-			"not a lot",
-			"There's stuff you could be doing.",
-			"not a lot",
-			"There's a lot you could be doing.",
-			"not very much",
-			"There's stuff you could be doing.",
-			"not very much",
-			"There's a lot you could be doing.",
+			"when did you start learning",
+			"Since <https://github.com/GiantLuigi4/Bots/commit/aece72ae19d95b175e19c4e3e083a62ea0955d76>.",
+			"when did you start learning",
+			"Before 0.1.",
+			"when did you start learning",
+			"Before the betas.",
+			"how do you learn",
+			"I watch conversations, and try to find patterns.",
+			"how does your learning work",
+			"I watch conversations, and try to find patterns.",
+			"how do you learn things",
+			"I watch conversations, and try to find patterns.",
 	};
 	
 	public static void main(String[] args) {
@@ -33,6 +29,7 @@ public class Learning {
 			if (prompt.equals("")) {
 				prompt = s;
 			} else {
+				s = s.replace("[", ":").replace(";", "]");
 				if (responseMap.containsKey(s)) {
 					if (!responseMap.get(s).contains(prompt)) responseMap.get(s).add(prompt);
 				} else {

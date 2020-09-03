@@ -172,7 +172,7 @@ public class AI {
 							if (output.exists()) {
 								Random rng = new Random();
 								String[] out = Files.readArray(output);
-								message = out[rng.nextInt(out.length)].replace("[", "").replace("]", "");
+								message = out[rng.nextInt(out.length)].replace("[", "").replace("]", "").replace(":", "[").replace(";", "]");
 								if (sentenceNumber == 1) {
 									String[] out2 = Files.readArray("bots\\convo\\complex\\outputs\\ask_up_to.grammar");
 									message += "\n> " + out2[rng.nextInt(out2.length)].replace("[", "").replace("]", "");
