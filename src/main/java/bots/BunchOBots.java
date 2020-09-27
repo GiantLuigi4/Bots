@@ -5,6 +5,7 @@ import bots.idle_maker.IdleMkr;
 import bots.rater.PublicRaterBot;
 import bots.rater.RaterBot;
 import bots.role_reaction.RoleReactionBot;
+import bots.sheets.SheetsBot;
 import utils.Files;
 import utils.PropertyReader;
 
@@ -41,6 +42,9 @@ public class BunchOBots {
 			}
 			if (PropertyReader.contains("bots.properties", "convo")) {
 				new Thread(() -> ConvoBot.main(args)).start();
+			}
+			if (PropertyReader.contains("bots.properties", "sheets")) {
+				new Thread(() -> SheetsBot.main(args)).start();
 			}
 		}
 	}

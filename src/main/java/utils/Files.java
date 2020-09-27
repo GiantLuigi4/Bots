@@ -1,7 +1,9 @@
 package utils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Random;
@@ -292,5 +294,14 @@ public class Files {
 		File f = new File(dir + "\\" + file);
 		String strings = read(f);
 		return strings.replace("\n", "|");
+	}
+	
+	public static InputStream getAsStream(String file) {
+		try {
+			File f = new File(dir + "\\" + file);
+			return new FileInputStream(f);
+		} catch (Throwable ignored) {
+		}
+		return null;
 	}
 }

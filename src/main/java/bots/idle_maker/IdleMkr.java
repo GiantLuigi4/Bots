@@ -44,13 +44,26 @@ public class IdleMkr extends ListenerAdapter {
         try {
             botBuilt = builder.buildAsync();
             Thread.sleep(1000);
-            id = botBuilt.getSelfUser().getId();
-        } catch (Throwable err) {
+            try {
+                id = botBuilt.getSelfUser().getId();
+            } catch (Throwable ignored) {
+                Thread.sleep(1000);
+                id = botBuilt.getSelfUser().getId();
+            }
+        } catch (Throwable ignored) {
         }
         //bots.idle_maker.handlestructs.getamt("380845972441530368",2L);
         structures = HandleStructs.getStructs();
         emote = botBuilt.getEmoteById(Long.parseLong("657410151178960916"));
-        currencyname = emote.getAsMention() + "cogs";
+        try {
+            currencyname = emote.getAsMention() + "cogs";
+        } catch (Throwable err) {
+            try {
+                Thread.sleep(1000);
+                currencyname = emote.getAsMention() + "cogs";
+            } catch (Throwable ignored) {
+            }
+        }
         HandleStructs.getCPS("380845972441530368");
     }
     

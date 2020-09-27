@@ -48,7 +48,7 @@ public class ConvoBot extends ListenerAdapter {
 		String token = PropertyReader.read("bots.properties", "convo");
 		builder.setToken(token);
 		builder.setStatus(OnlineStatus.ONLINE);
-		builder.setGame(Game.listening("-convo:help, GiantLuigi4, 10MLD downloads"));
+		builder.setGame(Game.listening("-convo:help"));
 		bot = new ConvoBot();
 		builder.addEventListener(bot);
 		try {

@@ -4,7 +4,10 @@ import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.Emote;
+import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import utils.PropertyReader;
@@ -12,7 +15,6 @@ import utils.PropertyReader;
 import javax.imageio.ImageIO;
 import javax.security.auth.login.LoginException;
 import javax.swing.*;
-import javax.swing.Icon;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -93,9 +95,9 @@ public class PublicRaterBot extends ListenerAdapter {
         botBuilt = builder.buildAsync();
         try {
             Thread.sleep(1000);
+            id = botBuilt.getSelfUser().getId();
         } catch (Throwable ignored) {
         }
-        id = botBuilt.getSelfUser().getId();
     }
     
     public void onMessageReceived(MessageReceivedEvent event) {

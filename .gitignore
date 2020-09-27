@@ -7,3 +7,5 @@
 /.idea/
 /Settings.properties
 /gource/
+/credentials.json
+/tokens.txt
