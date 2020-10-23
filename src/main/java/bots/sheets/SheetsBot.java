@@ -105,7 +105,7 @@ public class SheetsBot extends ListenerAdapter {
 		}
 		boolean topicCheck = event.getTextChannel().getTopic().startsWith("\u0001");
 		boolean isIdeasChannel = hasIdeasPin || topicCheck;
-		if (event.getMessage().getContentRaw().startsWith("-ideas:setup")) {
+		if (event.getMessage().getContentRaw().startsWith("-ideas:setup_sheets")) {
 			if (!isIdeasChannel) {
 				if (
 						event.getGuild().getMember(event.getMessage().getAuthor()).hasPermission(Permission.MANAGE_CHANNEL) ||
@@ -120,19 +120,19 @@ public class SheetsBot extends ListenerAdapter {
 						Message msg = event.getChannel().sendMessage("This is an ideas channel, if you want to add an idea, type in \"-idea:add\" and then write your idea.").complete();
 						try {
 							event.getMessage().getChannel().pinMessageById(msg.getId()).complete();
-							event.getTextChannel().getManager().setTopic("\377Submits your ideas for " + event.getMessage().getContentRaw().substring("-ideas:setup ".length()).split(" ", 1)[1] + " here!").complete();
+							event.getTextChannel().getManager().setTopic("\377Submits your ideas for " + event.getMessage().getContentRaw().substring("-ideas:setup_sheets ".length()).split(" ", 1)[1] + " here!").complete();
 						} catch (Throwable ignored) {
 						}
 						for (TextChannel chnl : sheetCache.getTextChannels()) {
 							if (chnl.getGuild().getMemberById(id).hasPermission(chnl, Permission.MANAGE_CHANNEL)) {
 								if (chnl.getName().startsWith("open") || chnl.getName().equals(id)) {
 									if (chnl.getHistory().retrievePast(20).complete().size() <= 20) {
-										chnl.sendMessage(event.getTextChannel().getAsMention() + "\n" + event.getMessage().getContentRaw().replace("-ideas:setup ", "").split(" ", 2)[0]).complete();
+										chnl.sendMessage(event.getTextChannel().getAsMention() + "\n" + event.getMessage().getContentRaw().replace("-ideas:setup_sheets ", "").split(" ", 2)[0]).complete();
 										if (chnl.getName().startsWith("open")) {
 											chnl.sendMessage(chnl.getGuild().getMemberById(380845972441530368L).getAsMention() + " LOCK THIS CHANNEL").complete();
 										}
 										chnl.getManager().setName(id).complete();
-										allSheets.add(new Sheet(event.getTextChannel().getAsMention(), event.getMessage().getContentRaw().replace("-ideas:setup ", "").split(" ", 2)[0]));
+										allSheets.add(new Sheet(event.getTextChannel().getAsMention(), event.getMessage().getContentRaw().replace("-ideas:setup_sheets ", "").split(" ", 2)[0]));
 										break;
 									}
 								}
