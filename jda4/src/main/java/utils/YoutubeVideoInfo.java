@@ -1,4 +1,4 @@
-package bots;
+package utils;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioInputStream;

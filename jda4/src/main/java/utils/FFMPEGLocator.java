@@ -1,4 +1,4 @@
-package bots;
+package utils;
 
 import ws.schild.jave.process.ffmpeg.DefaultFFMPEGLocator;
 
