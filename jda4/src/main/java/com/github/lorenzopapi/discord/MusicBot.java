@@ -118,6 +118,8 @@ public class MusicBot extends ListenerAdapter {
 				playSong(e, e.getGuild());
 			} else if (message.startsWith(prefix + "help")) {
 				e.getChannel().sendMessage(createBuilder(e).build()).complete();
+			} else if (message.startsWith(prefix + "leave")) {
+				e.getGuild().getAudioManager().closeAudioConnection();
 			}
 		}
 	}
@@ -125,6 +127,10 @@ public class MusicBot extends ListenerAdapter {
 	private static void playSong(GuildMessageReceivedEvent e, Guild guild) {
 		String[] args = e.getMessage().getContentRaw().split(" ");
 		AudioManager manager = guild.getAudioManager();
+		if (args.length <= 1) {
+			e.getChannel().sendMessage("Please provide a link to a valid youtube video").reference(e.getMessage()).mentionRepliedUser(false).complete();
+			return;
+		}
 		if (args[1].startsWith("<") && args[1].endsWith(">")) {
 			args[1] = args[1].substring(1, args[1].length() - 1);
 		}
@@ -142,8 +148,8 @@ public class MusicBot extends ListenerAdapter {
 				if (streamsByServer.containsKey(e.getGuild().getId()))
 					streamsByServer.replace(e.getGuild().getId(), info);
 				else streamsByServer.put(e.getGuild().getId(), info);
-				if (info.viewCount == -1) e.getChannel().sendMessage(info.name).complete();
-				else e.getChannel().sendMessage(createBuilder(info, e).build()).complete();
+				if (info.viewCount == -1) e.getChannel().sendMessage(info.name).reference(e.getMessage()).mentionRepliedUser(false).complete();
+				else e.getChannel().sendMessage(createBuilder(info, e).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 				manager.setSendingHandler(new SendingHandler(info.stream));
 			} catch (Throwable err) {
 				e.getChannel().sendMessage(createBuilder(err).build()).complete();
@@ -152,23 +158,23 @@ public class MusicBot extends ListenerAdapter {
 		}
 		if (vc != null) {
 			if (!guild.getSelfMember().hasPermission(vc, Permission.VOICE_CONNECT) || !guild.getSelfMember().hasPermission(vc, Permission.VOICE_SPEAK)) {
-				e.getChannel().sendMessage("Insufficient permissions!").queue();
+				e.getChannel().sendMessage("Insufficient permissions!").reference(e.getMessage()).mentionRepliedUser(false).queue();
 			} else {
 				manager.openAudioConnection(vc);
 				bot.getDirectAudioController().connect(vc);
-				e.getChannel().sendMessage("Connected successfully!").queue();
+				e.getChannel().sendMessage("Connected successfully!").reference(e.getMessage()).mentionRepliedUser(false).queue();
 				try {
 					YoutubeVideoInfo info = doYoutubeDLRequest(args[1]);
 					streamsByServer.put(e.getGuild().getId(), info);
-					if (info.viewCount == -1) e.getChannel().sendMessage(info.name).complete();
-					else e.getChannel().sendMessage(createBuilder(info, e).build()).complete();
+					if (info.viewCount == -1) e.getChannel().sendMessage(info.name).reference(e.getMessage()).mentionRepliedUser(false).complete();
+					else e.getChannel().sendMessage("Response").embed(createBuilder(info, e).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 					manager.setSendingHandler(new SendingHandler(info.stream));
 				} catch (Throwable err) {
-					e.getChannel().sendMessage(createBuilder(err).build()).complete();
+					e.getChannel().sendMessage(createBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 				}
 			}
 		} else {
-			e.getChannel().sendMessage("Please join a voice channel!").queue();
+			e.getChannel().sendMessage("Please join a voice channel!").reference(e.getMessage()).mentionRepliedUser(false).queue();
 		}
 	}
 	
