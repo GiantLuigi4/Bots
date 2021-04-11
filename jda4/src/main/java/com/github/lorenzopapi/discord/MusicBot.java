@@ -67,7 +67,7 @@ public class MusicBot extends ListenerAdapter {
 				bot = JDABuilder.createLight(PropertyReader.read("bots.properties", "musicBot"), GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_VOICE_STATES)
 						.enableCache(CacheFlag.VOICE_STATE)
 						.addEventListeners(new MusicBot())
-						.setActivity(Activity.watching("yes"))
+						.setActivity(Activity.watching("-music:help"))
 						.build();
 			} else {
 				return;
