@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.audio.SpeakingMode;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
@@ -76,30 +77,30 @@ public class MusicBot extends ListenerAdapter {
 		}
 		
 		bot.awaitReady();
-		while (true) {
-			bot.getAudioManagers().forEach((manager) -> {
-				manager.setSpeakingMode(SpeakingMode.SOUNDSHARE, SpeakingMode.PRIORITY);
-				if (!streamsByServer.containsKey(manager.getGuild().getId())) {
-//					manager.closeAudioConnection();
-				} else {
-					YoutubeVideoInfo info = streamsByServer.get(manager.getGuild().getId());
-					byte[] bytes = new byte[info.format.getFrameLength() * 20];
-					try {
-						if (info != null) {
-							info.stream.read(bytes);
-							if (info.stream.available() <= 1) {
-								streamsByServer.remove(manager.getGuild().getId());
-							}
-						}
-						if (manager.getSendingHandler() != null) {
-							manager.getSendingHandler().provide20MsAudio().put(bytes);
-						}
-					} catch (Throwable e) {
-						e.printStackTrace();
-					}
-				}
-			});
-		}
+//		while (true) {
+//			bot.getAudioManagers().forEach((manager) -> {
+//				manager.setSpeakingMode(SpeakingMode.SOUNDSHARE, SpeakingMode.PRIORITY);
+//				if (!streamsByServer.containsKey(manager.getGuild().getId())) {
+////					manager.closeAudioConnection();
+//				} else {
+//					YoutubeVideoInfo info = streamsByServer.get(manager.getGuild().getId());
+//					byte[] bytes = new byte[info.format.getFrameLength() * 20];
+//					try {
+//						if (info != null) {
+//							info.stream.read(bytes);
+//							if (info.stream.available() <= 1) {
+//								streamsByServer.remove(manager.getGuild().getId());
+//							}
+//						}
+//						if (manager.getSendingHandler() != null) {
+//							manager.getSendingHandler().provide20MsAudio().put(bytes);
+//						}
+//					} catch (Throwable e) {
+//						e.printStackTrace();
+//					}
+//				}
+//			});
+//		}
 	}
 	
 	@Override
@@ -115,6 +116,8 @@ public class MusicBot extends ListenerAdapter {
 		if (message.startsWith(prefix)) {
 			if (message.startsWith(prefix + "play")) {
 				playSong(e, e.getGuild());
+			} else if (message.startsWith(prefix + "help")) {
+				e.getChannel().sendMessage(createBuilder(e).build()).complete();
 			}
 		}
 	}
@@ -181,6 +184,18 @@ public class MusicBot extends ListenerAdapter {
 		builder.setThumbnail("https://i.ytimg.com/vi/%id%/hqdefault.jpg".replace("%id%", videoId));
 		builder.setAuthor("Requested by: " + e.getMember().getEffectiveName(), null, e.getAuthor().getAvatarUrl());
 		builder.setFooter("Bot by: GiantLuigi4 and LorenzoPapi");
+		return builder;
+	}
+	
+	private static EmbedBuilder createBuilder(GuildMessageReceivedEvent e) {
+		EmbedBuilder builder = new EmbedBuilder();
+		String name = e.getMember().getEffectiveName() + e.getMember().getAsMention() + e.getMember().getColor().toString() + e.getMember().getUser().getDiscriminator();
+		builder.setColor(new Color(((int) Math.abs(name.length() * 3732.12382f)) % 255, Math.abs(Objects.hash(name)) % 255, Math.abs(Objects.hash(name.toLowerCase())) % 255));
+		builder.setAuthor("Requested by: " + e.getMember().getEffectiveName(), null, e.getAuthor().getAvatarUrl());
+		builder.setFooter("Bot by: GiantLuigi4 and LorenzoPapi");
+		builder.setThumbnail(bot.getSelfUser().getAvatarUrl());
+		builder.addField("-music:help", "Displays this embed", false);
+		builder.addField("-music:play [link to youtube video]", "Plays a video's audio to the voice channel which you are currently in", false);
 		return builder;
 	}
 	
@@ -278,17 +293,14 @@ public class MusicBot extends ListenerAdapter {
 			//luigi's implementation
 			try {
 				AudioAttributes audio = new AudioAttributes();
-				audio.setChannels(2);
-				audio.setSamplingRate(44100);
+				audio.setSamplingRate(48000);
+				audio.setChannels(AudioSendHandler.INPUT_FORMAT.getChannels());
 				
 				EncodingAttributes attributes = new EncodingAttributes();
 				attributes.setOutputFormat("wav");
 				attributes.setAudioAttributes(audio);
 				
 				Encoder encoder = new Encoder(new FFMPEGLocator());
-				for (String audioDecoder : encoder.getAudioEncoders()) {
-					System.out.println(audioDecoder);
-				}
 				encoder.encode(new MultimediaObject(input), output, attributes);
 				return;
 			} catch (Throwable err1) {
