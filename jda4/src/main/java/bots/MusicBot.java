@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.audio.SpeakingMode;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
@@ -52,7 +53,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MusicBot extends ListenerAdapter {
-	private String prefix = "!";
+	private String prefix = "-music:";
 	public static Map<Guild, ArrayList<?>> queue = new HashMap<>();
 	private static final File downloadCache = new File("bot_cache");
 	private static JDA bot;
@@ -66,7 +67,7 @@ public class MusicBot extends ListenerAdapter {
 				bot = JDABuilder.createLight(PropertyReader.read("bots.properties", "musicBot"), GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_VOICE_STATES)
 						.enableCache(CacheFlag.VOICE_STATE)
 						.addEventListeners(new MusicBot())
-						.setActivity(Activity.watching("yes"))
+						.setActivity(Activity.watching("-music:help"))
 						.build();
 			} else {
 				return;
@@ -115,6 +116,8 @@ public class MusicBot extends ListenerAdapter {
 		if (message.startsWith(prefix)) {
 			if (message.startsWith(prefix + "play")) {
 				playSong(e, e.getGuild());
+			} else if (message.startsWith(prefix + "help")) {
+				e.getChannel().sendMessage(createBuilder(e).build()).complete();
 			}
 		}
 	}
@@ -182,6 +185,18 @@ public class MusicBot extends ListenerAdapter {
 		return builder;
 	}
 	
+	private static EmbedBuilder createBuilder(GuildMessageReceivedEvent e) {
+		EmbedBuilder builder = new EmbedBuilder();
+		String name = e.getMember().getEffectiveName() + e.getMember().getAsMention() + e.getMember().getColor().toString() + e.getMember().getUser().getDiscriminator();
+		builder.setColor(new Color(((int) Math.abs(name.length() * 3732.12382f)) % 255, Math.abs(Objects.hash(name)) % 255, Math.abs(Objects.hash(name.toLowerCase())) % 255));
+		builder.setAuthor("Requested by: " + e.getMember().getEffectiveName(), null, e.getAuthor().getAvatarUrl());
+		builder.setFooter("Bot by: GiantLuigi4 and LorenzoPapi");
+		builder.setThumbnail(bot.getSelfUser().getAvatarUrl());
+		builder.addField("-music:help", "Displays this embed", false);
+		builder.addField("-music:play [link to youtube video]", "Plays a video's audio to the voice channel which you are currently in", false);
+		return builder;
+	}
+	
 	private static EmbedBuilder createBuilder(Throwable throwable) {
 		EmbedBuilder builder = new EmbedBuilder();
 		builder.setColor(new Color(255, 0, 0));
@@ -235,6 +250,8 @@ public class MusicBot extends ListenerAdapter {
 				}
 				File targ = new File(downloadCache + "/" + video.details().title() + ".wav");
 				convert(src, targ);
+				System.out.println(AudioSendHandler.INPUT_FORMAT);
+				System.out.println(AudioSystem.getAudioFileFormat(targ).getFormat());
 				AudioInputStream stream = AudioSystem.getAudioInputStream(targ);
 //				Clip c = AudioSystem.getClip();
 //				c.open(stream);
@@ -264,17 +281,14 @@ public class MusicBot extends ListenerAdapter {
 			//luigi's implementation
 			try {
 				AudioAttributes audio = new AudioAttributes();
-				audio.setChannels(2);
-				audio.setSamplingRate(44100);
+				audio.setSamplingRate(48000);
+				audio.setChannels(AudioSendHandler.INPUT_FORMAT.getChannels());
 				
 				EncodingAttributes attributes = new EncodingAttributes();
 				attributes.setOutputFormat("wav");
 				attributes.setAudioAttributes(audio);
 				
 				Encoder encoder = new Encoder(new FFMPEGLocator());
-				for (String audioDecoder : encoder.getAudioEncoders()) {
-					System.out.println(audioDecoder);
-				}
 				encoder.encode(new MultimediaObject(input), output, attributes);
 				return;
 			} catch (Throwable err1) {
