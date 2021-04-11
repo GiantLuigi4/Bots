@@ -11,7 +11,17 @@ import java.util.Scanner;
 
 public class Files {
 	public static final String dir = System.getProperty("user.dir");
-	
+
+	public static boolean deleteDirectory(File directoryToBeDeleted) {
+		File[] allContents = directoryToBeDeleted.listFiles();
+		if (allContents != null) {
+			for (File file : allContents) {
+				deleteDirectory(file);
+			}
+		}
+		return directoryToBeDeleted.delete();
+	}
+
 	public static boolean create(String file) {
 		return create(file, "");
 	}
