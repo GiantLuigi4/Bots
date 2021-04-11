@@ -241,15 +241,9 @@ public class MusicBot extends ListenerAdapter {
 				}
 			}
 			File toEncodeOut = new File(downloadCache.getAbsolutePath(), videoId + ".wav");
-			File encoded = new File(downloadCache.getAbsolutePath(), videoId + ".encoded");
 			AudioInputStream stream = AudioSystem.getAudioInputStream(toEncodeOut);
 			System.out.println(stream.getFormat());
 			System.out.println(SendingHandler.INPUT_FORMAT);
-//			FFmpeg.atPath()
-//					.addInput(UrlInput.fromPath(toEncodeOut.toPath()))
-//					.addArgument("-ar 48000")
-//					.addOutput(UrlOutput.toPath(encoded.toPath()))
-//					.execute();
 			System.out.println(response.getOut());
 			return new YoutubeVideoInfo(title, views, stream, url, AudioSystem.getAudioFileFormat(toEncodeOut));
 		} catch (YoutubeDLException | UnsupportedAudioFileException | IOException ex) {
@@ -283,8 +277,13 @@ public class MusicBot extends ListenerAdapter {
 		try {
 			//converts to wav using FFmpeg
 			//lorenzo's implementation
+//			FFmpeg.atPath()
+//					.addInput(UrlInput.fromPath(input.toPath()))
+//					.addOutput(UrlOutput.toPath(output.toPath()))
+//					.execute();
 			FFmpeg.atPath()
 					.addInput(UrlInput.fromPath(input.toPath()))
+					.addArgument("-ar 48000")
 					.addOutput(UrlOutput.toPath(output.toPath()))
 					.execute();
 		} catch (Throwable err) {
