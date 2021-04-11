@@ -9,3 +9,6 @@
 /gource/
 /credentials.json
 /tokens.txt
+/bot_cache/
+/bots/music/
+/test/
