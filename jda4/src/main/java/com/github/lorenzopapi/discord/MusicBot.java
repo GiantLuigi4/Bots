@@ -206,8 +206,8 @@ public class MusicBot extends ListenerAdapter {
 		builder.setDescription(throwable.getLocalizedMessage());
 		boolean hitBotLine = false;
 		for (StackTraceElement element : throwable.getStackTrace()) {
-			hitBotLine = hitBotLine || element.toString().startsWith("bots");
-			if (hitBotLine && !element.toString().startsWith("bots")) break;
+			hitBotLine = hitBotLine || element.toString().startsWith("com.github.lorenzopapi");
+			if (hitBotLine && !element.toString().startsWith("com.github.lorenzopapi")) break;
 			builder.addField("", element.toString(), false);
 		}
 		return builder;
