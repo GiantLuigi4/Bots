@@ -53,7 +53,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class MusicBot extends ListenerAdapter {
-	private String prefix = "!";
+	private String prefix = "-music:";
 	public static Map<Guild, ArrayList<?>> queue = new HashMap<>();
 	private static final File downloadCache = new File("bot_cache");
 	private static JDA bot;
