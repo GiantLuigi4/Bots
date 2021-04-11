@@ -43,12 +43,12 @@ public class SendingHandler implements AudioSendHandler {
 		ByteBuffer buf = null;
 		try {
 			buf = ByteBuffer.allocate(stream.getFormat().getFrameSize() * 20 * stream.getFormat().getSampleSizeInBits());
-			int start = frame * (stream.getFormat().getFrameSize() * 20 * stream.getFormat().getSampleSizeInBits());
-			int end = start + (stream.getFormat().getFrameSize() * 20 * stream.getFormat().getSampleSizeInBits());
-			byte[] bytes1 = new byte[end - start];
-			if (end - start >= 0) System.arraycopy(bytes, start, bytes1, 0, end - start);
-			buf.put(bytes1);
-			frame++;
+//			int start = frame * (stream.getFormat().getFrameSize() * 20 * stream.getFormat().getSampleSizeInBits());
+//			int end = start + (stream.getFormat().getFrameSize() * 20 * stream.getFormat().getSampleSizeInBits());
+//			byte[] bytes1 = new byte[end - start];
+//			if (end - start >= 0) System.arraycopy(bytes, start, bytes1, 0, end - start);
+//			buf.put(bytes1);
+//			frame++;
 		} catch (Throwable ignored) {
 			ignored.printStackTrace();
 		}

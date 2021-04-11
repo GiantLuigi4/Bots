@@ -152,7 +152,7 @@ public class MusicBot extends ListenerAdapter {
 				else e.getChannel().sendMessage(createBuilder(info, e).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 				manager.setSendingHandler(new SendingHandler(info.stream));
 			} catch (Throwable err) {
-				e.getChannel().sendMessage(createBuilder(err).build()).complete();
+				e.getChannel().sendMessage(createBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 			}
 			return;
 		}
@@ -167,7 +167,7 @@ public class MusicBot extends ListenerAdapter {
 					YoutubeVideoInfo info = doYoutubeDLRequest(args[1]);
 					streamsByServer.put(e.getGuild().getId(), info);
 					if (info.viewCount == -1) e.getChannel().sendMessage(info.name).reference(e.getMessage()).mentionRepliedUser(false).complete();
-					else e.getChannel().sendMessage("Response").embed(createBuilder(info, e).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
+					else e.getChannel().sendMessage(createBuilder(info, e).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 					manager.setSendingHandler(new SendingHandler(info.stream));
 				} catch (Throwable err) {
 					e.getChannel().sendMessage(createBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
@@ -300,6 +300,7 @@ public class MusicBot extends ListenerAdapter {
 				AudioAttributes audio = new AudioAttributes();
 				audio.setSamplingRate(48000);
 				audio.setChannels(AudioSendHandler.INPUT_FORMAT.getChannels());
+//				audio.setCodec("pcm_s16be");
 				
 				EncodingAttributes attributes = new EncodingAttributes();
 				attributes.setOutputFormat("wav");
