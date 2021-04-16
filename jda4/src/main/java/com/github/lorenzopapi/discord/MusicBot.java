@@ -230,6 +230,7 @@ public class MusicBot extends ListenerAdapter {
 			req.setOption("output", "%(title)s.%(id)s.%(view_count)d.audio");
 			req.setOption("retries", 10);
 			YoutubeDLResponse response = YoutubeDL.execute(req);
+			File audioOut = new File(downloadCache, videoId + ".wav");
 			String title = "";
 			long views = -1;
 			for (File file : downloadCache.listFiles()) {
@@ -239,19 +240,20 @@ public class MusicBot extends ListenerAdapter {
 					File tempSrc = new File(file.getPath());
 					File audioSrc = new File(downloadCache, videoId + "." + file.getName().split("\\.")[3]);
 					java.nio.file.Files.copy(new FileInputStream(tempSrc), audioSrc.toPath());
-					File audioOut = new File(downloadCache, videoId + ".wav");
 					convert(tempSrc, audioOut);
 					tempSrc.delete();
 					audioSrc.delete();
 					break;
 				}
 			}
-			File toEncodeOut = new File(downloadCache.getAbsolutePath(), videoId + ".wav");
-			AudioInputStream stream = AudioSystem.getAudioInputStream(toEncodeOut);
+			AudioInputStream stream = AudioSystem.getAudioInputStream(audioOut);
 			System.out.println(stream.getFormat());
 			System.out.println(SendingHandler.INPUT_FORMAT);
+			System.out.println(stream.getFrameLength());
+			System.out.println(stream.getFormat().getFrameRate());
+			System.out.println(stream.getFormat().getFrameSize());
 			System.out.println(response.getOut());
-			return new YoutubeVideoInfo(title, views, stream, url, AudioSystem.getAudioFileFormat(toEncodeOut));
+			return new YoutubeVideoInfo(title, views, stream, url, AudioSystem.getAudioFileFormat(audioOut));
 		} catch (YoutubeDLException | UnsupportedAudioFileException | IOException ex) {
 			//downloads the video with YoutubeDownloader
 			try {
@@ -289,7 +291,8 @@ public class MusicBot extends ListenerAdapter {
 //					.execute();
 			FFmpeg.atPath()
 					.addInput(UrlInput.fromPath(input.toPath()))
-					.addArgument("-ar 48000")
+					.addArguments("-f", "ss16be")
+					.addArguments("-ar", "48000")
 					.addOutput(UrlOutput.toPath(output.toPath()))
 					.execute();
 		} catch (Throwable err) {

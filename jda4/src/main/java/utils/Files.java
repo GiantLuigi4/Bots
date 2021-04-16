@@ -13,16 +13,7 @@ public class Files {
 	public static final String dir = System.getProperty("user.dir");
 	
 	public static boolean create(String file) {
-		File f = new File(dir + "\\" + file);
-		if (!f.exists()) {
-			try {
-				f.getParentFile().mkdirs();
-				f.createNewFile();
-				return true;
-			} catch (Throwable ignored) {
-			}
-		}
-		return false;
+		return create(file, "");
 	}
 	
 	public static boolean create(String file, String text) {
@@ -31,10 +22,7 @@ public class Files {
 			try {
 				f.getParentFile().mkdirs();
 				f.createNewFile();
-				FileWriter writer = new FileWriter(f);
-				writer.write(text);
-				writer.close();
-				return true;
+				return write(f, text);
 			} catch (Throwable ignored) {
 			}
 		}
@@ -43,14 +31,7 @@ public class Files {
 	
 	public static boolean write(String file, String text) {
 		File f = new File(dir + "\\" + file);
-		try {
-			FileWriter writer = new FileWriter(f);
-			writer.write(text);
-			writer.close();
-			return true;
-		} catch (Throwable ignored) {
-		}
-		return false;
+		return write(f, text);
 	}
 	
 	public static boolean write(File file, String text) {
@@ -65,27 +46,12 @@ public class Files {
 	}
 	
 	public static File get(String file) {
-		File f = new File(dir + "\\" + file);
-		return f;
+		return new File(dir + "\\" + file);
 	}
 	
 	public static String[] readArray(String file) {
 		File f = new File(dir + "\\" + file);
-		try {
-			Scanner sc = new Scanner(f);
-			ArrayList<String> strings = new ArrayList<>();
-			while (sc.hasNextLine()) {
-				strings.add(sc.nextLine());
-			}
-			sc.close();
-			String[] strings1 = new String[strings.size()];
-			for (int i = 0; i < strings.size(); i++) {
-				strings1[i] = strings.get(i);
-			}
-			return strings1;
-		} catch (Throwable ignored) {
-		}
-		return new String[0];
+		return readArray(f);
 	}
 	
 	public static String[] readArray(File file) {
@@ -108,17 +74,7 @@ public class Files {
 	
 	public static String read(String file) {
 		File f = new File(dir + "\\" + file);
-		try {
-			Scanner sc = new Scanner(f);
-			StringBuilder text = new StringBuilder();
-			while (sc.hasNextLine()) {
-				text.append(sc.nextLine()).append("\n");
-			}
-			sc.close();
-			return text.toString();
-		} catch (Throwable ignored) {
-		}
-		return "";
+		return read(f);
 	}
 	
 	public static String read(File file) {
