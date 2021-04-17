@@ -285,7 +285,7 @@ public class MusicBot extends ListenerAdapter {
 				AudioFormat format = AudioSendHandler.INPUT_FORMAT;
 				audio.setSamplingRate(48000);
 				audio.setChannels(format.getChannels());
-				audio.setCodec("pcm_s16be");
+//				audio.setCodec("pcm_s16be");
 
 				EncodingAttributes attributes = new EncodingAttributes();
 				attributes.setOutputFormat(extension);
