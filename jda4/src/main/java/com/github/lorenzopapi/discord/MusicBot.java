@@ -1,5 +1,3 @@
-// MADE BY PIZZA BOI
-
 package com.github.lorenzopapi.discord;
 
 import com.github.kiulian.downloader.YoutubeDownloader;
