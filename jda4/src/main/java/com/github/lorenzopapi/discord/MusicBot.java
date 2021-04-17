@@ -233,19 +233,20 @@ public class MusicBot extends ListenerAdapter {
 				}
 			}
 			throw new RuntimeException("video not found");
-		} catch (YoutubeDLException | IOException | RuntimeException ex) {
+		} catch (/*YoutubeDLException | IOException | RuntimeException | */Throwable ex) {
 			//downloads the video with YoutubeDownloader
 			//luigi's implementation
 			//refactored by lorenzo
 			try {
+				extension = "flac";
 				YoutubeDownloader downloader = new YoutubeDownloader();
 				YoutubeVideo video = downloader.getVideo(videoId);
 				Format selectedFormat = video.findFormats((format) -> format.type().equals(Format.AUDIO)).get(0);
 				File src = new File(downloadCache + "/" + videoId + "." + selectedFormat.extension().value());
 				if (!src.exists()) {
-					video.download(selectedFormat, new File(downloadCache.getPath()));
+					video.download(selectedFormat, new File(downloadCache.getPath()), videoId);
 				}
-				File audioOut = new File(downloadCache + "/" + video.details().title() + extension);
+				File audioOut = new File(downloadCache + "/" + videoId + "." + extension);
 				convert(src, audioOut);
 				FileInputStream stream = new FileInputStream(audioOut);
 				byte[] audio = new byte[stream.available()];
@@ -257,8 +258,9 @@ public class MusicBot extends ListenerAdapter {
 					throw err;
 				}
 				err.printStackTrace();
+				throw err;
 			}
-			throw ex;
+//			throw ex;
 		}
 	}
 	
