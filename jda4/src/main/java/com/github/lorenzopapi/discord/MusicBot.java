@@ -2,7 +2,10 @@
 
 package com.github.lorenzopapi.discord;
 
+import com.github.kiulian.downloader.YoutubeDownloader;
 import com.github.kiulian.downloader.YoutubeException;
+import com.github.kiulian.downloader.model.YoutubeVideo;
+import com.github.kiulian.downloader.model.formats.Format;
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
@@ -14,6 +17,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -23,18 +27,27 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.managers.AudioManager;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import utils.FFMPEGLocator;
 import utils.Files;
 import utils.PropertyReader;
 import utils.YoutubeVideoInfo;
+import ws.schild.jave.Encoder;
 import ws.schild.jave.EncoderException;
+import ws.schild.jave.MultimediaObject;
+import ws.schild.jave.encode.AudioAttributes;
+import ws.schild.jave.encode.EncodingAttributes;
 
 import javax.security.auth.login.LoginException;
+import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class MusicBot extends ListenerAdapter {
 	private String prefix = "-music:";
@@ -206,18 +219,11 @@ public class MusicBot extends ListenerAdapter {
 				YoutubeDLResponse response = YoutubeDL.execute(req);
 				System.out.println(response.getOut());
 			}
-			for (File file : downloadCache.listFiles()) {
-				if (file.getName().contains(videoId)) {
-					System.out.println(separator);
-					System.out.println(Arrays.toString(file.getName().split(separator)));
-					String title = file.getName().split(separator)[0];
-					long views = Long.parseLong(file.getName().split(separator)[2]);
-					File tempSrc = new File(file.getPath());
-					File audioSrc = new File(downloadCache, videoId + file.getName().split(separator)[3]);
-					java.nio.file.Files.copy(new FileInputStream(tempSrc), audioSrc.toPath());
-					convert(tempSrc, audioOut);
-					tempSrc.delete();
-					audioSrc.delete();
+			for (File sourceAudio : downloadCache.listFiles()) {
+				if (sourceAudio.getName().contains(videoId)) {
+					String title = sourceAudio.getName().split(separator)[0];
+					long views = Long.parseLong(sourceAudio.getName().split(separator)[2]);
+					convert(sourceAudio, audioOut);
 					FileInputStream stream = new FileInputStream(audioOut);
 					byte[] audio = new byte[stream.available()];
 					stream.read(audio);
@@ -228,27 +234,30 @@ public class MusicBot extends ListenerAdapter {
 			}
 			throw new RuntimeException("video not found");
 		} catch (YoutubeDLException | IOException | RuntimeException ex) {
-			//Luigi please redo your implementation with the new things I did
-//			//downloads the video with YoutubeDownloader
-//			//luigi's implementation
-//			try {
-//				YoutubeDownloader downloader = new YoutubeDownloader();
-//				YoutubeVideo video = downloader.getVideo(videoId);
-//				Format selectedFormat = video.findFormats((format) -> format.type().equals(Format.AUDIO)).get(0);
-//				File src = new File(downloadCache + "/" + video.details().title() + "." + selectedFormat.extension().value());
-//				if (!src.exists()) {
-//					video.download(selectedFormat, new File(downloadCache.getPath()));
-//				}
-//				File targ = new File(downloadCache + "/" + video.details().title() + ".wav");
-//				convert(src, targ);
-//				FileInputStream stream = new FileInputStream(targ);
-//				return new YoutubeVideoInfo(video.details().title(), video.details().viewCount(), stream, url);
-//			} catch (Throwable err) {
-//				if (ex.getLocalizedMessage().contains("Cannot run program \"youtube-dl\"")) {
-//					throw err;
-//				}
-//				err.printStackTrace();
-//			}
+			//downloads the video with YoutubeDownloader
+			//luigi's implementation
+			//refactored by lorenzo
+			try {
+				YoutubeDownloader downloader = new YoutubeDownloader();
+				YoutubeVideo video = downloader.getVideo(videoId);
+				Format selectedFormat = video.findFormats((format) -> format.type().equals(Format.AUDIO)).get(0);
+				File src = new File(downloadCache + "/" + videoId + "." + selectedFormat.extension().value());
+				if (!src.exists()) {
+					video.download(selectedFormat, new File(downloadCache.getPath()));
+				}
+				File audioOut = new File(downloadCache + "/" + video.details().title() + extension);
+				convert(src, audioOut);
+				FileInputStream stream = new FileInputStream(audioOut);
+				byte[] audio = new byte[stream.available()];
+				stream.read(audio);
+				stream.close();
+				return new YoutubeVideoInfo(video.details().title(), video.details().viewCount(), audio, url);
+			} catch (Throwable err) {
+				if (ex.getLocalizedMessage().contains("Cannot run program \"youtube-dl\"")) {
+					throw err;
+				}
+				err.printStackTrace();
+			}
 			throw ex;
 		}
 	}
@@ -267,27 +276,27 @@ public class MusicBot extends ListenerAdapter {
 					.setOutputListener(System.out::println)
 					.execute();
 		} catch (Throwable err) {
-			//we need pcm 16bit signed big endian 48khz raw data, so no header, so no wav
-//			//https://github.com/a-schild/jave2
-//			//converts to wav using jave, as a fallback incase FFmpeg is not installed or throws an error
-//			//luigi's implementation
-//			try {
-//				AudioAttributes audio = new AudioAttributes();
-//				audio.setSamplingRate(48000);
-//				audio.setChannels(AudioSendHandler.INPUT_FORMAT.getChannels());
-//				audio.setCodec("pcm_s16be");
-//
-//				EncodingAttributes attributes = new EncodingAttributes();
-//				attributes.setOutputFormat("wav");
-//				attributes.setAudioAttributes(audio);
-//
-//				Encoder encoder = new Encoder(new FFMPEGLocator());
-//				encoder.encode(new MultimediaObject(input), output, attributes);
-//				System.out.println("Using jave");
-//				return;
-//			} catch (Throwable err1) {
-//				err1.printStackTrace();
-//			}
+			//https://github.com/a-schild/jave2
+			//converts to wav using jave, as a fallback incase FFmpeg is not installed or throws an error
+			//luigi's implementation
+			//refactored by LorenzoPapi
+			try {
+				AudioAttributes audio = new AudioAttributes();
+				AudioFormat format = AudioSendHandler.INPUT_FORMAT;
+				audio.setSamplingRate(48000);
+				audio.setChannels(format.getChannels());
+				audio.setCodec("pcm_s16be");
+
+				EncodingAttributes attributes = new EncodingAttributes();
+				attributes.setOutputFormat(extension);
+				attributes.setAudioAttributes(audio);
+
+				Encoder encoder = new Encoder(new FFMPEGLocator());
+				encoder.encode(new MultimediaObject(input), output, attributes);
+				return;
+			} catch (Throwable err1) {
+				err1.printStackTrace();
+			}
 			throw err;
 		}
 	}
