@@ -2,10 +2,7 @@
 
 package com.github.lorenzopapi.discord;
 
-import com.github.kiulian.downloader.YoutubeDownloader;
 import com.github.kiulian.downloader.YoutubeException;
-import com.github.kiulian.downloader.model.YoutubeVideo;
-import com.github.kiulian.downloader.model.formats.Format;
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
@@ -17,8 +14,6 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.audio.AudioSendHandler;
-import net.dv8tion.jda.api.audio.SpeakingMode;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -28,32 +23,23 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.managers.AudioManager;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
-import utils.FFMPEGLocator;
 import utils.Files;
 import utils.PropertyReader;
 import utils.YoutubeVideoInfo;
-import ws.schild.jave.Encoder;
 import ws.schild.jave.EncoderException;
-import ws.schild.jave.MultimediaObject;
-import ws.schild.jave.encode.AudioAttributes;
-import ws.schild.jave.encode.EncodingAttributes;
 
 import javax.security.auth.login.LoginException;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class MusicBot extends ListenerAdapter {
 	private String prefix = "-music:";
+	public static String extension = ".raw";
+	public static String separator = Long.toHexString(System.currentTimeMillis());
 	public static Map<Guild, ArrayList<?>> queue = new HashMap<>();
 	private static final File downloadCache = new File("bot_cache");
 	private static JDA bot;
@@ -64,6 +50,9 @@ public class MusicBot extends ListenerAdapter {
 		if (!Files.create("bots.properties")) {
 			if (PropertyReader.contains("bots.properties", "musicBot")) {
 				downloadCache.mkdirs();
+				for (File file : downloadCache.listFiles()) {
+					file.delete();
+				}
 				bot = JDABuilder.createLight(PropertyReader.read("bots.properties", "musicBot"), GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_VOICE_STATES)
 						.enableCache(CacheFlag.VOICE_STATE)
 						.addEventListeners(new MusicBot())
@@ -77,30 +66,6 @@ public class MusicBot extends ListenerAdapter {
 		}
 		
 		bot.awaitReady();
-//		while (true) {
-//			bot.getAudioManagers().forEach((manager) -> {
-//				manager.setSpeakingMode(SpeakingMode.SOUNDSHARE, SpeakingMode.PRIORITY);
-//				if (!streamsByServer.containsKey(manager.getGuild().getId())) {
-////					manager.closeAudioConnection();
-//				} else {
-//					YoutubeVideoInfo info = streamsByServer.get(manager.getGuild().getId());
-//					byte[] bytes = new byte[info.format.getFrameLength() * 20];
-//					try {
-//						if (info != null) {
-//							info.stream.read(bytes);
-//							if (info.stream.available() <= 1) {
-//								streamsByServer.remove(manager.getGuild().getId());
-//							}
-//						}
-//						if (manager.getSendingHandler() != null) {
-//							manager.getSendingHandler().provide20MsAudio().put(bytes);
-//						}
-//					} catch (Throwable e) {
-//						e.printStackTrace();
-//					}
-//				}
-//			});
-//		}
 	}
 	
 	@Override
@@ -219,7 +184,7 @@ public class MusicBot extends ListenerAdapter {
 		return builder;
 	}
 	
-	private static YoutubeVideoInfo doYoutubeDLRequest(String url) throws UnsupportedAudioFileException, YoutubeDLException, IOException, YoutubeException, EncoderException, LineUnavailableException {
+	private static YoutubeVideoInfo doYoutubeDLRequest(String url) throws YoutubeDLException, IOException, YoutubeException, EncoderException, LineUnavailableException {
 		String videoId = url.substring(url.indexOf("v=") + 2, url.indexOf("&") > 0 ? url.indexOf("&") : url.length()); //lorenzo's method of getting only the video id
 		try {
 			//Downloads the video with YoutubeDL
@@ -227,56 +192,63 @@ public class MusicBot extends ListenerAdapter {
 			YoutubeDLRequest req = new YoutubeDLRequest(url, downloadCache.getPath());
 			req.setOption("ignore-errors");
 			req.setOption("extract-audio");
-			req.setOption("output", "%(title)s.%(id)s.%(view_count)d.audio");
+			req.setOption("output", "%(title)s" + separator + "%(id)s" + separator + "%(view_count)d" + separator + ".audio");
 			req.setOption("retries", 10);
-			YoutubeDLResponse response = YoutubeDL.execute(req);
-			File audioOut = new File(downloadCache, videoId + ".wav");
-			String title = "";
-			long views = -1;
+			boolean cached = false;
+			File audioOut = new File(downloadCache, videoId + extension);
 			for (File file : downloadCache.listFiles()) {
-				if (file.getName().contains(videoId) && !file.getName().endsWith(".wav")) { // && file.getName().matches("(\\w+\\.\\w+)")
-					title = file.getName().split("\\.")[0];
-					views = Long.parseLong(file.getName().split("\\.")[2]);
+				if (file.getName().contains(videoId)) {
+					cached = true;
+					break;
+				}
+			}
+			if (!cached) {
+				YoutubeDLResponse response = YoutubeDL.execute(req);
+				System.out.println(response.getOut());
+			}
+			for (File file : downloadCache.listFiles()) {
+				if (file.getName().contains(videoId)) {
+					System.out.println(separator);
+					System.out.println(Arrays.toString(file.getName().split(separator)));
+					String title = file.getName().split(separator)[0];
+					long views = Long.parseLong(file.getName().split(separator)[2]);
 					File tempSrc = new File(file.getPath());
-					File audioSrc = new File(downloadCache, videoId + "." + file.getName().split("\\.")[3]);
+					File audioSrc = new File(downloadCache, videoId + file.getName().split(separator)[3]);
 					java.nio.file.Files.copy(new FileInputStream(tempSrc), audioSrc.toPath());
 					convert(tempSrc, audioOut);
 					tempSrc.delete();
 					audioSrc.delete();
-					break;
+					FileInputStream stream = new FileInputStream(audioOut);
+					byte[] audio = new byte[stream.available()];
+					stream.read(audio);
+					stream.close();
+					audioOut.delete();
+					return new YoutubeVideoInfo(title, views, audio, url);
 				}
 			}
-			AudioInputStream stream = AudioSystem.getAudioInputStream(audioOut);
-			System.out.println(stream.getFormat());
-			System.out.println(SendingHandler.INPUT_FORMAT);
-			System.out.println(stream.getFrameLength());
-			System.out.println(stream.getFormat().getFrameRate());
-			System.out.println(stream.getFormat().getFrameSize());
-			System.out.println(response.getOut());
-			return new YoutubeVideoInfo(title, views, stream, url, AudioSystem.getAudioFileFormat(audioOut));
-		} catch (YoutubeDLException | UnsupportedAudioFileException | IOException ex) {
-			//downloads the video with YoutubeDownloader
-			try {
-				YoutubeDownloader downloader = new YoutubeDownloader();
-				YoutubeVideo video = downloader.getVideo(videoId);
-				Format selectedFormat = video.findFormats((format) -> format.type().equals(Format.AUDIO)).get(0);
-				File src = new File(downloadCache + "/" + video.details().title() + "." + selectedFormat.extension().value());
-				if (!src.exists()) {
-					video.download(selectedFormat, new File(downloadCache.getPath()));
-				}
-				File targ = new File(downloadCache + "/" + video.details().title() + ".wav");
-				convert(src, targ);
-				AudioInputStream stream = AudioSystem.getAudioInputStream(targ);
-//				Clip c = AudioSystem.getClip();
-//				c.open(stream);
-//				c.start();
-				return new YoutubeVideoInfo(video.details().title(), video.details().viewCount(), stream, url, AudioSystem.getAudioFileFormat(targ));
-			} catch (Throwable err) {
-				if (ex.getLocalizedMessage().contains("Cannot run program \"youtube-dl\"")) {
-					throw err;
-				}
-				err.printStackTrace();
-			}
+			throw new RuntimeException("video not found");
+		} catch (YoutubeDLException | IOException | RuntimeException ex) {
+			//Luigi please redo your implementation with the new things I did
+//			//downloads the video with YoutubeDownloader
+//			//luigi's implementation
+//			try {
+//				YoutubeDownloader downloader = new YoutubeDownloader();
+//				YoutubeVideo video = downloader.getVideo(videoId);
+//				Format selectedFormat = video.findFormats((format) -> format.type().equals(Format.AUDIO)).get(0);
+//				File src = new File(downloadCache + "/" + video.details().title() + "." + selectedFormat.extension().value());
+//				if (!src.exists()) {
+//					video.download(selectedFormat, new File(downloadCache.getPath()));
+//				}
+//				File targ = new File(downloadCache + "/" + video.details().title() + ".wav");
+//				convert(src, targ);
+//				FileInputStream stream = new FileInputStream(targ);
+//				return new YoutubeVideoInfo(video.details().title(), video.details().viewCount(), stream, url);
+//			} catch (Throwable err) {
+//				if (ex.getLocalizedMessage().contains("Cannot run program \"youtube-dl\"")) {
+//					throw err;
+//				}
+//				err.printStackTrace();
+//			}
 			throw ex;
 		}
 	}
@@ -285,36 +257,37 @@ public class MusicBot extends ListenerAdapter {
 		try {
 			//converts to wav using FFmpeg
 			//lorenzo's implementation
-//			FFmpeg.atPath()
-//					.addInput(UrlInput.fromPath(input.toPath()))
-//					.addOutput(UrlOutput.toPath(output.toPath()))
-//					.execute();
 			FFmpeg.atPath()
 					.addInput(UrlInput.fromPath(input.toPath()))
-					.addArguments("-f", "ss16be")
+					.addArguments("-f", "s16be")
 					.addArguments("-ar", "48000")
+					.addArguments("-acodec", "pcm_s16be")
+					.addArguments("-ac", "2")
 					.addOutput(UrlOutput.toPath(output.toPath()))
+					.setOutputListener(System.out::println)
 					.execute();
 		} catch (Throwable err) {
-			//https://github.com/a-schild/jave2
-			//converts to wav using jave, as a fallback incase FFmpeg is not installed or throws an error
-			//luigi's implementation
-			try {
-				AudioAttributes audio = new AudioAttributes();
-				audio.setSamplingRate(48000);
-				audio.setChannels(AudioSendHandler.INPUT_FORMAT.getChannels());
+			//we need pcm 16bit signed big endian 48khz raw data, so no header, so no wav
+//			//https://github.com/a-schild/jave2
+//			//converts to wav using jave, as a fallback incase FFmpeg is not installed or throws an error
+//			//luigi's implementation
+//			try {
+//				AudioAttributes audio = new AudioAttributes();
+//				audio.setSamplingRate(48000);
+//				audio.setChannels(AudioSendHandler.INPUT_FORMAT.getChannels());
 //				audio.setCodec("pcm_s16be");
-				
-				EncodingAttributes attributes = new EncodingAttributes();
-				attributes.setOutputFormat("wav");
-				attributes.setAudioAttributes(audio);
-				
-				Encoder encoder = new Encoder(new FFMPEGLocator());
-				encoder.encode(new MultimediaObject(input), output, attributes);
-				return;
-			} catch (Throwable err1) {
-				err1.printStackTrace();
-			}
+//
+//				EncodingAttributes attributes = new EncodingAttributes();
+//				attributes.setOutputFormat("wav");
+//				attributes.setAudioAttributes(audio);
+//
+//				Encoder encoder = new Encoder(new FFMPEGLocator());
+//				encoder.encode(new MultimediaObject(input), output, attributes);
+//				System.out.println("Using jave");
+//				return;
+//			} catch (Throwable err1) {
+//				err1.printStackTrace();
+//			}
 			throw err;
 		}
 	}

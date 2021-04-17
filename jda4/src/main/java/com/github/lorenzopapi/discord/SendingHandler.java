@@ -2,35 +2,44 @@ package com.github.lorenzopapi.discord;
 
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.FloatControl;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class SendingHandler implements AudioSendHandler {
-	
-	AudioInputStream stream;
-	public SendingHandler(AudioInputStream stream) {
-		this.stream = stream;
+
+	ByteBuffer buf;
+	boolean canPlay;
+	int counter;
+	byte[] audio;
+
+	public SendingHandler(byte[] bytes) {
+		audio = bytes;
+		canPlay = true;
+		counter = 0;
+		System.out.println("E");
+		System.out.println(canPlay);
+		buf = ByteBuffer.allocate(3840);
 	}
 	
 	@Override
 	public boolean canProvide() {
-		return true;
+		return canPlay;
 	}
 	
 	@Override
 	public ByteBuffer provide20MsAudio() {
-		return null;
-	}
-	
-	@Override
-	public boolean isOpus() {
-		return false;
+		buf.clear();
+		byte[] sent = new byte[3840];
+		System.out.println(counter);
+		System.arraycopy(audio, counter, sent, 0, Math.min(3840, audio.length - counter - 1));
+		counter += 3840;
+		if (counter >= audio.length) {
+			canPlay = false;
+		}
+		buf.put(sent);
+		buf.position(0);
+		return buf;
 	}
 }
