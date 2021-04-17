@@ -238,7 +238,7 @@ public class MusicBot extends ListenerAdapter {
 			//luigi's implementation
 			//refactored by lorenzo
 			try {
-				extension = "flac";
+				extension = "wav";
 				YoutubeDownloader downloader = new YoutubeDownloader();
 				YoutubeVideo video = downloader.getVideo(videoId);
 				Format selectedFormat = video.findFormats((format) -> format.type().equals(Format.AUDIO)).get(0);
@@ -287,7 +287,7 @@ public class MusicBot extends ListenerAdapter {
 				AudioFormat format = AudioSendHandler.INPUT_FORMAT;
 				audio.setSamplingRate(48000);
 				audio.setChannels(format.getChannels());
-//				audio.setCodec("pcm_s16be");
+				audio.setCodec("pcm_s16be");
 
 				EncodingAttributes attributes = new EncodingAttributes();
 				attributes.setOutputFormat(extension);
