@@ -32,14 +32,11 @@ public class SendingHandler implements AudioSendHandler {
 	public ByteBuffer provide20MsAudio() {
 		buf.clear();
 		byte[] sent = new byte[3840];
-		System.out.println(counter);
 		System.arraycopy(audio, counter, sent, 0, Math.min(3840, audio.length - counter - 1));
-		counter += 3840;
-		if (counter >= audio.length) {
-			canPlay = false;
-		}
+		if (counter >= audio.length) canPlay = false;
 		buf.put(sent);
 		buf.position(0);
+		counter += 3840;
 		return buf;
 	}
 }

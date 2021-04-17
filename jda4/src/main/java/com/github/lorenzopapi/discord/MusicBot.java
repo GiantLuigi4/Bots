@@ -255,7 +255,7 @@ public class MusicBot extends ListenerAdapter {
 	
 	private static void convert(File input, File output) {
 		try {
-			//converts to wav using FFmpeg
+			//converts to 16bit signed pcm big endian raw audio using FFmpeg
 			//lorenzo's implementation
 			FFmpeg.atPath()
 					.addInput(UrlInput.fromPath(input.toPath()))
