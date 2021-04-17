@@ -10,7 +10,6 @@ import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
 import com.sapher.youtubedl.YoutubeDL;
-import com.sapher.youtubedl.YoutubeDLException;
 import com.sapher.youtubedl.YoutubeDLRequest;
 import com.sapher.youtubedl.YoutubeDLResponse;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -32,22 +31,17 @@ import utils.Files;
 import utils.PropertyReader;
 import utils.YoutubeVideoInfo;
 import ws.schild.jave.Encoder;
-import ws.schild.jave.EncoderException;
 import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.encode.AudioAttributes;
 import ws.schild.jave.encode.EncodingAttributes;
 
 import javax.security.auth.login.LoginException;
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.LineUnavailableException;
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class MusicBot extends ListenerAdapter {
 	private String prefix = "-music:";
@@ -91,6 +85,7 @@ public class MusicBot extends ListenerAdapter {
 		if (!queue.containsKey(e.getGuild())) {
 			queue.put(e.getGuild(), new ArrayList<>());
 		}
+		SendingHandler handler = (SendingHandler) e.getGuild().getAudioManager().getSendingHandler();
 		if (message.startsWith(prefix)) {
 			if (message.startsWith(prefix + "play")) {
 				playSong(e, e.getGuild());
@@ -98,6 +93,14 @@ public class MusicBot extends ListenerAdapter {
 				e.getChannel().sendMessage(createBuilder(e).build()).complete();
 			} else if (message.startsWith(prefix + "leave")) {
 				e.getGuild().getAudioManager().closeAudioConnection();
+			} else if (handler != null) {
+				if (message.startsWith(prefix + "pause")) {
+					handler.canPlay = false;
+					e.getChannel().sendMessage("Paused!").complete();
+				} else if (message.startsWith(prefix + "resume")) {
+					handler.canPlay = true;
+					e.getChannel().sendMessage("Resumed!").complete();
+				}
 			}
 		}
 	}
@@ -197,7 +200,7 @@ public class MusicBot extends ListenerAdapter {
 		return builder;
 	}
 	
-	private static YoutubeVideoInfo doYoutubeDLRequest(String url) throws YoutubeDLException, IOException, YoutubeException, EncoderException, LineUnavailableException {
+	private static YoutubeVideoInfo doYoutubeDLRequest(String url) throws IOException, YoutubeException {
 		String videoId = url.substring(url.indexOf("v=") + 2, url.indexOf("&") > 0 ? url.indexOf("&") : url.length()); //lorenzo's method of getting only the video id
 		try {
 			//Downloads the video with YoutubeDL
@@ -233,12 +236,11 @@ public class MusicBot extends ListenerAdapter {
 				}
 			}
 			throw new RuntimeException("video not found");
-		} catch (/*YoutubeDLException | IOException | RuntimeException | */Throwable ex) {
+		} catch (Throwable ex) {
 			//downloads the video with YoutubeDownloader
 			//luigi's implementation
 			//refactored by lorenzo
 			try {
-				extension = "wav";
 				YoutubeDownloader downloader = new YoutubeDownloader();
 				YoutubeVideo video = downloader.getVideo(videoId);
 				Format selectedFormat = video.findFormats((format) -> format.type().equals(Format.AUDIO)).get(0);
@@ -246,12 +248,13 @@ public class MusicBot extends ListenerAdapter {
 				if (!src.exists()) {
 					video.download(selectedFormat, new File(downloadCache.getPath()), videoId);
 				}
-				File audioOut = new File(downloadCache + "/" + videoId + "." + extension);
+				File audioOut = new File(downloadCache + "/" + videoId + extension);
 				convert(src, audioOut);
 				FileInputStream stream = new FileInputStream(audioOut);
 				byte[] audio = new byte[stream.available()];
 				stream.read(audio);
 				stream.close();
+				audioOut.delete();
 				return new YoutubeVideoInfo(video.details().title(), video.details().viewCount(), audio, url);
 			} catch (Throwable err) {
 				if (ex.getLocalizedMessage().contains("Cannot run program \"youtube-dl\"")) {
@@ -260,7 +263,6 @@ public class MusicBot extends ListenerAdapter {
 				err.printStackTrace();
 				throw err;
 			}
-//			throw ex;
 		}
 	}
 	
@@ -281,19 +283,21 @@ public class MusicBot extends ListenerAdapter {
 			//https://github.com/a-schild/jave2
 			//converts to wav using jave, as a fallback incase FFmpeg is not installed or throws an error
 			//luigi's implementation
-			//refactored by LorenzoPapi
+			//refactored and fixed by LorenzoPapi
 			try {
 				AudioAttributes audio = new AudioAttributes();
 				AudioFormat format = AudioSendHandler.INPUT_FORMAT;
+				audio.setCodec("pcm_s16be");
 				audio.setSamplingRate(48000);
 				audio.setChannels(format.getChannels());
-				audio.setCodec("pcm_s16be");
 
 				EncodingAttributes attributes = new EncodingAttributes();
-				attributes.setOutputFormat(extension);
+				attributes.setOutputFormat("s16be");
 				attributes.setAudioAttributes(audio);
 
 				Encoder encoder = new Encoder(new FFMPEGLocator());
+				System.out.println(Arrays.toString(encoder.getAudioEncoders()));
+				System.out.println(Arrays.toString(encoder.getSupportedEncodingFormats()));
 				encoder.encode(new MultimediaObject(input), output, attributes);
 				return;
 			} catch (Throwable err1) {
