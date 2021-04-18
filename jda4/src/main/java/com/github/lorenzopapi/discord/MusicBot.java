@@ -147,10 +147,21 @@ public class MusicBot extends ListenerAdapter {
 			e.getChannel().sendMessage("Please provide a link to a valid youtube video").reference(e.getMessage()).mentionRepliedUser(false).complete();
 			return;
 		}
-		if (args[1].startsWith("<") && args[1].endsWith(">")) {
-			args[1] = args[1].substring(1, args[1].length() - 1);
+		HashMap<String, String> args1 = new HashMap<>();
+		if (args.length > 2) {
+			String text = "";
+			for (String arg : args) {
+				text += arg + " ";
+			}
+			args1 = parseArgs(text);
+		} else {
+			args1.put("video", args[1]);
 		}
-		System.out.println(args[1]);
+		String video = args1.get("video");
+		if (video.startsWith("<") && video.endsWith(">")) {
+			video = video.substring(1, video.length() - 1);
+		}
+		System.out.println(video);
 		VoiceChannel vc = null;
 		for (VoiceChannel c : guild.getVoiceChannels()) {
 			if (c.getMembers().contains(e.getMember())) {
@@ -161,7 +172,7 @@ public class MusicBot extends ListenerAdapter {
 		if (guild.getSelfMember().getVoiceState().inVoiceChannel()) {
 			System.out.println("already connected");
 			try {
-				YoutubeVideoInfo info = doYoutubeDLRequest(args[1]);
+				YoutubeVideoInfo info = doYoutubeDLRequest(video);
 				if (streamsByServer.containsKey(e.getGuild().getId()))
 					streamsByServer.replace(e.getGuild().getId(), info);
 				else
@@ -169,10 +180,11 @@ public class MusicBot extends ListenerAdapter {
 				if (info.viewCount == -1)
 					e.getChannel().sendMessage(info.name).reference(e.getMessage()).mentionRepliedUser(false).complete();
 				else
-					e.getChannel().sendMessage(playingMessageBuilder(info, e).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
+					e.getChannel().sendMessage(playingMessageBuilder(info, e, true).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 				ArrayList<YoutubeVideoInfo> infos = getQueue(guild);
+				if (args1.containsKey("speed")) info.speed = Integer.parseInt(args1.get("speed"));
+				if (args1.containsKey("loop")) info.loopCount = Integer.parseInt(args1.get("loop"));
 				infos.add(info);
-//				manager.setSendingHandler(new SendingHandler(infos));
 			} catch (Throwable err) {
 				e.getChannel().sendMessage(errorMessageBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 			}
@@ -186,15 +198,17 @@ public class MusicBot extends ListenerAdapter {
 				bot.getDirectAudioController().connect(vc);
 				e.getChannel().sendMessage("Connected successfully!").reference(e.getMessage()).mentionRepliedUser(false).queue();
 				try {
-					YoutubeVideoInfo info = doYoutubeDLRequest(args[1]);
+					YoutubeVideoInfo info = doYoutubeDLRequest(video);
 					streamsByServer.put(e.getGuild().getId(), info);
 					if (info.viewCount == -1)
 						e.getChannel().sendMessage(info.name).reference(e.getMessage()).mentionRepliedUser(false).complete();
 					else
-						e.getChannel().sendMessage(playingMessageBuilder(info, e).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
+						e.getChannel().sendMessage(playingMessageBuilder(info, e, false).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 					ArrayList<YoutubeVideoInfo> infos = getQueue(guild);
+					if (args1.containsKey("speed")) info.speed = Integer.parseInt(args1.get("speed"));
+					if (args1.containsKey("loop")) info.loopCount = Integer.parseInt(args1.get("loop"));
 					infos.add(info);
-					manager.setSendingHandler(new SendingHandler(infos));
+					manager.setSendingHandler(new SendingHandler(infos, manager));
 				} catch (Throwable err) {
 					e.getChannel().sendMessage(errorMessageBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 				}
@@ -204,10 +218,11 @@ public class MusicBot extends ListenerAdapter {
 		}
 	}
 	
-	private static EmbedBuilder playingMessageBuilder(YoutubeVideoInfo info, GuildMessageReceivedEvent e) {
+	private static EmbedBuilder playingMessageBuilder(YoutubeVideoInfo info, GuildMessageReceivedEvent e, boolean isQueueing) {
 		EmbedBuilder builder = new EmbedBuilder();
 		builder.setColor(new Color(((int) Math.abs(info.name.length() * 3732.12382f)) % 255, Math.abs(Objects.hash(info.name)) % 255, Math.abs(Objects.hash(info.name.toLowerCase())) % 255));
-		builder.setTitle("Now Playing:");
+		if (isQueueing) builder.setTitle("Added to queue: ");
+		else builder.setTitle("Now Playing:");
 		String url = info.link;
 		builder.setDescription(info.name);
 		builder.addField("Link: ", url, false);
@@ -222,6 +237,16 @@ public class MusicBot extends ListenerAdapter {
 	private static ArrayList<YoutubeVideoInfo> getQueue(Guild guild) {
 		if (!queue.containsKey(guild)) queue.put(guild, new ArrayList<>());
 		return queue.get(guild);
+	}
+	
+	public static HashMap<String, String> parseArgs(String input) {
+		HashMap<String, String> args = new HashMap<>();
+		String[] strings = input.split(" ");
+		for (String string : strings) {
+			String[] text = string.split(":", 2);
+			args.put(text[0], text[1]);
+		}
+		return args;
 	}
 	
 	private static EmbedBuilder helpMessageBuilder(GuildMessageReceivedEvent e) {

@@ -5,6 +5,8 @@ public class YoutubeVideoInfo {
 	public long viewCount;
 	public byte[] audio;
 	public String link;
+	public int loopCount = 1;
+	public int speed = 1;
 	
 	public YoutubeVideoInfo(String name, long viewCount, byte[] audio, String link) {
 		this.name = name;

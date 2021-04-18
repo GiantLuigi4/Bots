@@ -3,6 +3,7 @@ package com.github.lorenzopapi.discord;
 import com.github.kiulian.downloader.model.YoutubeVideo;
 import com.github.lorenzopapi.discord.utils.YoutubeVideoInfo;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
+import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -14,6 +15,8 @@ public class SendingHandler implements AudioSendHandler {
 	int counter;
 	byte[] audio;
 	ArrayList<YoutubeVideoInfo> queue;
+	int loops = 0;
+	AudioManager manager;
 	/**
 	 * This magic number is calculated like this:
 	 * So we have an audio file that has a sample rate of 48000 sample per second
@@ -25,11 +28,14 @@ public class SendingHandler implements AudioSendHandler {
 	 */
 	int packetSize = 3840;
 
-	public SendingHandler(ArrayList<YoutubeVideoInfo> queue) {
+	public SendingHandler(ArrayList<YoutubeVideoInfo> queue, AudioManager manager) {
 		this.queue = queue;
 		YoutubeVideoInfo info = queue.get(0);
 		queue.remove(0);
+		loops = info.loopCount;
+		packetSize = 3840 * info.speed;
 		setup(info.audio);
+		this.manager = manager;
 	}
 	
 	public void setup(byte[] bytes) {
@@ -55,9 +61,17 @@ public class SendingHandler implements AudioSendHandler {
 		if (counter >= audio.length)
 			canPlay = false;
 		if (!canPlay) {
-			YoutubeVideoInfo info = queue.get(0);
-			queue.remove(0);
-			setup(info.audio);
+			loops-=1;
+			if (loops <= 0) {
+				if (!queue.isEmpty()) {
+					YoutubeVideoInfo info = queue.get(0);
+					queue.remove(0);
+					packetSize = 3840 * info.speed;
+					setup(info.audio);
+				} else {
+					manager.closeAudioConnection();
+				}
+			}
 			canPlay = true;
 			counter = 0;
 		}
