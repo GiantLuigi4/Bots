@@ -111,6 +111,7 @@ public class SendingHandler implements AudioSendHandler {
 					YoutubeVideoInfo info = queue.get(0);
 					queue.remove(0);
 					packetSize = 3840 * info.speed;
+					counter = getCounterIndex(info.startTimestamp, packetSize);
 					setup(info.audio);
 					this.info = info;
 				} else {
