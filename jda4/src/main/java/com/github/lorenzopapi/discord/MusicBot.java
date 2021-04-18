@@ -340,7 +340,7 @@ public class MusicBot extends ListenerAdapter {
 		builder.setColor(new Color(((int) Math.abs(e.hashCode() * 3732.12382f)) % 255, Math.abs(Objects.hash("queue")) % 255, Math.abs(Objects.hash("QUEUE")) % 255));
 		int index = 1;
 		for (YoutubeVideoInfo info : queue.get(e.getGuild())) {
-			builder.addField(index + ". " + info.name, "Looped " + info.loopCount + "times\n" + "Speed: " + info.loopCount, false);
+			builder.addField(index + ". " + info.name, "Looping: " + info.loopCount + " times\n" + "Speed: " + info.speed, false);
 			index++;
 		}
 		builder.setFooter("Bot by: GiantLuigi4 and LorenzoPapi");
