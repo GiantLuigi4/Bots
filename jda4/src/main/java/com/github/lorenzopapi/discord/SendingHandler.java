@@ -15,7 +15,7 @@ public class SendingHandler implements AudioSendHandler {
 	int counter;
 	byte[] audio;
 	ArrayList<YoutubeVideoInfo> queue;
-	int loops = 0;
+	int loops;
 	AudioManager manager;
 	/**
 	 * This magic number is calculated like this:
@@ -26,7 +26,7 @@ public class SendingHandler implements AudioSendHandler {
 	 * In a millisecond we thus have 48 * 4 bytes of audio, which equals 192
 	 * 192 * 20 = 3840, and that's exactly our magic number
 	 */
-	int packetSize = 3840;
+	int packetSize;
 
 	public SendingHandler(ArrayList<YoutubeVideoInfo> queue, AudioManager manager) {
 		this.queue = queue;
@@ -61,7 +61,7 @@ public class SendingHandler implements AudioSendHandler {
 		if (counter >= audio.length)
 			canPlay = false;
 		if (!canPlay) {
-			loops-=1;
+			loops -= 1;
 			if (loops <= 0) {
 				if (!queue.isEmpty()) {
 					YoutubeVideoInfo info = queue.get(0);

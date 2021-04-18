@@ -104,6 +104,15 @@ public class MusicBot extends ListenerAdapter {
 		if (message.startsWith(prefix) || message.startsWith("-music:")) {
 			if (message.startsWith(prefix + "play")) {
 				playSong(e, e.getGuild());
+			} else if (message.startsWith(prefix + "queue")) {
+				e.getChannel().sendMessage(queueBuilder(e).build()).complete();
+			} else if (message.startsWith(prefix + "clear")) {
+				if (e.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+					queue.get(e.getGuild()).clear();
+					e.getChannel().sendMessage("Queue cleared!").complete();
+				} else {
+					e.getChannel().sendMessage("You need the Administration permission to do that!").complete();
+				}
 			} else if (message.startsWith(prefix + "help") || message.startsWith("-music:help")) {
 				e.getChannel().sendMessage(helpMessageBuilder(e).build()).complete();
 			} else if (message.startsWith(prefix + "leave")) {
@@ -233,6 +242,20 @@ public class MusicBot extends ListenerAdapter {
 		builder.setFooter("Bot by: GiantLuigi4 and LorenzoPapi");
 		return builder;
 	}
+
+	private static EmbedBuilder queueBuilder(GuildMessageReceivedEvent e) {
+		HashMap<String, String> map =  parseArgs(e.getMessage().getContentRaw().toLowerCase());
+		System.out.println(map);
+		EmbedBuilder builder = new EmbedBuilder();
+		builder.setColor(new Color(((int) Math.abs(e.hashCode() * 3732.12382f)) % 255, Math.abs(Objects.hash("queue")) % 255, Math.abs(Objects.hash("QUEUE")) % 255));
+		int index = 1;
+		for (YoutubeVideoInfo info : queue.get(e.getGuild())) {
+			builder.addField(index + ". " + info.name, "Looped " + info.loopCount + "times\n" + "Speed: " + info.loopCount, false);
+			index++;
+		}
+		builder.setFooter("Bot by: GiantLuigi4 and LorenzoPapi");
+		return builder;
+	}
 	
 	private static ArrayList<YoutubeVideoInfo> getQueue(Guild guild) {
 		if (!queue.containsKey(guild)) queue.put(guild, new ArrayList<>());
@@ -242,9 +265,12 @@ public class MusicBot extends ListenerAdapter {
 	public static HashMap<String, String> parseArgs(String input) {
 		HashMap<String, String> args = new HashMap<>();
 		String[] strings = input.split(" ");
+		strings[0] = "";
 		for (String string : strings) {
-			String[] text = string.split(":", 2);
-			args.put(text[0], text[1]);
+			if (!string.isEmpty() && string.contains(":")) {
+				String[] text = string.split(":", 2);
+				args.put(text[0], text[1]);
+			}
 		}
 		return args;
 	}
