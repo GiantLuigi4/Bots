@@ -38,10 +38,11 @@ public class SendingHandler implements AudioSendHandler {
 		buf.clear();
 		byte[] sent = new byte[packetSize];
 		System.arraycopy(audio, counter, sent, 0, Math.min(packetSize, audio.length - counter - 1));
-		if (counter >= audio.length) canPlay = false;
 		buf.put(sent);
 		buf.position(0);
 		counter += packetSize;
+		if (counter >= audio.length)
+			canPlay = false;
 		return buf;
 	}
 }
