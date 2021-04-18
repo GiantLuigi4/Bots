@@ -16,6 +16,9 @@ public class Playlist {
 	public void addVideo(YoutubeVideoInfo info) {
 		videos.add(info);
 	}
+	public void addVideo(int index, YoutubeVideoInfo info) {
+		videos.add(index, info);
+	}
 	
 	public void removeVideo(int index) {
 		videos.remove(index);
@@ -23,9 +26,7 @@ public class Playlist {
 	
 	public JsonObject serialize() {
 		JsonObject object = new JsonObject();
-		for (int index = 0; index < videos.size(); index++) {
-			object.add("" + index, videos.get(index).serialize());
-		}
+		for (int index = 0; index < videos.size(); index++) object.add("" + index, videos.get(index).serialize());
 		return object;
 	}
 	

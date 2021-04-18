@@ -107,9 +107,11 @@ public class MusicBot extends ListenerAdapter {
 		if (message.startsWith(prefix + "playlist")) {
 			String subCommand = message.substring((prefix + "playlist ").length());
 			if (subCommand.startsWith("create")) {
+				String message1 = m.getContentRaw();
 				if (!subCommand.startsWith("create ")) {
 					e.getChannel().sendMessage("Please provide a name for your playlist").reference(e.getMessage()).mentionRepliedUser(false).complete();
 				} else {
+					subCommand = message1.substring((prefix + "playlist ").length());
 					String listName = subCommand.substring("create ".length());
 					File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
 					if (file.exists()) {
@@ -166,9 +168,11 @@ public class MusicBot extends ListenerAdapter {
 					}
 				}
 			} else if (subCommand.startsWith("play")) {
+				String message1 = m.getContentRaw();
 				if (!subCommand.startsWith("play ")) {
 					e.getChannel().sendMessage("Please provide a name for your playlist").reference(e.getMessage()).mentionRepliedUser(false).complete();
 				} else {
+					subCommand = message1.substring((prefix + "playlist ").length());
 					String listName = subCommand.substring("play ".length());
 					File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/playlist.json");
 					JsonObject listJson = gson.fromJson(Files.read(file), JsonObject.class);
@@ -187,6 +191,48 @@ public class MusicBot extends ListenerAdapter {
 						getQueue(e.getGuild()).add(video);
 					}
 					e.getGuild().getAudioManager().setSendingHandler(new SendingHandler(getQueue(e.getGuild()), e.getGuild().getAudioManager()));
+				}
+			} else if (subCommand.startsWith("add")) {
+				String message1 = m.getContentRaw();
+				if (!subCommand.startsWith("add ")) {
+					e.getChannel().sendMessage("Please provide the name of the playlist you want to add a video to, as well as the link to the video").reference(e.getMessage()).mentionRepliedUser(false).complete();
+				} else {
+					subCommand = message1.substring((prefix + "playlist ").length());
+					String[] args = subCommand.substring("add ".length()).split(" ");
+					String listName = args[0];
+					File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
+					String ownerID = PropertyReader.read(file, "owner");
+					Member member = e.getGuild().getMemberById(ownerID);
+					if (!e.getMember().getId().equals(ownerID)) {
+						e.getChannel().sendMessage(
+								"You cannot add a video to a playlist you do not own"
+						).reference(e.getMessage()).mentionRepliedUser(false).complete();
+						return;
+					}
+					file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/playlist.json");
+					JsonObject listJson = gson.fromJson(Files.read(file), JsonObject.class);
+					Playlist playlist = Playlist.deserialize(listJson);
+					String info = "";
+					if (args.length > 2) {
+						for (int index = 2; index < args.length; index++) {
+							info += args[index];
+						}
+					}
+					try {
+						System.out.println(args[1]);
+						YoutubeVideoInfo info1 = doYoutubeDLRequest(args[1]);
+						HashMap<String, String> args1 = parseArgs(info);
+						setupSpecial(info1, args1);
+						if (args1.containsKey("index")) playlist.addVideo(Integer.parseInt(args1.get("index")), info1);
+						else playlist.addVideo(info1);
+						JsonObject list = playlist.serialize();
+						Files.write(file, gson.toJson(list));
+						e.getChannel().sendMessage(
+								"Successfully added `" + info1.name + "` to " + listName + "."
+						).reference(e.getMessage()).mentionRepliedUser(false).complete();
+					} catch (Throwable err) {
+						err.printStackTrace();
+					}
 				}
 			} else {
 				e.getChannel().sendMessage("`" + subCommand + "`" + " is not a valid subcommand for playlist").reference(e.getMessage()).mentionRepliedUser(false).complete();
@@ -281,8 +327,7 @@ public class MusicBot extends ListenerAdapter {
 				else
 					e.getChannel().sendMessage(playingMessageBuilder(info, e, true).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 				ArrayList<YoutubeVideoInfo> infos = getQueue(guild);
-				if (args1.containsKey("speed")) info.speed = Integer.parseInt(args1.get("speed"));
-				if (args1.containsKey("loop")) info.loopCount = Integer.parseInt(args1.get("loop"));
+				setupSpecial(info, args1);
 				infos.add(info);
 			} catch (Throwable err) {
 				e.getChannel().sendMessage(errorMessageBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
@@ -304,8 +349,7 @@ public class MusicBot extends ListenerAdapter {
 					else
 						e.getChannel().sendMessage(playingMessageBuilder(info, e, false).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 					ArrayList<YoutubeVideoInfo> infos = getQueue(guild);
-					if (args1.containsKey("speed")) info.speed = Integer.parseInt(args1.get("speed"));
-					if (args1.containsKey("loop")) info.loopCount = Integer.parseInt(args1.get("loop"));
+					setupSpecial(info, args1);
 					infos.add(info);
 					manager.setSendingHandler(new SendingHandler(infos, manager));
 				} catch (Throwable err) {
@@ -315,6 +359,13 @@ public class MusicBot extends ListenerAdapter {
 		} else {
 			e.getChannel().sendMessage("Please join a voice channel!").reference(e.getMessage()).mentionRepliedUser(false).queue();
 		}
+	}
+	
+	private static void setupSpecial(YoutubeVideoInfo info, HashMap<String, String> args1) {
+		if (args1.containsKey("speed")) info.speed = Integer.parseInt(args1.get("speed"));
+		if (args1.containsKey("s")) info.speed = Integer.parseInt(args1.get("s"));
+		if (args1.containsKey("loop")) info.loopCount = Integer.parseInt(args1.get("loop"));
+		if (args1.containsKey("l")) info.loopCount = Integer.parseInt(args1.get("l"));
 	}
 	
 	private static EmbedBuilder playingMessageBuilder(YoutubeVideoInfo info, GuildMessageReceivedEvent e, boolean isQueueing) {
