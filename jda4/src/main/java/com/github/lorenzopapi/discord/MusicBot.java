@@ -108,9 +108,9 @@ public class MusicBot extends ListenerAdapter {
 				e.getChannel().sendMessage(helpMessageBuilder(e).build()).complete();
 			} else if (message.startsWith(prefix + "leave")) {
 				e.getGuild().getAudioManager().closeAudioConnection();
-			} else if (message.startsWith(prefix + "cp") && e.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+			} else if (message.startsWith(prefix + "cp")) {
 				String[] args = message.split(" ");
-				if (!args[1].isEmpty()) {
+				if (args.length > 0 && !args[1].isEmpty()) {
 					userToPrefix.replace(userId, args[1]);
 					String content = Files.read(prefixesFile);
 					StringBuilder newContent = new StringBuilder();
@@ -228,7 +228,7 @@ public class MusicBot extends ListenerAdapter {
 		builder.addField(prefix + "leave", "Makes the bot leave the vc it's in", false);
 		builder.addField(prefix + "resume", "Resumes the song", false);
 		builder.addField(prefix + "pause", "Pauses the song", false);
-		builder.addField(prefix + "cp", "Changes the prefix of the bot. Requires Administrator permission", false);
+		builder.addField(prefix + "cp", "Changes the prefix of the bot for the current user", false);
 		return builder;
 	}
 	
