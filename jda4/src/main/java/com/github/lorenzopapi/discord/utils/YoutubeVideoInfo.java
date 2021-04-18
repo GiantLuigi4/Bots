@@ -49,8 +49,8 @@ public class YoutubeVideoInfo {
 		object.addProperty("url", link.replace("https://www.youtube.com/watch?v=", "https://www.youtu.be/"));
 		object.addProperty("start", startTimestamp);
 		object.addProperty("end", endTimestamp);
-		object.addProperty("loop", "" + loopCount);
-		object.addProperty("speed", "" + speed);
+		object.addProperty("loop", loopCount);
+		object.addProperty("speed", speed);
 		return object;
 	}
 	
