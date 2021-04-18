@@ -11,7 +11,6 @@ import com.github.lorenzopapi.discord.utils.Files;
 import com.github.lorenzopapi.discord.utils.PropertyReader;
 import com.github.lorenzopapi.discord.utils.YoutubeVideoInfo;
 import com.sapher.youtubedl.YoutubeDL;
-import com.sapher.youtubedl.YoutubeDLException;
 import com.sapher.youtubedl.YoutubeDLRequest;
 import com.sapher.youtubedl.YoutubeDLResponse;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -45,9 +44,10 @@ import java.util.Map;
 import java.util.Objects;
 
 public class MusicBot extends ListenerAdapter {
-	private String prefix = "-music:";
+	public static String prefixesFile = "musicBotPrefixes.properties";
 	public static String extension = ".raw";
 	public static String separator = Long.toHexString(System.currentTimeMillis());
+	public static Map<Long, String> guildToPrefix = new HashMap<>();
 	public static Map<Guild, ArrayList<?>> queue = new HashMap<>();
 	private static final File downloadCache = new File("bot_cache");
 	private static JDA bot;
@@ -66,6 +66,15 @@ public class MusicBot extends ListenerAdapter {
 						.addEventListeners(new MusicBot())
 						.setActivity(Activity.watching("-music:help"))
 						.build();
+				Files.create(prefixesFile);
+				String content = Files.read(prefixesFile);
+				for (String line : content.split("\n")) {
+					if (line.contains(":")) {
+						line = line.trim().replace("\n", "");
+						String id = line.substring(0, line.indexOf(":"));
+						guildToPrefix.put(Long.parseLong(id), PropertyReader.read(prefixesFile, id));
+					}
+				}
 			} else {
 				return;
 			}
@@ -81,24 +90,49 @@ public class MusicBot extends ListenerAdapter {
 		if (e.getAuthor().isBot()) {
 			return;
 		}
+		long guildId = e.getGuild().getIdLong();
 		Message m = e.getMessage();
 		String message = m.getContentRaw().toLowerCase();
 		if (!queue.containsKey(e.getGuild())) {
 			queue.put(e.getGuild(), new ArrayList<>());
 		}
+		if (!guildToPrefix.containsKey(guildId)) {
+			guildToPrefix.put(guildId, "-music:");
+		}
+		String prefix = guildToPrefix.get(guildId);
 		SendingHandler handler = (SendingHandler) e.getGuild().getAudioManager().getSendingHandler();
 		if (message.startsWith(prefix)) {
 			if (message.startsWith(prefix + "play")) {
 				playSong(e, e.getGuild());
 			} else if (message.startsWith(prefix + "help")) {
-				e.getChannel().sendMessage(createBuilder(e).build()).complete();
+				e.getChannel().sendMessage(helpMessageBuilder(e).build()).complete();
 			} else if (message.startsWith(prefix + "leave")) {
 				e.getGuild().getAudioManager().closeAudioConnection();
+			} else if (message.startsWith(prefix + "cp") && e.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+				String[] args = message.split(" ");
+				if (!args[1].isEmpty()) {
+					guildToPrefix.replace(guildId, args[1]);
+					String content = Files.read(prefixesFile);
+					StringBuilder newContent = new StringBuilder();
+					for (String line : content.split("\n")) {
+						if (line.contains(":")) {
+							long parsedId = Long.parseLong(line.substring(0, line.indexOf(":")));
+							if (parsedId != guildId) {
+								newContent.append(line).append("\n");
+							}
+						}
+					}
+					newContent.append(guildId).append(":").append(args[1]);
+					Files.get(prefixesFile).delete();
+					Files.create(prefixesFile, newContent.toString());
+				} else {
+					e.getChannel().sendMessage("Prefix cannot be empty").complete();
+				}
 			} else if (handler != null) {
-				if (message.startsWith(prefix + "pause")) {
+				if (message.startsWith(prefix + "pause") && handler.canPlay) {
 					handler.canPlay = false;
 					e.getChannel().sendMessage("Paused!").complete();
-				} else if (message.startsWith(prefix + "resume")) {
+				} else if (message.startsWith(prefix + "resume") && !handler.canPlay) {
 					handler.canPlay = true;
 					e.getChannel().sendMessage("Resumed!").complete();
 				}
@@ -125,16 +159,20 @@ public class MusicBot extends ListenerAdapter {
 			}
 		}
 		if (guild.getSelfMember().getVoiceState().inVoiceChannel()) {
+			System.out.println("already connected");
 			try {
 				YoutubeVideoInfo info = doYoutubeDLRequest(args[1]);
 				if (streamsByServer.containsKey(e.getGuild().getId()))
 					streamsByServer.replace(e.getGuild().getId(), info);
-				else streamsByServer.put(e.getGuild().getId(), info);
-				if (info.viewCount == -1) e.getChannel().sendMessage(info.name).reference(e.getMessage()).mentionRepliedUser(false).complete();
-				else e.getChannel().sendMessage(createBuilder(info, e).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
+				else
+					streamsByServer.put(e.getGuild().getId(), info);
+				if (info.viewCount == -1)
+					e.getChannel().sendMessage(info.name).reference(e.getMessage()).mentionRepliedUser(false).complete();
+				else
+					e.getChannel().sendMessage(playingMessageBuilder(info, e).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 				manager.setSendingHandler(new SendingHandler(info.audio));
 			} catch (Throwable err) {
-				e.getChannel().sendMessage(createBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
+				e.getChannel().sendMessage(errorMessageBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 			}
 			return;
 		}
@@ -148,11 +186,13 @@ public class MusicBot extends ListenerAdapter {
 				try {
 					YoutubeVideoInfo info = doYoutubeDLRequest(args[1]);
 					streamsByServer.put(e.getGuild().getId(), info);
-					if (info.viewCount == -1) e.getChannel().sendMessage(info.name).reference(e.getMessage()).mentionRepliedUser(false).complete();
-					else e.getChannel().sendMessage(createBuilder(info, e).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
+					if (info.viewCount == -1)
+						e.getChannel().sendMessage(info.name).reference(e.getMessage()).mentionRepliedUser(false).complete();
+					else
+						e.getChannel().sendMessage(playingMessageBuilder(info, e).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 					manager.setSendingHandler(new SendingHandler(info.audio));
 				} catch (Throwable err) {
-					e.getChannel().sendMessage(createBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
+					e.getChannel().sendMessage(errorMessageBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 				}
 			}
 		} else {
@@ -160,14 +200,14 @@ public class MusicBot extends ListenerAdapter {
 		}
 	}
 	
-	private static EmbedBuilder createBuilder(YoutubeVideoInfo info, GuildMessageReceivedEvent e) {
+	private static EmbedBuilder playingMessageBuilder(YoutubeVideoInfo info, GuildMessageReceivedEvent e) {
 		EmbedBuilder builder = new EmbedBuilder();
 		builder.setColor(new Color(((int) Math.abs(info.name.length() * 3732.12382f)) % 255, Math.abs(Objects.hash(info.name)) % 255, Math.abs(Objects.hash(info.name.toLowerCase())) % 255));
 		builder.setTitle("Now Playing:");
-		builder.setDescription(info.name);
-		builder.addField("Link: ", info.link, false);
-		builder.addField("Video has: ", info.viewCount + " views", false);
 		String url = info.link;
+		builder.setDescription(info.name);
+		builder.addField("Link: ", url, false);
+		builder.addField("Video has: ", info.viewCount + " views", false);
 		String videoId = url.substring(url.indexOf("v=") + 2, url.indexOf("&") > 0 ? url.indexOf("&") : url.length());
 		builder.setThumbnail("https://i.ytimg.com/vi/%id%/hqdefault.jpg".replace("%id%", videoId));
 		builder.setAuthor("Requested by: " + e.getMember().getEffectiveName(), null, e.getAuthor().getAvatarUrl());
@@ -175,19 +215,24 @@ public class MusicBot extends ListenerAdapter {
 		return builder;
 	}
 	
-	private static EmbedBuilder createBuilder(GuildMessageReceivedEvent e) {
+	private static EmbedBuilder helpMessageBuilder(GuildMessageReceivedEvent e) {
 		EmbedBuilder builder = new EmbedBuilder();
+		String prefix = guildToPrefix.get(e.getGuild().getIdLong());
 		String name = e.getMember().getEffectiveName() + e.getMember().getAsMention() + e.getMember().getColor().toString() + e.getMember().getUser().getDiscriminator();
 		builder.setColor(new Color(((int) Math.abs(name.length() * 3732.12382f)) % 255, Math.abs(Objects.hash(name)) % 255, Math.abs(Objects.hash(name.toLowerCase())) % 255));
 		builder.setAuthor("Requested by: " + e.getMember().getEffectiveName(), null, e.getAuthor().getAvatarUrl());
 		builder.setFooter("Bot by: GiantLuigi4 and LorenzoPapi");
 		builder.setThumbnail(bot.getSelfUser().getAvatarUrl());
-		builder.addField("-music:help", "Displays this embed", false);
-		builder.addField("-music:play [link to youtube video]", "Plays a video's audio to the voice channel which you are currently in", false);
+		builder.addField(prefix + "help", "Displays this embed", false);
+		builder.addField(prefix + "play [link to youtube video]", "Plays a video's audio to the voice channel which you are currently in", false);
+		builder.addField(prefix + "leave", "Makes the bot leave the vc it's in", false);
+		builder.addField(prefix + "resume", "Resumes the song", false);
+		builder.addField(prefix + "pause", "Pauses the song", false);
+		builder.addField(prefix + "cp", "Changes the prefix of the bot. Requires Administrator permission", false);
 		return builder;
 	}
 	
-	private static EmbedBuilder createBuilder(Throwable throwable) {
+	private static EmbedBuilder errorMessageBuilder(Throwable throwable) {
 		EmbedBuilder builder = new EmbedBuilder();
 		builder.setColor(new Color(255, 0, 0));
 		builder.setTitle("An error occurred:");
@@ -201,7 +246,7 @@ public class MusicBot extends ListenerAdapter {
 		return builder;
 	}
 	
-	private static YoutubeVideoInfo doYoutubeDLRequest(String url) throws IOException, YoutubeException, YoutubeDLException {
+	private static YoutubeVideoInfo doYoutubeDLRequest(String url) throws IOException, YoutubeException {
 		String videoId = url.substring(url.indexOf("v=") + 2, url.indexOf("&") > 0 ? url.indexOf("&") : url.length()); //lorenzo's method of getting only the video id
 		try {
 			//Downloads the video with YoutubeDL

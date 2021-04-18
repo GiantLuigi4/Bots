@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class PropertyReader {
 	public static String read(String file, String property) {
-		return read(new File(Files.dir + File.separatorChar + file), property);
+		return read(Files.get(file), property);
 	}
 	
 	public static String read(File file, String property) {
@@ -26,7 +26,7 @@ public class PropertyReader {
 	}
 	
 	public static boolean contains(String file, String property) {
-		File f = new File(Files.dir + File.separatorChar + file);
+		File f = Files.get(file);
 		try {
 			Scanner sc = new Scanner(f);
 			String line = "";
