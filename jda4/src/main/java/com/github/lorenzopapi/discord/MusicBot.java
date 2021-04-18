@@ -566,7 +566,7 @@ public class MusicBot extends ListenerAdapter {
 
 	private static EmbedBuilder infoMessageBuilder(GuildMessageReceivedEvent e) {
 		SendingHandler handler = (SendingHandler) e.getGuild().getAudioManager().getSendingHandler();
-		YoutubeVideoInfo info = handler.currentSong;
+		YoutubeVideoInfo info = handler.info;
 		EmbedBuilder builder = new EmbedBuilder();
 		builder.setColor(new Color(((int) Math.abs(info.name.length() * 3732.12382f)) % 255, Math.abs(Objects.hash(info.name)) % 255, Math.abs(Objects.hash(info.name.toLowerCase())) % 255));
 		builder.setTitle("Currently playing: ");
