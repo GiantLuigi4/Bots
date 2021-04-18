@@ -56,8 +56,8 @@ public class SendingHandler implements AudioSendHandler {
 			start = format.parse(timeStamp);
 		} catch (Throwable ignored) {
 		}
-		System.out.println(start.getSeconds() + ((start.getMinutes() + (start.getHours() * 60)) * 60) * packetSize * 48);
-		return (int) ((start.getSeconds() + ((start.getMinutes() + (start.getHours() * 60)) * 60)) * packetSize * (50.25));
+//		System.out.println(start.getSeconds() + ((start.getMinutes() + (start.getHours() * 60)) * 60) * packetSize * 48);
+		return (int) ((start.getSeconds() + ((start.getMinutes() + (start.getHours() * 60)) * 60)) * packetSize * (50));
 	}
 	
 	public void setup(byte[] bytes) {
@@ -72,6 +72,27 @@ public class SendingHandler implements AudioSendHandler {
 		return canPlay;
 	}
 	
+	public String getEndTimestamp() {
+		DateFormat format;
+		String timeStamp = info.endTimestamp;
+		Date time;
+		if (timeStamp.split(":").length == 3) {
+			format = new SimpleDateFormat("hh:mm:ss");
+		} else {
+			format = new SimpleDateFormat("mm:ss");
+		}
+		try {
+			time = format.parse(timeStamp);
+		} catch (Throwable err) {
+			int time1 = (int)((audio.length / packetSize) / (50));
+			int hours = time1 / (60 * 60);
+			int minutes = time1 / 60 - (hours * 60);
+			int seconds = time1 - (minutes + (hours * 60)) * 60;
+			return toStr(hours) + ":" + toStr(minutes) + ":" + toStr(seconds);
+		}
+		return toStr(time.getHours()) + ":" + toStr(time.getMinutes()) + ":" + toStr(time.getSeconds());
+	}
+	
 	@Override
 	public ByteBuffer provide20MsAudio() {
 		buf.clear();
@@ -81,8 +102,8 @@ public class SendingHandler implements AudioSendHandler {
 		buf.position(0);
 		counter += packetSize;
 		int end = audio.length;
-		if (!info.endTimestamp.equals("-1")) end = Math.min(getCounterIndex(info.endTimestamp, packetSize), end);
-		if (counter >= end) canPlay = false;
+//		if (!info.endTimestamp.equals("-1")) end = Math.min(getCounterIndex(info.endTimestamp, packetSize), end);
+		if (counter >= end || getEndTimestamp().equals(getTimestamp())) canPlay = false;
 		if (!canPlay) {
 			loops -= 1;
 			if (loops <= 0) {
@@ -100,5 +121,37 @@ public class SendingHandler implements AudioSendHandler {
 			counter = 0;
 		}
 		return buf;
+	}
+	
+	private static String toStr(int time) {
+		if (("" + time).length() == 1) {
+			return "0" + time;
+		}
+		return time + "";
+	}
+	
+	public String getTimestamp() {
+		int time = (int)((counter / packetSize) / (50));
+		int hours = time / (60 * 60);
+		int minutes = time / 60 - (hours * 60);
+		int seconds = time - (minutes + (hours * 60)) * 60;
+		return toStr(hours) + ":" + toStr(minutes) + ":" + toStr(seconds);
+	}
+	
+	public String getStartTimestamp() {
+		DateFormat format;
+		String timeStamp = info.startTimestamp;
+		Date time;
+		if (timeStamp.split(":").length == 3) {
+			format = new SimpleDateFormat("hh:mm:ss");
+		} else {
+			format = new SimpleDateFormat("mm:ss");
+		}
+		try {
+			time = format.parse(timeStamp);
+		} catch (Throwable err) {
+			return "00:00:00";
+		}
+		return toStr(time.getHours()) + ":" + toStr(time.getMinutes()) + ":" + toStr(time.getSeconds());
 	}
 }
