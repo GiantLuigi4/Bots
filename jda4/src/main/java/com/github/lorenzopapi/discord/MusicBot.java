@@ -56,7 +56,7 @@ public class MusicBot extends ListenerAdapter {
 	private static final Gson gson = new GsonBuilder().setLenient().setPrettyPrinting().create();
 	
 	public static void main(String[] args) throws LoginException, InterruptedException {
-		System.out.println(Playlist.deserialize(gson.fromJson(Files.read("bots/music/playlists/746564697385336872/test/playlist.json"), JsonObject.class)));
+		//System.out.println(Playlist.deserialize(gson.fromJson(Files.read("bots/music/playlists/746564697385336872/test/playlist.json"), JsonObject.class)));
 		Files.create("Settings.properties", "drive:C");
 		if (!Files.create("bots.properties")) {
 			if (PropertyReader.contains("bots.properties", "musicBot")) {
@@ -365,6 +365,46 @@ public class MusicBot extends ListenerAdapter {
 				playSong(e, e.getGuild());
 			} else if (message.startsWith(prefix + "queue")) {
 				e.getChannel().sendMessage(queueBuilder(e).build()).complete();
+			} else if (message.startsWith(prefix + "insert")) {
+				HashMap<String, String> args = parseArgs(e.getMessage().getContentRaw());
+				if (args.containsKey("pos")) {
+					if (args.containsKey("video")) {
+						YoutubeVideoInfo info = getQueue(e.getGuild()).get(Integer.parseInt(args.get("pos")));
+						if (args.containsKey("r")) {
+							if (e.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+								addToQueue(args, e);
+							} else {
+								e.getChannel().sendMessage("You need Administrator permission to replace queue elements").complete();
+							}
+						} else {
+							if (info == null) {
+								addToQueue(args, e);
+							} else {
+								e.getChannel().sendMessage("There is already a song in the queue at that position.\nAdd the r:1 to the message to replace the song").complete();
+							}
+						}
+					} else {
+						e.getChannel().sendMessage("Please add video link").complete();
+					}
+				} else {
+					e.getChannel().sendMessage("Please add queue position").complete();
+				}
+			} else if (message.startsWith(prefix + "remove")) {
+				if (e.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+					HashMap<String, String> args = parseArgs(e.getMessage().getContentRaw());
+					if (args.containsKey("pos")) {
+						YoutubeVideoInfo info = getQueue(e.getGuild()).get(Integer.parseInt(args.get("pos")));
+						if (info == null) {
+							e.getChannel().sendMessage("There is no song at the position " + args.get("pos") + " in the queue").complete();
+						} else {
+							getQueue(e.getGuild()).remove(Integer.parseInt(args.get("pos")));
+						}
+					} else {
+						e.getChannel().sendMessage("Please add queue position").complete();
+					}
+				} else {
+					e.getChannel().sendMessage("You need Administrator permission to replace queue elements").complete();
+				}
 			} else if (message.startsWith(prefix + "clear")) {
 				if (e.getMember().hasPermission(Permission.ADMINISTRATOR)) {
 					queue.get(e.getGuild()).clear();
@@ -407,7 +447,20 @@ public class MusicBot extends ListenerAdapter {
 			}
 		}
 	}
-	
+
+	private static void addToQueue(HashMap<String, String> args, GuildMessageReceivedEvent e) {
+		try {
+			String video = args.get("video");
+			if (video.startsWith("<") && video.endsWith(">")) {
+				video = video.substring(1, video.length() - 1);
+			}
+			YoutubeVideoInfo info = doYoutubeDLRequest(video);
+			setupSpecial(info, args);
+			getQueue(e.getGuild()).set(Integer.parseInt(args.get("pos")) - 1, info);
+			e.getChannel().sendMessage("Successfully modified the queue!").complete();
+		} catch (IOException | YoutubeException ignored) {}
+	}
+
 	private static void playSong(GuildMessageReceivedEvent e, Guild guild) {
 		String[] args = e.getMessage().getContentRaw().split(" ");
 		AudioManager manager = guild.getAudioManager();
@@ -511,13 +564,29 @@ public class MusicBot extends ListenerAdapter {
 
 	private static EmbedBuilder queueBuilder(GuildMessageReceivedEvent e) {
 		HashMap<String, String> map =  parseArgs(e.getMessage().getContentRaw().toLowerCase());
-		System.out.println(map);
 		EmbedBuilder builder = new EmbedBuilder();
 		builder.setColor(new Color(((int) Math.abs(e.hashCode() * 3732.12382f)) % 255, Math.abs(Objects.hash("queue")) % 255, Math.abs(Objects.hash("QUEUE")) % 255));
-		int index = 1;
-		for (YoutubeVideoInfo info : queue.get(e.getGuild())) {
-			builder.addField(index + ". " + info.name, "Looping: " + info.loopCount + " times\n" + "Speed: " + info.speed, false);
-			index++;
+		if (getQueue(e.getGuild()).size() > 10) {
+			if (!map.isEmpty() && map.containsKey("p")) {
+				int page = Integer.parseInt(map.get("p"));
+				builder.setTitle("Current queue, page " + page);
+				for (int i = 10 * (page - 1); i < Math.min((10 * page), getQueue(e.getGuild()).size()); i++) {
+					YoutubeVideoInfo info = getQueue(e.getGuild()).get(i);
+					builder.addField((i + 1) + ". " + info.name, "Looping: " + info.loopCount + " times\n" + "Speed: " + info.speed, false);
+				}
+			} else {
+				builder.setTitle("Current queue, page 1");
+				for (int i = 0; i < 10; i++) {
+					YoutubeVideoInfo info = getQueue(e.getGuild()).get(i);
+					builder.addField((i + 1) + ". " + info.name, "Looping: " + info.loopCount + " times\n" + "Speed: " + info.speed, false);
+				}
+			}
+		} else {
+			builder.setTitle("Current queue");
+			for (int i = 0; i < getQueue(e.getGuild()).size(); i++) {
+				YoutubeVideoInfo info = getQueue(e.getGuild()).get(i);
+				builder.addField((i + 1) + ". " + info.name, "Looping: " + info.loopCount + " times\n" + "Speed: " + info.speed, false);
+			}
 		}
 		builder.setFooter("Bot by: GiantLuigi4 and LorenzoPapi");
 		return builder;
