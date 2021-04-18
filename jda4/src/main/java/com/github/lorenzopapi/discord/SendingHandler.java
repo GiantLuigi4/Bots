@@ -1,6 +1,5 @@
 package com.github.lorenzopapi.discord;
 
-import com.github.kiulian.downloader.model.YoutubeVideo;
 import com.github.lorenzopapi.discord.utils.YoutubeVideoInfo;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.managers.AudioManager;
@@ -14,6 +13,7 @@ public class SendingHandler implements AudioSendHandler {
 	boolean canPlay;
 	int counter;
 	byte[] audio;
+	YoutubeVideoInfo currentSong;
 	ArrayList<YoutubeVideoInfo> queue;
 	int loops;
 	AudioManager manager;
@@ -30,11 +30,11 @@ public class SendingHandler implements AudioSendHandler {
 
 	public SendingHandler(ArrayList<YoutubeVideoInfo> queue, AudioManager manager) {
 		this.queue = queue;
-		YoutubeVideoInfo info = queue.get(0);
+		currentSong = queue.get(0);
 		queue.remove(0);
-		loops = info.loopCount;
-		packetSize = 3840 * info.speed;
-		setup(info.audio);
+		loops = currentSong.loopCount;
+		packetSize = 3840 * currentSong.speed;
+		setup(currentSong.audio);
 		this.manager = manager;
 	}
 	
@@ -64,10 +64,10 @@ public class SendingHandler implements AudioSendHandler {
 			loops -= 1;
 			if (loops <= 0) {
 				if (!queue.isEmpty()) {
-					YoutubeVideoInfo info = queue.get(0);
+					currentSong = queue.get(0);
 					queue.remove(0);
-					packetSize = 3840 * info.speed;
-					setup(info.audio);
+					packetSize = 3840 * currentSong.speed;
+					setup(currentSong.audio);
 				} else {
 					manager.closeAudioConnection();
 				}

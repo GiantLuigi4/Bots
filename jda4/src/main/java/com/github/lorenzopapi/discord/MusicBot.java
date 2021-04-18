@@ -416,6 +416,8 @@ public class MusicBot extends ListenerAdapter {
 				e.getChannel().sendMessage(helpMessageBuilder(e).build()).complete();
 			} else if (message.startsWith(prefix + "leave")) {
 				e.getGuild().getAudioManager().closeAudioConnection();
+			} else if (message.startsWith(prefix + "info")) {
+				e.getChannel().sendMessage(infoMessageBuilder(e).build()).complete();
 			} else if (message.startsWith(prefix + "cp")) {
 				String[] args = message.split(" ");
 				if (args.length > 0 && !args[1].isEmpty()) {
@@ -551,6 +553,23 @@ public class MusicBot extends ListenerAdapter {
 		builder.setColor(new Color(((int) Math.abs(info.name.length() * 3732.12382f)) % 255, Math.abs(Objects.hash(info.name)) % 255, Math.abs(Objects.hash(info.name.toLowerCase())) % 255));
 		if (isQueueing) builder.setTitle("Added to queue: ");
 		else builder.setTitle("Now Playing:");
+		String url = info.link;
+		builder.setDescription(info.name);
+		builder.addField("Link: ", url, false);
+		builder.addField("Video has: ", info.viewCount + " views", false);
+		String videoId = url.substring(url.indexOf("v=") + 2, url.indexOf("&") > 0 ? url.indexOf("&") : url.length());
+		builder.setThumbnail("https://i.ytimg.com/vi/%id%/hqdefault.jpg".replace("%id%", videoId));
+		builder.setAuthor("Requested by: " + e.getMember().getEffectiveName(), null, e.getAuthor().getAvatarUrl());
+		builder.setFooter("Bot by: GiantLuigi4 and LorenzoPapi");
+		return builder;
+	}
+
+	private static EmbedBuilder infoMessageBuilder(GuildMessageReceivedEvent e) {
+		SendingHandler handler = (SendingHandler) e.getGuild().getAudioManager().getSendingHandler();
+		YoutubeVideoInfo info = handler.currentSong;
+		EmbedBuilder builder = new EmbedBuilder();
+		builder.setColor(new Color(((int) Math.abs(info.name.length() * 3732.12382f)) % 255, Math.abs(Objects.hash(info.name)) % 255, Math.abs(Objects.hash(info.name.toLowerCase())) % 255));
+		builder.setTitle("Currently playing: ");
 		String url = info.link;
 		builder.setDescription(info.name);
 		builder.addField("Link: ", url, false);
