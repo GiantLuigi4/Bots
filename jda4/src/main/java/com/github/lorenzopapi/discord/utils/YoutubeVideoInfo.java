@@ -59,7 +59,7 @@ public class YoutubeVideoInfo {
 		return "YoutubeVideoInfo{" +
 				"name='" + name + '\'' +
 				", viewCount=" + viewCount +
-				", audio=" + Arrays.toString(audio) +
+//				", audio=" + Arrays.toString(audio) +
 				", link='" + link + '\'' +
 				", loopCount=" + loopCount +
 				", speed=" + speed +

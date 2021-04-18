@@ -8,8 +8,12 @@ import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
 import com.github.lorenzopapi.discord.utils.Files;
+import com.github.lorenzopapi.discord.utils.Playlist;
 import com.github.lorenzopapi.discord.utils.PropertyReader;
 import com.github.lorenzopapi.discord.utils.YoutubeVideoInfo;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.sapher.youtubedl.YoutubeDL;
 import com.sapher.youtubedl.YoutubeDLRequest;
 import com.sapher.youtubedl.YoutubeDLResponse;
@@ -49,8 +53,10 @@ public class MusicBot extends ListenerAdapter {
 	private static final File downloadCache = new File("bot_cache");
 	private static JDA bot;
 	private static final HashMap<String, YoutubeVideoInfo> streamsByServer = new HashMap<>();
+	private static final Gson gson = new GsonBuilder().setLenient().setPrettyPrinting().create();
 	
 	public static void main(String[] args) throws LoginException, InterruptedException {
+		System.out.println(Playlist.deserialize(gson.fromJson(Files.read("bots/music/playlists/746564697385336872/test/playlist.json"), JsonObject.class)));
 		Files.create("Settings.properties", "drive:C");
 		if (!Files.create("bots.properties")) {
 			if (PropertyReader.contains("bots.properties", "musicBot")) {
@@ -231,10 +237,6 @@ public class MusicBot extends ListenerAdapter {
 		if (video.startsWith("<") && video.endsWith(">")) {
 			video = video.substring(1, video.length() - 1);
 		}
-		if (video.startsWith("https://youtu.be/")) {
-			video = video.substring("https://youtu.be/".length());
-			video = "https://www.youtube.com/watch?v=" + video;
-		}
 		System.out.println(video);
 		VoiceChannel vc = null;
 		for (VoiceChannel c : guild.getVoiceChannels()) {
@@ -372,6 +374,10 @@ public class MusicBot extends ListenerAdapter {
 	}
 	
 	public static YoutubeVideoInfo doYoutubeDLRequest(String url) throws IOException, YoutubeException {
+		if (url.startsWith("https://youtu.be/")) {
+			url = url.substring("https://youtu.be/".length());
+			url = "https://www.youtube.com/watch?v=" + url;
+		}
 		String videoId = url.substring(url.indexOf("v=") + 2, url.indexOf("&") > 0 ? url.indexOf("&") : url.length()); //lorenzo's method of getting only the video id
 		try {
 			//Downloads the video with YoutubeDL
