@@ -48,7 +48,7 @@ public class MusicBot extends ListenerAdapter {
 	public static String extension = ".raw";
 	public static String separator = Long.toHexString(System.currentTimeMillis());
 	public static Map<Long, String> userToPrefix = new HashMap<>();
-	public static Map<Guild, ArrayList<?>> queue = new HashMap<>();
+	public static Map<Guild, ArrayList<YoutubeVideoInfo>> queue = new HashMap<>();
 	private static final File downloadCache = new File("bot_cache");
 	private static JDA bot;
 	private static final HashMap<String, YoutubeVideoInfo> streamsByServer = new HashMap<>();
@@ -170,7 +170,9 @@ public class MusicBot extends ListenerAdapter {
 					e.getChannel().sendMessage(info.name).reference(e.getMessage()).mentionRepliedUser(false).complete();
 				else
 					e.getChannel().sendMessage(playingMessageBuilder(info, e).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
-				manager.setSendingHandler(new SendingHandler(info.audio));
+				ArrayList<YoutubeVideoInfo> infos = getQueue(guild);
+				infos.add(info);
+//				manager.setSendingHandler(new SendingHandler(infos));
 			} catch (Throwable err) {
 				e.getChannel().sendMessage(errorMessageBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 			}
@@ -190,7 +192,9 @@ public class MusicBot extends ListenerAdapter {
 						e.getChannel().sendMessage(info.name).reference(e.getMessage()).mentionRepliedUser(false).complete();
 					else
 						e.getChannel().sendMessage(playingMessageBuilder(info, e).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
-					manager.setSendingHandler(new SendingHandler(info.audio));
+					ArrayList<YoutubeVideoInfo> infos = getQueue(guild);
+					infos.add(info);
+					manager.setSendingHandler(new SendingHandler(infos));
 				} catch (Throwable err) {
 					e.getChannel().sendMessage(errorMessageBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 				}
@@ -213,6 +217,11 @@ public class MusicBot extends ListenerAdapter {
 		builder.setAuthor("Requested by: " + e.getMember().getEffectiveName(), null, e.getAuthor().getAvatarUrl());
 		builder.setFooter("Bot by: GiantLuigi4 and LorenzoPapi");
 		return builder;
+	}
+	
+	private static ArrayList<YoutubeVideoInfo> getQueue(Guild guild) {
+		if (!queue.containsKey(guild)) queue.put(guild, new ArrayList<>());
+		return queue.get(guild);
 	}
 	
 	private static EmbedBuilder helpMessageBuilder(GuildMessageReceivedEvent e) {
