@@ -45,8 +45,10 @@ public class Playlist {
 		if (object.has("pointer")) {
 			pointer = object.get(pointer).getAsString();
 			infos1 = (ArrayList<YoutubeVideoInfo>) Playlist.deserialize(gson.fromJson(Files.read(new File("bots/music/playlists/" + pointer + "/playlist.json")), JsonObject.class)).getVideos();
-		} else for (Map.Entry<String, JsonElement> entry : object.entrySet())
+		} else for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
 			infos[Integer.parseInt(entry.getKey())] = YoutubeVideoInfo.deserialize((JsonObject) entry.getValue());
+		}
+		infos1 = new ArrayList<>(Arrays.asList(infos));
 		Playlist list = new Playlist(infos1);
 		list.pointer = pointer;
 		return list;
