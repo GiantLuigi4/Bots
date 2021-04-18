@@ -33,6 +33,7 @@ dependencies {
     musicBot 'com.github.sapher:youtubedl-java:1.+'
     musicBot 'com.github.kokorin.jaffree:jaffree:2021-04-08'
     musicBot 'club.minnced:opus-java-api:1.1.0'
+    implementation 'com.google.code.gson:gson:2.8.6'
 }
 
 task dist(type: Jar) {

@@ -18,10 +18,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
-import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.managers.AudioManager;
@@ -101,7 +98,71 @@ public class MusicBot extends ListenerAdapter {
 		}
 		String prefix = userToPrefix.get(userId);
 		SendingHandler handler = (SendingHandler) e.getGuild().getAudioManager().getSendingHandler();
-		if (message.startsWith(prefix) || message.startsWith("-music:")) {
+		if (message.startsWith(prefix + "playlist")) {
+			String subCommand = message.substring((prefix + "playlist ").length());
+			if (subCommand.startsWith("create")) {
+				if (!subCommand.startsWith("create ")) {
+					e.getChannel().sendMessage("Please provide a name for your playlist").reference(e.getMessage()).mentionRepliedUser(false).complete();
+				} else {
+					String listName = subCommand.substring("create ".length());
+					File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
+					if (file.exists()) {
+						String ownerID = PropertyReader.read(file, "owner");
+						Member member = e.getGuild().getMemberById(ownerID);
+						if (e.getMember().getId().equals(ownerID)) {
+							e.getChannel()
+									.sendMessage("Playlist " + listName + " already exists, it is owned by you.")
+									.reference(e.getMessage()).mentionRepliedUser(false).complete();
+							Files.write(file,
+									"owner:" + e.getMember().getId() + "\n" +
+											"ownerName:" + e.getMember().getUser().getName() + "\n" +
+											"ownerDiscriminator:" + e.getMember().getUser().getDiscriminator()
+							);
+							return;
+						}
+						String name = "";
+						for (Member member1 : e.getGuild().getMembers()) {
+							if (member1.getId().equals(ownerID)) {
+								name = member.getEffectiveName();
+								name += "#" + member.getUser().getDiscriminator();
+							}
+						}
+						if (name.equals("")) {
+							if (member != null) {
+								name = member.getEffectiveName();
+								name += "#" + member.getUser().getDiscriminator();
+							} else {
+								if  (e.getJDA().getUserById(ownerID) != null) {
+									name = e.getJDA().getUserById(ownerID).getName();
+									name += "#" + e.getJDA().getUserById(ownerID).getDiscriminator();
+								}
+							}
+						}
+						if (name.equals("")) {
+							name = PropertyReader.read(file, "ownerName");
+							name += "#" + PropertyReader.read(file, "ownerDiscriminator");
+						}
+						e.getChannel()
+								.sendMessage("Playlist " + listName + " already exists, it is owned by " + name + ".")
+								.reference(e.getMessage()).mentionRepliedUser(false).complete();
+					} else {
+						file.getParentFile().mkdirs();
+						Files.create(file.toString());
+						Files.write(file,
+								"owner:" + e.getMember().getId() + "\n" +
+										"ownerName:" + e.getMember().getUser().getName() + "\n" +
+										"ownerDiscriminator:" + e.getMember().getUser().getDiscriminator()
+						);
+						e.getChannel().sendMessage(
+								"Playlist " + listName + "has been created successfully!\n" +
+										"Use `-music:playlist add " + listName + " [url]` to start filling it up."
+						).reference(e.getMessage()).mentionRepliedUser(false).complete();
+					}
+				}
+			} else {
+				e.getChannel().sendMessage("`" + subCommand + "`" + " is not a valid subcommand for playlist").reference(e.getMessage()).mentionRepliedUser(false).complete();
+			}
+		} else if (message.startsWith(prefix) || message.startsWith("-music:")) {
 			if (message.startsWith(prefix + "play")) {
 				playSong(e, e.getGuild());
 			} else if (message.startsWith(prefix + "queue")) {
@@ -169,6 +230,10 @@ public class MusicBot extends ListenerAdapter {
 		String video = args1.get("video");
 		if (video.startsWith("<") && video.endsWith(">")) {
 			video = video.substring(1, video.length() - 1);
+		}
+		if (video.startsWith("https://youtu.be/")) {
+			video = video.substring("https://youtu.be/".length());
+			video = "https://www.youtube.com/watch?v=" + video;
 		}
 		System.out.println(video);
 		VoiceChannel vc = null;
@@ -306,7 +371,7 @@ public class MusicBot extends ListenerAdapter {
 		return builder;
 	}
 	
-	private static YoutubeVideoInfo doYoutubeDLRequest(String url) throws IOException, YoutubeException {
+	public static YoutubeVideoInfo doYoutubeDLRequest(String url) throws IOException, YoutubeException {
 		String videoId = url.substring(url.indexOf("v=") + 2, url.indexOf("&") > 0 ? url.indexOf("&") : url.length()); //lorenzo's method of getting only the video id
 		try {
 			//Downloads the video with YoutubeDL
