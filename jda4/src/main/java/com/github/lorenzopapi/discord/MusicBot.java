@@ -215,7 +215,7 @@ public class MusicBot extends ListenerAdapter {
 					String info = "";
 					if (args.length > 2) {
 						for (int index = 2; index < args.length; index++) {
-							info += args[index];
+							info += args[index] + " ";
 						}
 					}
 					try {
@@ -223,16 +223,43 @@ public class MusicBot extends ListenerAdapter {
 						YoutubeVideoInfo info1 = doYoutubeDLRequest(args[1]);
 						HashMap<String, String> args1 = parseArgs(info);
 						setupSpecial(info1, args1);
-						if (args1.containsKey("index")) playlist.addVideo(Integer.parseInt(args1.get("index")), info1);
+						if (args1.containsKey("index")) playlist.addVideo(Integer.parseInt(args1.get("index") + 1), info1);
 						else playlist.addVideo(info1);
 						JsonObject list = playlist.serialize();
 						Files.write(file, gson.toJson(list));
 						e.getChannel().sendMessage(
-								"Successfully added `" + info1.name + "` to " + listName + "."
+								"Successfully added `" + info1.name + "` to `" + listName + "`."
 						).reference(e.getMessage()).mentionRepliedUser(false).complete();
 					} catch (Throwable err) {
 						err.printStackTrace();
 					}
+				}
+			} else if (subCommand.startsWith("remove")) {
+				String message1 = m.getContentRaw();
+				if (!subCommand.startsWith("remove ")) {
+					e.getChannel().sendMessage("Please provide the name of the playlist you want to add a video to, as well as the link to the video").reference(e.getMessage()).mentionRepliedUser(false).complete();
+				} else {
+					subCommand = message1.substring((prefix + "playlist ").length());
+					String[] args = subCommand.substring("remove ".length()).split(" ");
+					String listName = args[0];
+					File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
+					String ownerID = PropertyReader.read(file, "owner");
+					Member member = e.getGuild().getMemberById(ownerID);
+					if (!e.getMember().getId().equals(ownerID)) {
+						e.getChannel().sendMessage(
+								"You cannot add a video to a playlist you do not own"
+						).reference(e.getMessage()).mentionRepliedUser(false).complete();
+						return;
+					}
+					file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/playlist.json");
+					JsonObject listJson = gson.fromJson(Files.read(file), JsonObject.class);
+					Playlist playlist = Playlist.deserialize(listJson);
+					YoutubeVideoInfo info1 = playlist.removeVideo(Integer.parseInt(args[1]) + 1);
+					JsonObject list = playlist.serialize();
+					Files.write(file, gson.toJson(list));
+					e.getChannel().sendMessage(
+							"Successfully removed `" + info1.name + "` from `" + listName + "`."
+					).reference(e.getMessage()).mentionRepliedUser(false).complete();
 				}
 			} else {
 				e.getChannel().sendMessage("`" + subCommand + "`" + " is not a valid subcommand for playlist").reference(e.getMessage()).mentionRepliedUser(false).complete();

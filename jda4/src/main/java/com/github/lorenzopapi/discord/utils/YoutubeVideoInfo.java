@@ -46,7 +46,7 @@ public class YoutubeVideoInfo {
 	
 	public JsonObject serialize() {
 		JsonObject object = new JsonObject();
-		object.addProperty("url", link.replace("https://www.youtube.com/watch?v=", "https://www.youtu.be/"));
+		object.addProperty("url", link.replace("https://www.youtube.com/watch?v=", "https://youtu.be/"));
 		object.addProperty("start", startTimestamp);
 		object.addProperty("end", endTimestamp);
 		object.addProperty("loop", loopCount);

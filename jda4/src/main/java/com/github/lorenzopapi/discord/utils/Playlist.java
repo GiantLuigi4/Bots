@@ -20,8 +20,10 @@ public class Playlist {
 		videos.add(index, info);
 	}
 	
-	public void removeVideo(int index) {
+	public YoutubeVideoInfo removeVideo(int index) {
+		YoutubeVideoInfo info = videos.get(index);
 		videos.remove(index);
+		return info;
 	}
 	
 	public JsonObject serialize() {
