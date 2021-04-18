@@ -165,6 +165,29 @@ public class MusicBot extends ListenerAdapter {
 						).reference(e.getMessage()).mentionRepliedUser(false).complete();
 					}
 				}
+			} else if (subCommand.startsWith("play")) {
+				if (!subCommand.startsWith("play ")) {
+					e.getChannel().sendMessage("Please provide a name for your playlist").reference(e.getMessage()).mentionRepliedUser(false).complete();
+				} else {
+					String listName = subCommand.substring("play ".length());
+					File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/playlist.json");
+					JsonObject listJson = gson.fromJson(Files.read(file), JsonObject.class);
+					Playlist playlist = Playlist.deserialize(listJson);
+					if (e.getGuild().getAudioManager().getConnectedChannel() == null) {
+						VoiceChannel vc = null;
+						for (VoiceChannel c : e.getGuild().getVoiceChannels()) {
+							if (c.getMembers().contains(e.getMember())) {
+								vc = c;
+								e.getGuild().getAudioManager().openAudioConnection(vc);
+								break;
+							}
+						}
+					}
+					for (YoutubeVideoInfo video : playlist.getVideos()) {
+						getQueue(e.getGuild()).add(video);
+					}
+					e.getGuild().getAudioManager().setSendingHandler(new SendingHandler(getQueue(e.getGuild()), e.getGuild().getAudioManager()));
+				}
 			} else {
 				e.getChannel().sendMessage("`" + subCommand + "`" + " is not a valid subcommand for playlist").reference(e.getMessage()).mentionRepliedUser(false).complete();
 			}
