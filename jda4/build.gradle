@@ -1,25 +1,47 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
-group 'TFC'
-version '1.0-SNAPSHOT'
+group 'com.github.lorenzopapi'
+version '1.0'
+
+mainClassName = "com.github.lorenzopapi.discord.MusicBot"
+
+apply plugin:'java'
 
 repositories {
-    mavenCentral()
-    maven { url 'https://jitpack.io' }
     maven {
         name 'm2-dv8tion'
         url 'https://m2.dv8tion.net/releases'
     }
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+configurations {
+    musicBot.extendsFrom implementation
+    compileClasspath.extendsFrom musicBot
+    runtimeClasspath.extendsFrom musicBot
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    implementation 'net.dv8tion:JDA:4.2.1_255'
-    compile 'com.github.sapher:youtubedl-java:1.+'
-    implementation 'com.github.sealedtx:java-youtube-downloader:cc7ae9c675'
+    musicBot 'net.dv8tion:JDA:4.2.1_259'
     // https://mvnrepository.com/artifact/ws.schild/jave-all-deps
-    implementation group: 'ws.schild', name: 'jave-all-deps', version: '3.0.1'
-    compile 'com.github.kokorin.jaffree:jaffree:2021-04-08'
+    musicBot 'com.github.sealedtx:java-youtube-downloader:cc7ae9c675'
+    musicBot group: 'ws.schild', name: 'jave-all-deps', version: '3.0.1'
+    musicBot 'com.github.sapher:youtubedl-java:1.+'
+    musicBot 'com.github.kokorin.jaffree:jaffree:2021-04-08'
+    musicBot 'club.minnced:opus-java-api:1.1.0'
+}
+
+task dist(type: Jar) {
+    manifest {
+        attributes 'Main-Class': project.mainClassName
+    }
+    dependsOn configurations.musicBot
+    from {
+        configurations.musicBot.collect({it.isDirectory() ? it : !it.getName().contains("opus-java-1.1.0.pom") ? zipTree(it) : it})
+    }
+    with jar
 }

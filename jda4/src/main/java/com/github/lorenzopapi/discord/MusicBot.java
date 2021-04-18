@@ -7,7 +7,11 @@ import com.github.kiulian.downloader.model.formats.Format;
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
+import com.github.lorenzopapi.discord.utils.Files;
+import com.github.lorenzopapi.discord.utils.PropertyReader;
+import com.github.lorenzopapi.discord.utils.YoutubeVideoInfo;
 import com.sapher.youtubedl.YoutubeDL;
+import com.sapher.youtubedl.YoutubeDLException;
 import com.sapher.youtubedl.YoutubeDLRequest;
 import com.sapher.youtubedl.YoutubeDLResponse;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -24,10 +28,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.managers.AudioManager;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
-import utils.FFMPEGLocator;
-import utils.Files;
-import utils.PropertyReader;
-import utils.YoutubeVideoInfo;
 import ws.schild.jave.Encoder;
 import ws.schild.jave.MultimediaObject;
 import ws.schild.jave.encode.AudioAttributes;
@@ -39,7 +39,10 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class MusicBot extends ListenerAdapter {
 	private String prefix = "-music:";
@@ -129,7 +132,7 @@ public class MusicBot extends ListenerAdapter {
 				else streamsByServer.put(e.getGuild().getId(), info);
 				if (info.viewCount == -1) e.getChannel().sendMessage(info.name).reference(e.getMessage()).mentionRepliedUser(false).complete();
 				else e.getChannel().sendMessage(createBuilder(info, e).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
-				manager.setSendingHandler(new SendingHandler(info.stream));
+				manager.setSendingHandler(new SendingHandler(info.audio));
 			} catch (Throwable err) {
 				e.getChannel().sendMessage(createBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 			}
@@ -147,7 +150,7 @@ public class MusicBot extends ListenerAdapter {
 					streamsByServer.put(e.getGuild().getId(), info);
 					if (info.viewCount == -1) e.getChannel().sendMessage(info.name).reference(e.getMessage()).mentionRepliedUser(false).complete();
 					else e.getChannel().sendMessage(createBuilder(info, e).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
-					manager.setSendingHandler(new SendingHandler(info.stream));
+					manager.setSendingHandler(new SendingHandler(info.audio));
 				} catch (Throwable err) {
 					e.getChannel().sendMessage(createBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 				}
@@ -198,7 +201,7 @@ public class MusicBot extends ListenerAdapter {
 		return builder;
 	}
 	
-	private static YoutubeVideoInfo doYoutubeDLRequest(String url) throws IOException, YoutubeException {
+	private static YoutubeVideoInfo doYoutubeDLRequest(String url) throws IOException, YoutubeException, YoutubeDLException {
 		String videoId = url.substring(url.indexOf("v=") + 2, url.indexOf("&") > 0 ? url.indexOf("&") : url.length()); //lorenzo's method of getting only the video id
 		try {
 			//Downloads the video with YoutubeDL
@@ -279,7 +282,7 @@ public class MusicBot extends ListenerAdapter {
 					.execute();
 		} catch (Throwable err) {
 			//https://github.com/a-schild/jave2
-			//converts to wav using jave, as a fallback incase FFmpeg is not installed or throws an error
+			//converts to 16bit signed pcm big endian raw audio using jave, in case ffmpeg is not found
 			//luigi's implementation
 			//refactored and fixed by LorenzoPapi
 			try {
@@ -293,9 +296,7 @@ public class MusicBot extends ListenerAdapter {
 				attributes.setOutputFormat("s16be");
 				attributes.setAudioAttributes(audio);
 
-				Encoder encoder = new Encoder(new FFMPEGLocator());
-				System.out.println(Arrays.toString(encoder.getAudioEncoders()));
-				System.out.println(Arrays.toString(encoder.getSupportedEncodingFormats()));
+				Encoder encoder = new Encoder();
 				encoder.encode(new MultimediaObject(input), output, attributes);
 				return;
 			} catch (Throwable err1) {

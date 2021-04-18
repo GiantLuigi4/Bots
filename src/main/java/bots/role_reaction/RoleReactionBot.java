@@ -13,7 +13,6 @@ import net.dv8tion.jda.core.requests.RestAction;
 import net.dv8tion.jda.core.requests.restaction.MessageAction;
 import utils.PropertyReader;
 
-import javax.security.auth.login.LoginException;
 import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;

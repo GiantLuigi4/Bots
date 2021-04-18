@@ -2,10 +2,7 @@ package com.github.lorenzopapi.discord;
 
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 public class SendingHandler implements AudioSendHandler {
 
@@ -18,8 +15,6 @@ public class SendingHandler implements AudioSendHandler {
 		audio = bytes;
 		canPlay = true;
 		counter = 0;
-		System.out.println("E");
-		System.out.println(canPlay);
 		buf = ByteBuffer.allocate(3840);
 	}
 	
