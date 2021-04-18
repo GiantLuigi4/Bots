@@ -47,7 +47,7 @@ public class MusicBot extends ListenerAdapter {
 	public static String prefixesFile = "musicBotPrefixes.properties";
 	public static String extension = ".raw";
 	public static String separator = Long.toHexString(System.currentTimeMillis());
-	public static Map<Long, String> guildToPrefix = new HashMap<>();
+	public static Map<Long, String> userToPrefix = new HashMap<>();
 	public static Map<Guild, ArrayList<?>> queue = new HashMap<>();
 	private static final File downloadCache = new File("bot_cache");
 	private static JDA bot;
@@ -72,7 +72,7 @@ public class MusicBot extends ListenerAdapter {
 					if (line.contains(":")) {
 						line = line.trim().replace("\n", "");
 						String id = line.substring(0, line.indexOf(":"));
-						guildToPrefix.put(Long.parseLong(id), PropertyReader.read(prefixesFile, id));
+						userToPrefix.put(Long.parseLong(id), PropertyReader.read(prefixesFile, id));
 					}
 				}
 			} else {
@@ -90,39 +90,39 @@ public class MusicBot extends ListenerAdapter {
 		if (e.getAuthor().isBot()) {
 			return;
 		}
-		long guildId = e.getGuild().getIdLong();
+		long userId = e.getMember().getIdLong();
 		Message m = e.getMessage();
 		String message = m.getContentRaw().toLowerCase();
 		if (!queue.containsKey(e.getGuild())) {
 			queue.put(e.getGuild(), new ArrayList<>());
 		}
-		if (!guildToPrefix.containsKey(guildId)) {
-			guildToPrefix.put(guildId, "-music:");
+		if (!userToPrefix.containsKey(userId)) {
+			userToPrefix.put(userId, "-music:");
 		}
-		String prefix = guildToPrefix.get(guildId);
+		String prefix = userToPrefix.get(userId);
 		SendingHandler handler = (SendingHandler) e.getGuild().getAudioManager().getSendingHandler();
-		if (message.startsWith(prefix)) {
+		if (message.startsWith(prefix) || message.startsWith("-music:")) {
 			if (message.startsWith(prefix + "play")) {
 				playSong(e, e.getGuild());
-			} else if (message.startsWith(prefix + "help")) {
+			} else if (message.startsWith(prefix + "help") || message.startsWith("-music:help")) {
 				e.getChannel().sendMessage(helpMessageBuilder(e).build()).complete();
 			} else if (message.startsWith(prefix + "leave")) {
 				e.getGuild().getAudioManager().closeAudioConnection();
 			} else if (message.startsWith(prefix + "cp") && e.getMember().hasPermission(Permission.ADMINISTRATOR)) {
 				String[] args = message.split(" ");
 				if (!args[1].isEmpty()) {
-					guildToPrefix.replace(guildId, args[1]);
+					userToPrefix.replace(userId, args[1]);
 					String content = Files.read(prefixesFile);
 					StringBuilder newContent = new StringBuilder();
 					for (String line : content.split("\n")) {
 						if (line.contains(":")) {
 							long parsedId = Long.parseLong(line.substring(0, line.indexOf(":")));
-							if (parsedId != guildId) {
+							if (parsedId != userId) {
 								newContent.append(line).append("\n");
 							}
 						}
 					}
-					newContent.append(guildId).append(":").append(args[1]);
+					newContent.append(userId).append(":").append(args[1]);
 					Files.get(prefixesFile).delete();
 					Files.create(prefixesFile, newContent.toString());
 				} else {
@@ -217,7 +217,7 @@ public class MusicBot extends ListenerAdapter {
 	
 	private static EmbedBuilder helpMessageBuilder(GuildMessageReceivedEvent e) {
 		EmbedBuilder builder = new EmbedBuilder();
-		String prefix = guildToPrefix.get(e.getGuild().getIdLong());
+		String prefix = userToPrefix.get(e.getMember().getIdLong());
 		String name = e.getMember().getEffectiveName() + e.getMember().getAsMention() + e.getMember().getColor().toString() + e.getMember().getUser().getDiscriminator();
 		builder.setColor(new Color(((int) Math.abs(name.length() * 3732.12382f)) % 255, Math.abs(Objects.hash(name)) % 255, Math.abs(Objects.hash(name.toLowerCase())) % 255));
 		builder.setAuthor("Requested by: " + e.getMember().getEffectiveName(), null, e.getAuthor().getAvatarUrl());
