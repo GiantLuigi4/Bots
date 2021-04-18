@@ -577,7 +577,7 @@ public class MusicBot extends ListenerAdapter {
 		builder.addField("Timestamp:", handler.getTimestamp() + " / " + handler.getEndTimestamp(), true);
 		builder.addField("Selected Range:", handler.getStartTimestamp() + " - " + handler.getEndTimestamp(), true);
 //		builder.addField("", "", false);
-		builder.addField("**Remaining Loops:" + (info.loopCount - 1) + "**", "**Speed:" + info.speed + "**", false);
+		builder.addField("**Remaining Loops:" + (handler.loops) + "**", "**Speed:" + info.speed + "**", false);
 		String videoId = url.substring(url.indexOf("v=") + 2, url.indexOf("&") > 0 ? url.indexOf("&") : url.length());
 		builder.setThumbnail("https://i.ytimg.com/vi/%id%/hqdefault.jpg".replace("%id%", videoId));
 		builder.setAuthor("Requested by: " + e.getMember().getEffectiveName(), null, e.getAuthor().getAvatarUrl());
