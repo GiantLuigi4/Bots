@@ -6,7 +6,10 @@ import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.nio.ByteBuffer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class SendingHandler implements AudioSendHandler {
 
@@ -16,6 +19,7 @@ public class SendingHandler implements AudioSendHandler {
 	byte[] audio;
 	ArrayList<YoutubeVideoInfo> queue;
 	int loops;
+	YoutubeVideoInfo info;
 	AudioManager manager;
 	/**
 	 * This magic number is calculated like this:
@@ -35,7 +39,25 @@ public class SendingHandler implements AudioSendHandler {
 		loops = info.loopCount;
 		packetSize = 3840 * info.speed;
 		setup(info.audio);
+		counter = getCounterIndex(info.startTimestamp, packetSize);
 		this.manager = manager;
+		this.info = info;
+	}
+	
+	public static int getCounterIndex(String timeStamp, int packetSize) {
+		Date start = new Date(0);
+		try {
+			DateFormat format;
+			if (timeStamp.split(":").length == 3) {
+				format = new SimpleDateFormat("hh:mm:ss");
+			} else {
+				format = new SimpleDateFormat("mm:ss");
+			}
+			start = format.parse(timeStamp);
+		} catch (Throwable ignored) {
+		}
+		System.out.println(start.getSeconds() + ((start.getMinutes() + (start.getHours() * 60)) * 60) * packetSize * 48);
+		return (int) ((start.getSeconds() + ((start.getMinutes() + (start.getHours() * 60)) * 60)) * packetSize * (50.25));
 	}
 	
 	public void setup(byte[] bytes) {
@@ -58,8 +80,9 @@ public class SendingHandler implements AudioSendHandler {
 		buf.put(sent);
 		buf.position(0);
 		counter += packetSize;
-		if (counter >= audio.length)
-			canPlay = false;
+		int end = audio.length;
+		if (!info.endTimestamp.equals("-1")) end = Math.min(getCounterIndex(info.endTimestamp, packetSize), end);
+		if (counter >= end) canPlay = false;
 		if (!canPlay) {
 			loops -= 1;
 			if (loops <= 0) {
@@ -68,6 +91,7 @@ public class SendingHandler implements AudioSendHandler {
 					queue.remove(0);
 					packetSize = 3840 * info.speed;
 					setup(info.audio);
+					this.info = info;
 				} else {
 					manager.closeAudioConnection();
 				}
