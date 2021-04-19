@@ -641,6 +641,11 @@ public class MusicBot extends ListenerAdapter {
 		builder.addField(prefix + "resume", "Resumes the song", false);
 		builder.addField(prefix + "pause", "Pauses the song", false);
 		builder.addField(prefix + "cp", "Changes the prefix of the bot for the current user", false);
+		builder.addField(prefix + "queue", "Displays the queue, 10 songs per page", false);
+		builder.addField(prefix + "insert pos:pos video:link", "Inserts specified song at position of queue.\nAdd r:1 to replace", false);
+		builder.addField(prefix + "remove pos:pos", "Removes song at specified position", false);
+		builder.addField(prefix + "clear", "Clears queue", false);
+		builder.addField(prefix + "playlist", "NYI", false);
 		return builder;
 	}
 	
