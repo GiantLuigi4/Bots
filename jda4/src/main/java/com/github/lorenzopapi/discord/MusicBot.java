@@ -105,262 +105,16 @@ public class MusicBot extends ListenerAdapter {
 		SendingHandler handler = (SendingHandler) e.getGuild().getAudioManager().getSendingHandler();
 		if (message.startsWith(prefix + "playlist")) {
 			String subCommand = message.substring((prefix + "playlist ").length());
-			if (subCommand.startsWith("create")) {
-				String message1 = m.getContentRaw();
-				if (!subCommand.startsWith("create ")) {
-					e.getChannel().sendMessage("Please provide a name for your playlist").reference(e.getMessage()).mentionRepliedUser(false).complete();
-				} else {
-					subCommand = message1.substring((prefix + "playlist ").length());
-					String listName = subCommand.substring("create ".length());
-					File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
-					if (file.exists()) {
-						String ownerID = PropertyReader.read(file, "owner");
-						Member member = e.getGuild().getMemberById(ownerID);
-						if (e.getMember().getId().equals(ownerID)) {
-							e.getChannel()
-									.sendMessage("Playlist " + listName + " already exists, it is owned by you.")
-									.reference(e.getMessage()).mentionRepliedUser(false).complete();
-							Files.write(file,
-									"owner:" + e.getMember().getId() + "\n" +
-											"ownerName:" + e.getMember().getUser().getName() + "\n" +
-											"ownerDiscriminator:" + e.getMember().getUser().getDiscriminator()
-							);
-							return;
-						}
-						String name = "";
-						for (Member member1 : e.getGuild().getMembers()) {
-							if (member1.getId().equals(ownerID)) {
-								name = member.getEffectiveName();
-								name += "#" + member.getUser().getDiscriminator();
-							}
-						}
-						if (name.equals("")) {
-							if (member != null) {
-								name = member.getEffectiveName();
-								name += "#" + member.getUser().getDiscriminator();
-							} else {
-								if  (e.getJDA().getUserById(ownerID) != null) {
-									name = e.getJDA().getUserById(ownerID).getName();
-									name += "#" + e.getJDA().getUserById(ownerID).getDiscriminator();
-								}
-							}
-						}
-						if (name.equals("")) {
-							name = PropertyReader.read(file, "ownerName");
-							name += "#" + PropertyReader.read(file, "ownerDiscriminator");
-						}
-						e.getChannel()
-								.sendMessage("Playlist " + listName + " already exists, it is owned by " + name + ".")
-								.reference(e.getMessage()).mentionRepliedUser(false).complete();
-					} else {
-						file.getParentFile().mkdirs();
-						Files.create(file.toString());
-						Files.write(file,
-								"owner:" + e.getMember().getId() + "\n" +
-										"ownerName:" + e.getMember().getUser().getName() + "\n" +
-										"ownerDiscriminator:" + e.getMember().getUser().getDiscriminator()
-						);
-						e.getChannel().sendMessage(
-								"Playlist " + listName + "has been created successfully!\n" +
-										"Use `-music:playlist add " + listName + " [url]` to start filling it up."
-						).reference(e.getMessage()).mentionRepliedUser(false).complete();
-					}
-				}
-			} else if (subCommand.startsWith("play")) {
-				String message1 = m.getContentRaw();
-				if (!subCommand.startsWith("play ")) {
-					e.getChannel().sendMessage("Please provide a name for your playlist").reference(e.getMessage()).mentionRepliedUser(false).complete();
-				} else {
-					subCommand = message1.substring((prefix + "playlist ").length());
-					String listName = subCommand.substring("play ".length());
-					File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/playlist.json");
-					JsonObject listJson = gson.fromJson(Files.read(file), JsonObject.class);
-					Playlist playlist = Playlist.deserialize(listJson);
-					if (e.getGuild().getAudioManager().getConnectedChannel() == null) {
-						VoiceChannel vc;
-						for (VoiceChannel c : e.getGuild().getVoiceChannels()) {
-							if (c.getMembers().contains(e.getMember())) {
-								vc = c;
-								e.getGuild().getAudioManager().openAudioConnection(vc);
-								break;
-							}
-						}
-					}
-					for (YoutubeVideoInfo video : playlist.getVideos()) {
-						getQueue(e.getGuild()).add(video);
-					}
-					e.getGuild().getAudioManager().setSendingHandler(new SendingHandler(getQueue(e.getGuild()), e.getGuild().getAudioManager()));
-				}
-			} else if (subCommand.startsWith("add")) {
-				String message1 = m.getContentRaw();
-				if (!subCommand.startsWith("add ")) {
-					e.getChannel().sendMessage("Please provide the name of the playlist you want to add a video to, as well as the link to the video").reference(e.getMessage()).mentionRepliedUser(false).complete();
-				} else {
-					subCommand = message1.substring((prefix + "playlist ").length());
-					String[] args = subCommand.substring("add ".length()).split(" ");
-					String listName = args[0];
-					File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
-					String ownerID = PropertyReader.read(file, "owner");
-					if (!e.getMember().getId().equals(ownerID)) {
-						e.getChannel().sendMessage(
-								"You cannot add a video to a playlist you do not own"
-						).reference(e.getMessage()).mentionRepliedUser(false).complete();
-						return;
-					}
-					file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/playlist.json");
-					JsonObject listJson = gson.fromJson(Files.read(file), JsonObject.class);
-					Playlist playlist = Playlist.deserialize(listJson);
-					String info = "";
-					if (args.length > 2) {
-						for (int index = 2; index < args.length; index++) {
-							info += args[index] + " ";
-						}
-					}
-					try {
-						System.out.println(args[1]);
-						YoutubeVideoInfo info1 = doYoutubeDLRequest(args[1]);
-						HashMap<String, String> args1 = parseArgs(info);
-						setupSpecial(info1, args1);
-						if (args1.containsKey("index")) playlist.addVideo(Integer.parseInt(args1.get("index") + 1), info1);
-						else playlist.addVideo(info1);
-						JsonObject list = playlist.serialize();
-						Files.write(file, gson.toJson(list));
-						e.getChannel().sendMessage(
-								"Successfully added `" + info1.name + "` to `" + listName + "`."
-						).reference(e.getMessage()).mentionRepliedUser(false).complete();
-					} catch (Throwable err) {
-						err.printStackTrace();
-					}
-				}
-			} else if (subCommand.startsWith("remove")) {
-				String message1 = m.getContentRaw();
-				if (!subCommand.startsWith("remove ")) {
-					e.getChannel().sendMessage("Please provide the name of the playlist you want to remove a video from, as well as the index of the video").reference(e.getMessage()).mentionRepliedUser(false).complete();
-				} else {
-					subCommand = message1.substring((prefix + "playlist ").length());
-					String[] args = subCommand.substring("remove ".length()).split(" ");
-					String listName = args[0];
-					File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
-					String ownerID = PropertyReader.read(file, "owner");
-					if (!e.getMember().getId().equals(ownerID)) {
-						e.getChannel().sendMessage(
-								"You cannot remove a video from a playlist you do not own"
-						).reference(e.getMessage()).mentionRepliedUser(false).complete();
-						return;
-					}
-					file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/playlist.json");
-					JsonObject listJson = gson.fromJson(Files.read(file), JsonObject.class);
-					Playlist playlist = Playlist.deserialize(listJson);
-					YoutubeVideoInfo info1 = playlist.removeVideo(Integer.parseInt(args[1]) + 1);
-					JsonObject list = playlist.serialize();
-					Files.write(file, gson.toJson(list));
-					e.getChannel().sendMessage(
-							"Successfully removed `" + info1.name + "` from `" + listName + "`."
-					).reference(e.getMessage()).mentionRepliedUser(false).complete();
-				}
-			} else if (subCommand.startsWith("delete")) {
-				String message1 = m.getContentRaw();
-				if (!subCommand.startsWith("delete ")) {
-					e.getChannel().sendMessage("Please provide the name of the playlist you want to delete").reference(e.getMessage()).mentionRepliedUser(false).complete();
-				} else {
-					subCommand = message1.substring((prefix + "playlist ").length());
-					String[] args = subCommand.substring("remove ".length()).split(" ");
-					String listName = args[0];
-					File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
-					String ownerID = PropertyReader.read(file, "owner");
-					if (!e.getMember().getId().equals(ownerID)) {
-						e.getChannel().sendMessage(
-								"You cannot add a video to a playlist you do not own"
-						).reference(e.getMessage()).mentionRepliedUser(false).complete();
-						return;
-					}
-					file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName);
-					for (File listFile : file.listFiles()) {
-						listFile.delete();
-					}
-					file.delete();
-					e.getChannel().sendMessage(
-							"Successfully deleted `" + listName + "`.\nAny servers which hold a copy of this playlist will no longer be able to play it."
-					).reference(e.getMessage()).mentionRepliedUser(false).complete();
-				}
-			} else if (subCommand.startsWith("copy")) {
-				String message1 = m.getContentRaw();
-				if (!subCommand.startsWith("copy ")) {
-					e.getChannel().sendMessage("Please provide the name of the playlist you want to copy, and which server you want to copy it from").reference(e.getMessage()).mentionRepliedUser(false).complete();
-				} else {
-					subCommand = message1.substring((prefix + "playlist ").length());
-					String[] args = subCommand.substring("copy ".length()).split(" ");
-					String guildName = "";
-					for (int index = 1; index < args.length; index++) {
-						guildName += args[index] + " ";
-					}
-					Guild srcGuild = null;
-					for (Guild guild : bot.getGuilds()) {
-						if (guild.getName().startsWith(guildName)) {
-							srcGuild = guild;
-							break;
-						}
-					}
-					if (srcGuild != null) {
-						String pointer = srcGuild.getId() + "/" + args[0];
-						File file = new File("bots/music/playlists/" + pointer);
-						File file1 = new File("bots/music/playlists/" + pointer + "/attributes.properties");
-						if (!file.exists()) {
-							e.getChannel().sendMessage(
-									"Server `" + srcGuild.getName() + "` does not have a playlist called `" + args[0] + "`."
-							).reference(e.getMessage()).mentionRepliedUser(false).complete();
-						}
-						Playlist playlist = new Playlist(new ArrayList<>());
-						playlist.pointer = pointer;
-						file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + args[0]);
-						if (file.exists()) {
-							e.getChannel().sendMessage(
-									"The playlist `" + args[0] + "` already exists in this server."
-							).reference(e.getMessage()).mentionRepliedUser(false).complete();
-						}
-						file.mkdirs();
-						file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + args[0] + "/attributes.properties");
-						Files.write(file, Files.read(file1));
-						file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + args[0] + "/playlist.json");
-						JsonObject list = playlist.serialize();
-						Files.write(file, gson.toJson(list));
-						e.getChannel().sendMessage(
-								"Successfully copied `" + args[0] + "` from `" + srcGuild.getName() + "`"
-						).reference(e.getMessage()).mentionRepliedUser(false).complete();
-					} else {
-						e.getChannel().sendMessage(
-								"Server `" + guildName + "` is unknown to the me, and no servers known to me start with that name"
-						).reference(e.getMessage()).mentionRepliedUser(false).complete();
-					}
-//					subCommand = message1.substring((prefix + "playlist ").length());
-//					String[] args = subCommand.substring("remove ".length()).split(" ");
-//					String listName = args[0];
-//					File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
-//					String ownerID = PropertyReader.read(file, "owner");
-//					Member member = e.getGuild().getMemberById(ownerID);
-//					if (!e.getMember().getId().equals(ownerID)) {
-//						e.getChannel().sendMessage(
-//								"You cannot add a video to a playlist you do not own"
-//						).reference(e.getMessage()).mentionRepliedUser(false).complete();
-//						return;
-//					}
-//					file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName);
-//					for (File listFile : file.listFiles()) {
-//						listFile.delete();
-//					}
-//					file.delete();
-//					e.getChannel().sendMessage(
-//							"Successfully deleted `" + listName + "`.\nAny servers which hold a copy of this playlist will no longer be able to play it."
-//					).reference(e.getMessage()).mentionRepliedUser(false).complete();
-				}
-			} else {
-				e.getChannel().sendMessage("`" + subCommand + "`" + " is not a valid subcommand for playlist").reference(e.getMessage()).mentionRepliedUser(false).complete();
-			}
+			handlePlaylist(e, m, prefix, subCommand);
 		} else if (message.startsWith(prefix) || message.startsWith("-music:")) {
 			if (message.startsWith(prefix + "play")) {
 				playSong(e, e.getGuild());
 			} else if (message.startsWith(prefix + "queue")) {
-				e.getChannel().sendMessage(queueBuilder(e).build()).complete();
+				if (!getQueue(e.getGuild()).isEmpty()) {
+					e.getChannel().sendMessage(queueBuilder(e).build()).complete();
+				} else {
+					e.getChannel().sendMessage("Queue is empty").complete();
+				}
 			} else if (message.startsWith(prefix + "insert")) {
 				HashMap<String, String> args = parseArgs(e.getMessage().getContentRaw());
 				if (args.containsKey("pos")) {
@@ -446,6 +200,260 @@ public class MusicBot extends ListenerAdapter {
 		}
 	}
 
+	private static void handlePlaylist(GuildMessageReceivedEvent e, Message m, String prefix, String subCommand) {
+		if (subCommand.startsWith("create")) {
+			String message1 = m.getContentRaw();
+			if (!subCommand.startsWith("create ")) {
+				e.getChannel().sendMessage("Please provide a name for your playlist").reference(e.getMessage()).mentionRepliedUser(false).complete();
+			} else {
+				subCommand = message1.substring((prefix + "playlist ").length());
+				String listName = subCommand.substring("create ".length());
+				File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
+				if (file.exists()) {
+					String ownerID = PropertyReader.read(file, "owner");
+					Member member = e.getGuild().getMemberById(ownerID);
+					if (e.getMember().getId().equals(ownerID)) {
+						e.getChannel()
+								.sendMessage("Playlist " + listName + " already exists, it is owned by you.")
+								.reference(e.getMessage()).mentionRepliedUser(false).complete();
+						Files.write(file,
+								"owner:" + e.getMember().getId() + "\n" +
+										"ownerName:" + e.getMember().getUser().getName() + "\n" +
+										"ownerDiscriminator:" + e.getMember().getUser().getDiscriminator()
+						);
+						return;
+					}
+					String name = "";
+					for (Member member1 : e.getGuild().getMembers()) {
+						if (member1.getId().equals(ownerID)) {
+							name = member.getEffectiveName();
+							name += "#" + member.getUser().getDiscriminator();
+						}
+					}
+					if (name.equals("")) {
+						if (member != null) {
+							name = member.getEffectiveName();
+							name += "#" + member.getUser().getDiscriminator();
+						} else {
+							if  (e.getJDA().getUserById(ownerID) != null) {
+								name = e.getJDA().getUserById(ownerID).getName();
+								name += "#" + e.getJDA().getUserById(ownerID).getDiscriminator();
+							}
+						}
+					}
+					if (name.equals("")) {
+						name = PropertyReader.read(file, "ownerName");
+						name += "#" + PropertyReader.read(file, "ownerDiscriminator");
+					}
+					e.getChannel()
+							.sendMessage("Playlist " + listName + " already exists, it is owned by " + name + ".")
+							.reference(e.getMessage()).mentionRepliedUser(false).complete();
+				} else {
+					file.getParentFile().mkdirs();
+					Files.create(file.toString());
+					Files.write(file,
+							"owner:" + e.getMember().getId() + "\n" +
+									"ownerName:" + e.getMember().getUser().getName() + "\n" +
+									"ownerDiscriminator:" + e.getMember().getUser().getDiscriminator()
+					);
+					e.getChannel().sendMessage(
+							"Playlist " + listName + "has been created successfully!\n" +
+									"Use `-music:playlist add " + listName + " [url]` to start filling it up."
+					).reference(e.getMessage()).mentionRepliedUser(false).complete();
+				}
+			}
+		} else if (subCommand.startsWith("play")) {
+			String message1 = m.getContentRaw();
+			if (!subCommand.startsWith("play ")) {
+				e.getChannel().sendMessage("Please provide a name for your playlist").reference(e.getMessage()).mentionRepliedUser(false).complete();
+			} else {
+				subCommand = message1.substring((prefix + "playlist ").length());
+				String listName = subCommand.substring("play ".length());
+				File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/playlist.json");
+				JsonObject listJson = gson.fromJson(Files.read(file), JsonObject.class);
+				Playlist playlist = Playlist.deserialize(listJson);
+				if (e.getGuild().getAudioManager().getConnectedChannel() == null) {
+					VoiceChannel vc;
+					for (VoiceChannel c : e.getGuild().getVoiceChannels()) {
+						if (c.getMembers().contains(e.getMember())) {
+							vc = c;
+							e.getGuild().getAudioManager().openAudioConnection(vc);
+							break;
+						}
+					}
+				}
+				for (YoutubeVideoInfo video : playlist.getVideos()) {
+					getQueue(e.getGuild()).add(video);
+				}
+				e.getGuild().getAudioManager().setSendingHandler(new SendingHandler(getQueue(e.getGuild()), e.getGuild().getAudioManager()));
+			}
+		} else if (subCommand.startsWith("add")) {
+			String message1 = m.getContentRaw();
+			if (!subCommand.startsWith("add ")) {
+				e.getChannel().sendMessage("Please provide the name of the playlist you want to add a video to, as well as the link to the video").reference(e.getMessage()).mentionRepliedUser(false).complete();
+			} else {
+				subCommand = message1.substring((prefix + "playlist ").length());
+				String[] args = subCommand.substring("add ".length()).split(" ");
+				String listName = args[0];
+				File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
+				String ownerID = PropertyReader.read(file, "owner");
+				if (!e.getMember().getId().equals(ownerID)) {
+					e.getChannel().sendMessage(
+							"You cannot add a video to a playlist you do not own"
+					).reference(e.getMessage()).mentionRepliedUser(false).complete();
+					return;
+				}
+				file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/playlist.json");
+				JsonObject listJson = gson.fromJson(Files.read(file), JsonObject.class);
+				Playlist playlist = Playlist.deserialize(listJson);
+				String info = "";
+				if (args.length > 2) {
+					for (int index = 2; index < args.length; index++) {
+						info += args[index] + " ";
+					}
+				}
+				try {
+					System.out.println(args[1]);
+					YoutubeVideoInfo info1 = doYoutubeDLRequest(args[1]);
+					HashMap<String, String> args1 = parseArgs(info);
+					setupSpecial(info1, args1);
+					if (args1.containsKey("index")) playlist.addVideo(Integer.parseInt(args1.get("index") + 1), info1);
+					else playlist.addVideo(info1);
+					JsonObject list = playlist.serialize();
+					Files.write(file, gson.toJson(list));
+					e.getChannel().sendMessage(
+							"Successfully added `" + info1.name + "` to `" + listName + "`."
+					).reference(e.getMessage()).mentionRepliedUser(false).complete();
+				} catch (Throwable err) {
+					err.printStackTrace();
+				}
+			}
+		} else if (subCommand.startsWith("remove")) {
+			String message1 = m.getContentRaw();
+			if (!subCommand.startsWith("remove ")) {
+				e.getChannel().sendMessage("Please provide the name of the playlist you want to remove a video from, as well as the index of the video").reference(e.getMessage()).mentionRepliedUser(false).complete();
+			} else {
+				subCommand = message1.substring((prefix + "playlist ").length());
+				String[] args = subCommand.substring("remove ".length()).split(" ");
+				String listName = args[0];
+				File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
+				String ownerID = PropertyReader.read(file, "owner");
+				if (!e.getMember().getId().equals(ownerID)) {
+					e.getChannel().sendMessage(
+							"You cannot remove a video from a playlist you do not own"
+					).reference(e.getMessage()).mentionRepliedUser(false).complete();
+					return;
+				}
+				file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/playlist.json");
+				JsonObject listJson = gson.fromJson(Files.read(file), JsonObject.class);
+				Playlist playlist = Playlist.deserialize(listJson);
+				YoutubeVideoInfo info1 = playlist.removeVideo(Integer.parseInt(args[1]) + 1);
+				JsonObject list = playlist.serialize();
+				Files.write(file, gson.toJson(list));
+				e.getChannel().sendMessage(
+						"Successfully removed `" + info1.name + "` from `" + listName + "`."
+				).reference(e.getMessage()).mentionRepliedUser(false).complete();
+			}
+		} else if (subCommand.startsWith("delete")) {
+			String message1 = m.getContentRaw();
+			if (!subCommand.startsWith("delete ")) {
+				e.getChannel().sendMessage("Please provide the name of the playlist you want to delete").reference(e.getMessage()).mentionRepliedUser(false).complete();
+			} else {
+				subCommand = message1.substring((prefix + "playlist ").length());
+				String[] args = subCommand.substring("remove ".length()).split(" ");
+				String listName = args[0];
+				File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
+				String ownerID = PropertyReader.read(file, "owner");
+				if (!e.getMember().getId().equals(ownerID)) {
+					e.getChannel().sendMessage(
+							"You cannot add a video to a playlist you do not own"
+					).reference(e.getMessage()).mentionRepliedUser(false).complete();
+					return;
+				}
+				file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName);
+				for (File listFile : file.listFiles()) {
+					listFile.delete();
+				}
+				file.delete();
+				e.getChannel().sendMessage(
+						"Successfully deleted `" + listName + "`.\nAny servers which hold a copy of this playlist will no longer be able to play it."
+				).reference(e.getMessage()).mentionRepliedUser(false).complete();
+			}
+		} else if (subCommand.startsWith("copy")) {
+			String message1 = m.getContentRaw();
+			if (!subCommand.startsWith("copy ")) {
+				e.getChannel().sendMessage("Please provide the name of the playlist you want to copy, and which server you want to copy it from").reference(e.getMessage()).mentionRepliedUser(false).complete();
+			} else {
+				subCommand = message1.substring((prefix + "playlist ").length());
+				String[] args = subCommand.substring("copy ".length()).split(" ");
+				String guildName = "";
+				for (int index = 1; index < args.length; index++) {
+					guildName += args[index] + " ";
+				}
+				Guild srcGuild = null;
+				for (Guild guild : bot.getGuilds()) {
+					if (guild.getName().startsWith(guildName)) {
+						srcGuild = guild;
+						break;
+					}
+				}
+				if (srcGuild != null) {
+					String pointer = srcGuild.getId() + "/" + args[0];
+					File file = new File("bots/music/playlists/" + pointer);
+					File file1 = new File("bots/music/playlists/" + pointer + "/attributes.properties");
+					if (!file.exists()) {
+						e.getChannel().sendMessage(
+								"Server `" + srcGuild.getName() + "` does not have a playlist called `" + args[0] + "`."
+						).reference(e.getMessage()).mentionRepliedUser(false).complete();
+					}
+					Playlist playlist = new Playlist(new ArrayList<>());
+					playlist.pointer = pointer;
+					file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + args[0]);
+					if (file.exists()) {
+						e.getChannel().sendMessage(
+								"The playlist `" + args[0] + "` already exists in this server."
+						).reference(e.getMessage()).mentionRepliedUser(false).complete();
+					}
+					file.mkdirs();
+					file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + args[0] + "/attributes.properties");
+					Files.write(file, Files.read(file1));
+					file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + args[0] + "/playlist.json");
+					JsonObject list = playlist.serialize();
+					Files.write(file, gson.toJson(list));
+					e.getChannel().sendMessage(
+							"Successfully copied `" + args[0] + "` from `" + srcGuild.getName() + "`"
+					).reference(e.getMessage()).mentionRepliedUser(false).complete();
+				} else {
+					e.getChannel().sendMessage(
+							"Server `" + guildName + "` is unknown to the me, and no servers known to me start with that name"
+					).reference(e.getMessage()).mentionRepliedUser(false).complete();
+				}
+//					subCommand = message1.substring((prefix + "playlist ").length());
+//					String[] args = subCommand.substring("remove ".length()).split(" ");
+//					String listName = args[0];
+//					File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
+//					String ownerID = PropertyReader.read(file, "owner");
+//					Member member = e.getGuild().getMemberById(ownerID);
+//					if (!e.getMember().getId().equals(ownerID)) {
+//						e.getChannel().sendMessage(
+//								"You cannot add a video to a playlist you do not own"
+//						).reference(e.getMessage()).mentionRepliedUser(false).complete();
+//						return;
+//					}
+//					file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName);
+//					for (File listFile : file.listFiles()) {
+//						listFile.delete();
+//					}
+//					file.delete();
+//					e.getChannel().sendMessage(
+//							"Successfully deleted `" + listName + "`.\nAny servers which hold a copy of this playlist will no longer be able to play it."
+//					).reference(e.getMessage()).mentionRepliedUser(false).complete();
+			}
+		} else {
+			e.getChannel().sendMessage("`" + subCommand + "`" + " is not a valid subcommand for playlist").reference(e.getMessage()).mentionRepliedUser(false).complete();
+		}
+	}
+
 	private static void addToQueue(HashMap<String, String> args, GuildMessageReceivedEvent e) {
 		try {
 			String video = args.get("video");
@@ -485,7 +493,6 @@ public class MusicBot extends ListenerAdapter {
 			}
 		}
 		if (guild.getSelfMember().getVoiceState().inVoiceChannel()) {
-			System.out.println("already connected");
 			try {
 				YoutubeVideoInfo info = doYoutubeDLRequest(video);
 				if (streamsByServer.containsKey(e.getGuild().getId()))
@@ -499,6 +506,7 @@ public class MusicBot extends ListenerAdapter {
 				ArrayList<YoutubeVideoInfo> infos = getQueue(guild);
 				setupSpecial(info, args1);
 				infos.add(info);
+				manager.setSendingHandler(new SendingHandler(infos, manager));
 			} catch (Throwable err) {
 				e.getChannel().sendMessage(errorMessageBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 			}
