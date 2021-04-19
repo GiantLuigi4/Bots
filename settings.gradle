@@ -1,3 +1,3 @@
-rootProject.name = 'RoleReationBot'
+rootProject.name = 'Bots'
 include 'jda4'
 

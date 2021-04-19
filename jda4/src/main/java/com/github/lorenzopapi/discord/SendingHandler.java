@@ -116,6 +116,7 @@ public class SendingHandler implements AudioSendHandler {
 			sent[index] += bassBoost;
 			sent[index] *= Math.min(Math.max(volume, -100) / 100f, 1);
 			sent[index] = sent[(index / pseudoRetro) * pseudoRetro];
+//			sent[index] = (byte) Math.sqrt(sent[index] * sent[index]);
 		}
 		byte[] srcSwap = Arrays.copyOf(sent, sent.length);
 		for (int index = 0; index < sent.length; index++) {
