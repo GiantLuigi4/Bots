@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 public class SendingHandler implements AudioSendHandler {
@@ -23,6 +24,7 @@ public class SendingHandler implements AudioSendHandler {
 	AudioManager manager;
 	boolean isForTheWorstApplied = false;
 	float volume = 100;
+	int byteSwap = 1;
 	/**
 	 * This magic number is calculated like this:
 	 * So we have an audio file that has a sample rate of 48000 sample per second
@@ -113,6 +115,16 @@ public class SendingHandler implements AudioSendHandler {
 			}
 			sent[index] *= Math.min(Math.max(volume, -100) / 100f, 1);
 		}
+		byte[] srcSwap = Arrays.copyOf(sent, sent.length);
+		for (int index = 0; index < sent.length; index++) {
+			int num = byteSwap;
+			if (index % num * 2 < num) {
+				sent[index] = srcSwap[index + index % num];
+			} else {
+				sent[index] = srcSwap[index - index % num];
+			}
+		}
+		System.out.println(Arrays.equals(sent, srcSwap));
 		buf.put(sent);
 		buf.position(0);
 		counter += packetSize;
