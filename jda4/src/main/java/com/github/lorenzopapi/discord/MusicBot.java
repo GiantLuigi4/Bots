@@ -118,11 +118,11 @@ public class MusicBot extends ListenerAdapter {
 			} //TODO: user presets
 			HashMap<String, String> args = parseArgs(effects);
 			if (args.containsKey("volume")) handler.volume =  Float.parseFloat(args.get("volume"));
+			else if (args.containsKey("v")) handler.volume =  Float.parseFloat(args.get("v"));
 			if (args.containsKey("byteswap")) handler.volume =  Float.parseFloat(args.get("byteswap"));
 			if (args.containsKey("bassboost")) handler.bassBoost =  Integer.parseInt(args.get("bassboost"));
-			if (args.containsKey("bb")) handler.bassBoost =  Integer.parseInt(args.get("bb"));
-			if (args.containsKey("bass_boost")) handler.bassBoost =  Integer.parseInt(args.get("bass_boost"));
-			if (args.containsKey("v")) handler.volume =  Float.parseFloat(args.get("v"));
+			else if (args.containsKey("bb")) handler.bassBoost =  Integer.parseInt(args.get("bb"));
+			else if (args.containsKey("bass_boost")) handler.bassBoost =  Integer.parseInt(args.get("bass_boost"));
 		} else if (message.startsWith(prefix) || message.startsWith("-music:")) {
 			if (message.startsWith(prefix + "play")) {
 				playSong(e, e.getGuild());

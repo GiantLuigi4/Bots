@@ -124,7 +124,7 @@ public class SendingHandler implements AudioSendHandler {
 				sent[index] = srcSwap[index - index % num];
 			}
 		}
-		System.out.println(Arrays.equals(sent, srcSwap));
+//		System.out.println(Arrays.equals(sent, srcSwap));
 		buf.put(sent);
 		buf.position(0);
 		counter += packetSize;
