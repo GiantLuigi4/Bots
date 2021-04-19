@@ -42,10 +42,9 @@ public class SendingHandler implements AudioSendHandler {
 		queue.remove(0);
 		loops = info.loopCount;
 		packetSize = 3840 * info.speed;
-		bassBoost = info.bassBoost;
-		if (bassBoost != 0) {
+		if (info.bassBoost != 0) {
 			for (int i = 0; i < info.audio.length; i++) {
-				info.audio[i] += bassBoost;
+				info.audio[i] += info.bassBoost;
 			}
 		}
 		setup(info.audio);
@@ -113,6 +112,7 @@ public class SendingHandler implements AudioSendHandler {
 				sent[index] = (byte) ((byte) (((byte) (sent[index] % 32) / 20) * 20));
 				if (index > 1 || counter > 1) audio[counter + index - 1] += audio[counter + index - 1] / 32;
 			}
+			sent[index] += bassBoost;
 			sent[index] *= Math.min(Math.max(volume, -100) / 100f, 1);
 		}
 		byte[] srcSwap = Arrays.copyOf(sent, sent.length);
@@ -139,10 +139,9 @@ public class SendingHandler implements AudioSendHandler {
 					queue.remove(0);
 					packetSize = 3840 * info.speed;
 					counter = getCounterIndex(info.startTimestamp, packetSize);
-					bassBoost = info.bassBoost;
-					if (bassBoost != 0) {
+					if (info.bassBoost != 0) {
 						for (int i = 0; i < info.audio.length; i++) {
-							info.audio[i] += bassBoost;
+							info.audio[i] += info.bassBoost;
 						}
 					}
 					setup(info.audio);

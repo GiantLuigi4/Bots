@@ -113,10 +113,15 @@ public class MusicBot extends ListenerAdapter {
 			} else if (effects.equals(" reset")) {
 				handler.isForTheWorstApplied = false;
 				handler.volume = 100;
+				handler.byteSwap = 1;
+				handler.bassBoost = 0;
 			} //TODO: user presets
 			HashMap<String, String> args = parseArgs(effects);
 			if (args.containsKey("volume")) handler.volume =  Float.parseFloat(args.get("volume"));
 			if (args.containsKey("byteswap")) handler.volume =  Float.parseFloat(args.get("byteswap"));
+			if (args.containsKey("bassboost")) handler.bassBoost =  Integer.parseInt(args.get("bassboost"));
+			if (args.containsKey("bb")) handler.bassBoost =  Integer.parseInt(args.get("bb"));
+			if (args.containsKey("bass_boost")) handler.bassBoost =  Integer.parseInt(args.get("bass_boost"));
 			if (args.containsKey("v")) handler.volume =  Float.parseFloat(args.get("v"));
 		} else if (message.startsWith(prefix) || message.startsWith("-music:")) {
 			if (message.startsWith(prefix + "play")) {
