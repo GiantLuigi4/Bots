@@ -22,6 +22,7 @@ public class SendingHandler implements AudioSendHandler {
 	YoutubeVideoInfo info;
 	AudioManager manager;
 	boolean isForTheWorstApplied = false;
+	float volume = 100;
 	/**
 	 * This magic number is calculated like this:
 	 * So we have an audio file that has a sample rate of 48000 sample per second
@@ -40,8 +41,10 @@ public class SendingHandler implements AudioSendHandler {
 		loops = info.loopCount;
 		packetSize = 3840 * info.speed;
 		bassBoost = info.bassBoost;
-		for (int i = 0; i < info.audio.length; i++) {
-			info.audio[i] += bassBoost;
+		if (bassBoost != 0) {
+			for (int i = 0; i < info.audio.length; i++) {
+				info.audio[i] += bassBoost;
+			}
 		}
 		setup(info.audio);
 		counter = getCounterIndex(info.startTimestamp, packetSize);
@@ -103,11 +106,12 @@ public class SendingHandler implements AudioSendHandler {
 		byte[] sent = new byte[packetSize];
 //		counter = packetSize*41;
 		System.arraycopy(audio, counter, sent, 0, Math.min(packetSize, audio.length - counter - 1));
-		if (isForTheWorstApplied) {
-			for (int index = 0; index < sent.length; index++) {
+		for (int index = 0; index < sent.length; index++) {
+			if (isForTheWorstApplied) {
 				sent[index] = (byte) ((byte) (((byte) (sent[index] % 32) / 20) * 20));
 				if (index > 1 || counter > 1) audio[counter + index - 1] += audio[counter + index - 1] / 32;
 			}
+			sent[index] *= Math.min(Math.max(volume, -100) / 100f, 1);
 		}
 		buf.put(sent);
 		buf.position(0);
@@ -123,6 +127,12 @@ public class SendingHandler implements AudioSendHandler {
 					queue.remove(0);
 					packetSize = 3840 * info.speed;
 					counter = getCounterIndex(info.startTimestamp, packetSize);
+					bassBoost = info.bassBoost;
+					if (bassBoost != 0) {
+						for (int i = 0; i < info.audio.length; i++) {
+							info.audio[i] += bassBoost;
+						}
+					}
 					setup(info.audio);
 					this.info = info;
 				} else {

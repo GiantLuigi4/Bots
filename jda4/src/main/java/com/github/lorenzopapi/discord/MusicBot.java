@@ -107,13 +107,16 @@ public class MusicBot extends ListenerAdapter {
 			String subCommand = message.substring((prefix + "playlist ").length());
 			handlePlaylist(e, m, prefix, subCommand);
 		} else if (message.startsWith(prefix + "effects ")) {
-			String effects = message.substring((prefix+"effects ").length());
-			if (effects.equals("for the worst")) {
+			String effects = message.substring((prefix+"effects").length());
+			if (effects.equals(" for the worst")) {
 				handler.isForTheWorstApplied = true;
-			} else if (effects.equals("reset")) {
+			} else if (effects.equals(" reset")) {
 				handler.isForTheWorstApplied = false;
+				handler.volume = 100;
 			} //TODO: user presets
 			HashMap<String, String> args = parseArgs(effects);
+			if (args.containsKey("volume")) handler.volume =  Float.parseFloat(args.get("volume"));
+			if (args.containsKey("v")) handler.volume =  Float.parseFloat(args.get("v"));
 		} else if (message.startsWith(prefix) || message.startsWith("-music:")) {
 			if (message.startsWith(prefix + "play")) {
 				playSong(e, e.getGuild());
@@ -296,7 +299,9 @@ public class MusicBot extends ListenerAdapter {
 				for (YoutubeVideoInfo video : playlist.getVideos()) {
 					getQueue(e.getGuild()).add(video);
 				}
-				e.getGuild().getAudioManager().setSendingHandler(new SendingHandler(getQueue(e.getGuild()), e.getGuild().getAudioManager()));
+				if (!e.getGuild().getAudioManager().isConnected()) {
+					e.getGuild().getAudioManager().setSendingHandler(new SendingHandler(getQueue(e.getGuild()), e.getGuild().getAudioManager()));
+				}
 			}
 		} else if (subCommand.startsWith("add")) {
 			String message1 = m.getContentRaw();
@@ -517,7 +522,7 @@ public class MusicBot extends ListenerAdapter {
 				ArrayList<YoutubeVideoInfo> infos = getQueue(guild);
 				setupSpecial(info, args1);
 				infos.add(info);
-				manager.setSendingHandler(new SendingHandler(infos, manager));
+//				manager.setSendingHandler(new SendingHandler(infos, manager));
 			} catch (Throwable err) {
 				e.getChannel().sendMessage(errorMessageBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 			}
