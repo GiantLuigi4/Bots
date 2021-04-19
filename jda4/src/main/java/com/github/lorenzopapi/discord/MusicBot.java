@@ -119,7 +119,7 @@ public class MusicBot extends ListenerAdapter {
 			HashMap<String, String> args = parseArgs(effects);
 			if (args.containsKey("volume")) handler.volume =  Float.parseFloat(args.get("volume"));
 			else if (args.containsKey("v")) handler.volume =  Float.parseFloat(args.get("v"));
-			if (args.containsKey("byteswap")) handler.volume =  Float.parseFloat(args.get("byteswap"));
+			if (args.containsKey("byteswap")) handler.byteSwap =  Integer.parseInt(args.get("byteswap"));
 			if (args.containsKey("bassboost")) handler.bassBoost =  Integer.parseInt(args.get("bassboost"));
 			else if (args.containsKey("bb")) handler.bassBoost =  Integer.parseInt(args.get("bb"));
 			else if (args.containsKey("bass_boost")) handler.bassBoost =  Integer.parseInt(args.get("bass_boost"));
