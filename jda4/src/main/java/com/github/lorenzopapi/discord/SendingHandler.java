@@ -25,6 +25,7 @@ public class SendingHandler implements AudioSendHandler {
 	boolean isForTheWorstApplied = false;
 	float volume = 100;
 	int byteSwap = 1;
+	int pseudoRetro = 1;
 	/**
 	 * This magic number is calculated like this:
 	 * So we have an audio file that has a sample rate of 48000 sample per second
@@ -114,6 +115,7 @@ public class SendingHandler implements AudioSendHandler {
 			}
 			sent[index] += bassBoost;
 			sent[index] *= Math.min(Math.max(volume, -100) / 100f, 1);
+			sent[index] = sent[(index / pseudoRetro) * pseudoRetro];
 		}
 		byte[] srcSwap = Arrays.copyOf(sent, sent.length);
 		for (int index = 0; index < sent.length; index++) {

@@ -120,6 +120,8 @@ public class MusicBot extends ListenerAdapter {
 			if (args.containsKey("volume")) handler.volume =  Float.parseFloat(args.get("volume"));
 			else if (args.containsKey("v")) handler.volume =  Float.parseFloat(args.get("v"));
 			if (args.containsKey("byteswap")) handler.byteSwap =  Integer.parseInt(args.get("byteswap"));
+			if (args.containsKey("pr")) handler.pseudoRetro =  Integer.parseInt(args.get("pr"));
+			else if (args.containsKey("psuedo_retro")) handler.pseudoRetro =  Integer.parseInt(args.get("psuedo_retro"));
 			if (args.containsKey("bassboost")) handler.bassBoost =  Integer.parseInt(args.get("bassboost"));
 			else if (args.containsKey("bb")) handler.bassBoost =  Integer.parseInt(args.get("bb"));
 			else if (args.containsKey("bass_boost")) handler.bassBoost =  Integer.parseInt(args.get("bass_boost"));
