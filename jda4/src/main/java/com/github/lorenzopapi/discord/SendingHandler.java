@@ -21,6 +21,7 @@ public class SendingHandler implements AudioSendHandler {
 	int bassBoost;
 	YoutubeVideoInfo info;
 	AudioManager manager;
+	boolean isForTheWorstApplied = false;
 	/**
 	 * This magic number is calculated like this:
 	 * So we have an audio file that has a sample rate of 48000 sample per second
@@ -100,7 +101,14 @@ public class SendingHandler implements AudioSendHandler {
 	public ByteBuffer provide20MsAudio() {
 		buf.clear();
 		byte[] sent = new byte[packetSize];
+//		counter = packetSize*41;
 		System.arraycopy(audio, counter, sent, 0, Math.min(packetSize, audio.length - counter - 1));
+		if (isForTheWorstApplied) {
+			for (int index = 0; index < sent.length; index++) {
+				sent[index] = (byte) ((byte) (((byte) (sent[index] % 32) / 20) * 20));
+				if (index > 1 || counter > 1) audio[counter + index - 1] += audio[counter + index - 1] / 32;
+			}
+		}
 		buf.put(sent);
 		buf.position(0);
 		counter += packetSize;

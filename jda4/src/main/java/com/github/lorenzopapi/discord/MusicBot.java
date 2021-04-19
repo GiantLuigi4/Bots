@@ -106,6 +106,14 @@ public class MusicBot extends ListenerAdapter {
 		if (message.startsWith(prefix + "playlist")) {
 			String subCommand = message.substring((prefix + "playlist ").length());
 			handlePlaylist(e, m, prefix, subCommand);
+		} else if (message.startsWith(prefix + "effects ")) {
+			String effects = message.substring((prefix+"effects ").length());
+			if (effects.equals("for the worst")) {
+				handler.isForTheWorstApplied = true;
+			} else if (effects.equals("reset")) {
+				handler.isForTheWorstApplied = false;
+			} //TODO: user presets
+			HashMap<String, String> args = parseArgs(effects);
 		} else if (message.startsWith(prefix) || message.startsWith("-music:")) {
 			if (message.startsWith(prefix + "play")) {
 				playSong(e, e.getGuild());
@@ -200,6 +208,9 @@ public class MusicBot extends ListenerAdapter {
 		}
 	}
 
+	private static void handleEffect(GuildMessageReceivedEvent e) {
+	}
+	
 	private static void handlePlaylist(GuildMessageReceivedEvent e, Message m, String prefix, String subCommand) {
 		if (subCommand.startsWith("create")) {
 			String message1 = m.getContentRaw();
