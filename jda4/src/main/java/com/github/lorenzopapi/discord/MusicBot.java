@@ -56,7 +56,6 @@ public class MusicBot extends ListenerAdapter {
 	private static final Gson gson = new GsonBuilder().setLenient().setPrettyPrinting().create();
 	
 	public static void main(String[] args) throws LoginException, InterruptedException {
-		//System.out.println(Playlist.deserialize(gson.fromJson(Files.read("bots/music/playlists/746564697385336872/test/playlist.json"), JsonObject.class)));
 		Files.create("Settings.properties", "drive:C");
 		if (!Files.create("bots.properties")) {
 			if (PropertyReader.contains("bots.properties", "musicBot")) {
@@ -178,7 +177,7 @@ public class MusicBot extends ListenerAdapter {
 					JsonObject listJson = gson.fromJson(Files.read(file), JsonObject.class);
 					Playlist playlist = Playlist.deserialize(listJson);
 					if (e.getGuild().getAudioManager().getConnectedChannel() == null) {
-						VoiceChannel vc = null;
+						VoiceChannel vc;
 						for (VoiceChannel c : e.getGuild().getVoiceChannels()) {
 							if (c.getMembers().contains(e.getMember())) {
 								vc = c;
@@ -202,7 +201,6 @@ public class MusicBot extends ListenerAdapter {
 					String listName = args[0];
 					File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
 					String ownerID = PropertyReader.read(file, "owner");
-					Member member = e.getGuild().getMemberById(ownerID);
 					if (!e.getMember().getId().equals(ownerID)) {
 						e.getChannel().sendMessage(
 								"You cannot add a video to a playlist you do not own"
@@ -244,7 +242,6 @@ public class MusicBot extends ListenerAdapter {
 					String listName = args[0];
 					File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
 					String ownerID = PropertyReader.read(file, "owner");
-					Member member = e.getGuild().getMemberById(ownerID);
 					if (!e.getMember().getId().equals(ownerID)) {
 						e.getChannel().sendMessage(
 								"You cannot remove a video from a playlist you do not own"
@@ -271,7 +268,6 @@ public class MusicBot extends ListenerAdapter {
 					String listName = args[0];
 					File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/attributes.properties");
 					String ownerID = PropertyReader.read(file, "owner");
-					Member member = e.getGuild().getMemberById(ownerID);
 					if (!e.getMember().getId().equals(ownerID)) {
 						e.getChannel().sendMessage(
 								"You cannot add a video to a playlist you do not own"
@@ -470,17 +466,13 @@ public class MusicBot extends ListenerAdapter {
 			e.getChannel().sendMessage("Please provide a link to a valid youtube video").reference(e.getMessage()).mentionRepliedUser(false).complete();
 			return;
 		}
-		HashMap<String, String> args1 = new HashMap<>();
-		if (args.length > 2) {
-			String text = "";
-			for (String arg : args) {
-				text += arg + " ";
-			}
-			args1 = parseArgs(text);
+		HashMap<String, String> args1 = parseArgs(e.getMessage().getContentRaw());
+		String video;
+		if (args1.containsKey("video")) {
+			video = args1.get("video");
 		} else {
-			args1.put("video", args[1]);
+			video = args[1];
 		}
-		String video = args1.get("video");
 		if (video.startsWith("<") && video.endsWith(">")) {
 			video = video.substring(1, video.length() - 1);
 		}
@@ -540,6 +532,8 @@ public class MusicBot extends ListenerAdapter {
 	}
 	
 	private static void setupSpecial(YoutubeVideoInfo info, HashMap<String, String> args1) {
+		if (args1.containsKey("bb")) info.bassBoost = Byte.parseByte(args1.get("bb"));
+		if (args1.containsKey("bassboost")) info.bassBoost = Byte.parseByte(args1.get("bassboost"));
 		if (args1.containsKey("speed")) info.speed = Integer.parseInt(args1.get("speed"));
 		if (args1.containsKey("s")) info.speed = Integer.parseInt(args1.get("s"));
 		if (args1.containsKey("loop")) info.loopCount = Integer.parseInt(args1.get("loop"));
@@ -625,7 +619,7 @@ public class MusicBot extends ListenerAdapter {
 		String[] strings = input.split(" ");
 		strings[0] = "";
 		for (String string : strings) {
-			if (!string.isEmpty() && string.contains(":")) {
+			if (!string.isEmpty() && string.contains(":") && !string.startsWith("https")) {
 				String[] text = string.split(":", 2);
 				args.put(text[0], text[1]);
 			}

@@ -14,7 +14,8 @@ public class YoutubeVideoInfo {
 	public String link;
 	public int loopCount = 1;
 	public int speed = 1;
-	
+	public byte bassBoost = 0;
+
 	public String startTimestamp = "0:00";
 	public String endTimestamp = "-1";
 	
@@ -59,6 +60,7 @@ public class YoutubeVideoInfo {
 		return "YoutubeVideoInfo{" +
 				"name='" + name + '\'' +
 				", viewCount=" + viewCount +
+				", bassBoost=" + bassBoost +
 //				", audio=" + Arrays.toString(audio) +
 				", link='" + link + '\'' +
 				", loopCount=" + loopCount +

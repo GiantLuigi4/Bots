@@ -1,6 +1,5 @@
 package com.github.lorenzopapi.discord;
 
-import com.github.kiulian.downloader.model.YoutubeVideo;
 import com.github.lorenzopapi.discord.utils.YoutubeVideoInfo;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.managers.AudioManager;
@@ -19,6 +18,7 @@ public class SendingHandler implements AudioSendHandler {
 	byte[] audio;
 	ArrayList<YoutubeVideoInfo> queue;
 	int loops;
+	int bassBoost;
 	YoutubeVideoInfo info;
 	AudioManager manager;
 	/**
@@ -38,6 +38,10 @@ public class SendingHandler implements AudioSendHandler {
 		queue.remove(0);
 		loops = info.loopCount;
 		packetSize = 3840 * info.speed;
+		bassBoost = info.bassBoost;
+		for (int i = 0; i < info.audio.length; i++) {
+			info.audio[i] += bassBoost;
+		}
 		setup(info.audio);
 		counter = getCounterIndex(info.startTimestamp, packetSize);
 		this.manager = manager;
@@ -56,8 +60,7 @@ public class SendingHandler implements AudioSendHandler {
 			start = format.parse(timeStamp);
 		} catch (Throwable ignored) {
 		}
-//		System.out.println(start.getSeconds() + ((start.getMinutes() + (start.getHours() * 60)) * 60) * packetSize * 48);
-		return (int) ((start.getSeconds() + ((start.getMinutes() + (start.getHours() * 60)) * 60)) * packetSize * (50));
+		return (start.getSeconds() + ((start.getMinutes() + (start.getHours() * 60)) * 60)) * packetSize * (50);
 	}
 	
 	public void setup(byte[] bytes) {
@@ -84,7 +87,7 @@ public class SendingHandler implements AudioSendHandler {
 		try {
 			time = format.parse(timeStamp);
 		} catch (Throwable err) {
-			int time1 = (int)((audio.length / packetSize) / (50));
+			int time1 = (audio.length / packetSize) / (50);
 			int hours = time1 / (60 * 60);
 			int minutes = time1 / 60 - (hours * 60);
 			int seconds = time1 - (minutes + (hours * 60)) * 60;
@@ -132,7 +135,7 @@ public class SendingHandler implements AudioSendHandler {
 	}
 	
 	public String getTimestamp() {
-		int time = (int)((counter / packetSize) / (50));
+		int time = (counter / packetSize) / (50);
 		int hours = time / (60 * 60);
 		int minutes = time / 60 - (hours * 60);
 		int seconds = time - (minutes + (hours * 60)) * 60;
