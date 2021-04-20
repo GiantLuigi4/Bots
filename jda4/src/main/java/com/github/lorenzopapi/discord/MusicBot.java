@@ -63,11 +63,13 @@ public class MusicBot extends ListenerAdapter {
 				for (File file : downloadCache.listFiles()) {
 					file.delete();
 				}
-				bot = JDABuilder.createLight(PropertyReader.read("bots.properties", "musicBot"), GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_VOICE_STATES)
+				JDABuilder builder = JDABuilder.createLight(PropertyReader.read("bots.properties", "musicBot"), GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_VOICE_STATES)
 						.enableCache(CacheFlag.VOICE_STATE)
+//						.enableIntents(GatewayIntent.GUILD_MEMBERS)
+//						.setMemberCachePolicy(MemberCachePolicy.ALL)
 						.addEventListeners(new MusicBot())
-						.setActivity(Activity.watching("-music:help"))
-						.build();
+						.setActivity(Activity.watching("-music:help"));
+				bot = builder.build();
 				Files.create(prefixesFile);
 				String content = Files.read(prefixesFile);
 				for (String line : content.split("\n")) {
@@ -92,6 +94,9 @@ public class MusicBot extends ListenerAdapter {
 		if (e.getAuthor().isBot()) {
 			return;
 		}
+//		e.getAuthor().openPrivateChannel().complete().sendMessage("h").complete();
+//		e.getChannel().sendMessage("h").reference(e.getChannel().sendMessage("a").completeAfter(10, TimeUnit.SECONDS)).complete();
+//		e.getChannel().sendMessage("h").mentionUsers(e.getAuthor().getId()).complete();
 		long userId = e.getMember().getIdLong();
 		Message m = e.getMessage();
 		String message = m.getContentRaw().toLowerCase();
@@ -125,6 +130,8 @@ public class MusicBot extends ListenerAdapter {
 			if (args.containsKey("bassboost")) handler.bassBoost =  Integer.parseInt(args.get("bassboost"));
 			else if (args.containsKey("bb")) handler.bassBoost =  Integer.parseInt(args.get("bb"));
 			else if (args.containsKey("bass_boost")) handler.bassBoost =  Integer.parseInt(args.get("bass_boost"));
+			if (args.containsKey("loops")) handler.loops =  Integer.parseInt(args.get("loops"));
+			else if (args.containsKey("l")) handler.loops =  Integer.parseInt(args.get("l"));
 		} else if (message.startsWith(prefix) || message.startsWith("-music:")) {
 			if (message.startsWith(prefix + "play")) {
 				playSong(e, e.getGuild());
@@ -178,6 +185,14 @@ public class MusicBot extends ListenerAdapter {
 				if (e.getMember().hasPermission(Permission.ADMINISTRATOR)) {
 					queue.get(e.getGuild()).clear();
 					e.getChannel().sendMessage("Queue cleared!").complete();
+				} else {
+					e.getChannel().sendMessage("You need the Administration permission to do that!").complete();
+				}
+			} else if (message.startsWith(prefix + "skip")) {
+				if (e.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+					handler.loops = 0;
+					handler.counter = handler.audio.length - handler.packetSize;
+					e.getChannel().sendMessage("Song Skipped!").complete();
 				} else {
 					e.getChannel().sendMessage("You need the Administration permission to do that!").complete();
 				}

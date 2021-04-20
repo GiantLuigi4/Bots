@@ -147,6 +147,7 @@ public class SendingHandler implements AudioSendHandler {
 							info.audio[i] += info.bassBoost;
 						}
 					}
+					loops = info.loopCount;
 					setup(info.audio);
 					this.info = info;
 				} else {
