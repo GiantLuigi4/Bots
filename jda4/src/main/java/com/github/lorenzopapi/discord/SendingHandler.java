@@ -42,7 +42,7 @@ public class SendingHandler implements AudioSendHandler {
 		YoutubeVideoInfo info = queue.get(0);
 		queue.remove(0);
 		loops = info.loopCount;
-		packetSize = 3840 * info.speed;
+		packetSize = Math.round(3840f * info.speed);
 		if (info.bassBoost != 0) {
 			for (int i = 0; i < info.audio.length; i++) {
 				info.audio[i] += info.bassBoost;
@@ -110,7 +110,7 @@ public class SendingHandler implements AudioSendHandler {
 		System.arraycopy(audio, counter, sent, 0, Math.min(packetSize, audio.length - counter - 1));
 		for (int index = 0; index < sent.length; index++) {
 			if (isForTheWorstApplied) {
-				sent[index] = (byte) ((byte) (((byte) (sent[index] % 32) / 20) * 20));
+				sent[index] = (byte) (((byte) (sent[index] % 32) / 20) * 20);
 				if (index > 1 || counter > 1) audio[counter + index - 1] += audio[counter + index - 1] / 32;
 			}
 			sent[index] += bassBoost;
@@ -140,7 +140,7 @@ public class SendingHandler implements AudioSendHandler {
 				if (!queue.isEmpty()) {
 					YoutubeVideoInfo info = queue.get(0);
 					queue.remove(0);
-					packetSize = 3840 * info.speed;
+					packetSize = Math.round(3840f * info.speed);
 					counter = getCounterIndex(info.startTimestamp, packetSize);
 					if (info.bassBoost != 0) {
 						for (int i = 0; i < info.audio.length; i++) {

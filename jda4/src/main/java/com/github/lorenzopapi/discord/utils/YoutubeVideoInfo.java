@@ -13,7 +13,7 @@ public class YoutubeVideoInfo {
 	public byte[] audio;
 	public String link;
 	public int loopCount = 1;
-	public int speed = 1;
+	public float speed = 1;
 	public byte bassBoost = 0;
 
 	public String startTimestamp = "0:00";

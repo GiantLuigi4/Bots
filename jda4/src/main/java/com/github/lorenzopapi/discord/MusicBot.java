@@ -581,8 +581,8 @@ public class MusicBot extends ListenerAdapter {
 	private static void setupSpecial(YoutubeVideoInfo info, HashMap<String, String> args1) {
 		if (args1.containsKey("bb")) info.bassBoost = Byte.parseByte(args1.get("bb"));
 		if (args1.containsKey("bassboost")) info.bassBoost = Byte.parseByte(args1.get("bassboost"));
-		if (args1.containsKey("speed")) info.speed = Integer.parseInt(args1.get("speed"));
-		if (args1.containsKey("s")) info.speed = Integer.parseInt(args1.get("s"));
+		if (args1.containsKey("speed")) info.speed = Float.parseFloat(args1.get("speed"));
+		if (args1.containsKey("s")) info.speed = Float.parseFloat(args1.get("s"));
 		if (args1.containsKey("loop")) info.loopCount = Integer.parseInt(args1.get("loop"));
 		if (args1.containsKey("l")) info.loopCount = Integer.parseInt(args1.get("l"));
 		if (args1.containsKey("start")) info.startTimestamp = args1.get("start");
