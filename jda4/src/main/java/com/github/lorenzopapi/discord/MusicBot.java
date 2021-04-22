@@ -39,8 +39,8 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class MusicBot extends ListenerAdapter {
 	public static String prefixesFile = "musicBotPrefixes.properties";
@@ -92,9 +92,6 @@ public class MusicBot extends ListenerAdapter {
 		if (e.getAuthor().isBot()) {
 			return;
 		}
-//		e.getAuthor().openPrivateChannel().complete().sendMessage("h").complete();
-//		e.getChannel().sendMessage("h").reference(e.getChannel().sendMessage("a").completeAfter(10, TimeUnit.SECONDS)).complete();
-//		e.getChannel().sendMessage("h").mentionUsers(e.getAuthor().getId()).complete();
 		long userId = e.getMember().getIdLong();
 		Message m = e.getMessage();
 		String message = m.getContentRaw().toLowerCase();
@@ -112,26 +109,7 @@ public class MusicBot extends ListenerAdapter {
 				handlePlaylist(e, m, prefix, subCommand);
 			} catch (IOException ignored) {}
 		} else if (message.startsWith(prefix + "effects ")) {
-			String effects = message.substring((prefix+"effects").length());
-			if (effects.equals(" for the worst")) {
-				handler.isForTheWorstApplied = true;
-			} else if (effects.equals(" reset")) {
-				handler.isForTheWorstApplied = false;
-				handler.volume = 100;
-				handler.byteSwap = 1;
-				handler.bassBoost = 0;
-			} //TODO: user presets
-			HashMap<String, String> args = parseArgs(effects);
-			if (args.containsKey("volume")) handler.volume =  Float.parseFloat(args.get("volume"));
-			else if (args.containsKey("v")) handler.volume =  Float.parseFloat(args.get("v"));
-			if (args.containsKey("byteswap")) handler.byteSwap =  Integer.parseInt(args.get("byteswap"));
-			if (args.containsKey("pr")) handler.pseudoRetro =  Integer.parseInt(args.get("pr"));
-			else if (args.containsKey("psuedo_retro")) handler.pseudoRetro =  Integer.parseInt(args.get("psuedo_retro"));
-			if (args.containsKey("bassboost")) handler.bassBoost =  Integer.parseInt(args.get("bassboost"));
-			else if (args.containsKey("bb")) handler.bassBoost =  Integer.parseInt(args.get("bb"));
-			else if (args.containsKey("bass_boost")) handler.bassBoost =  Integer.parseInt(args.get("bass_boost"));
-			if (args.containsKey("loops")) handler.loops =  Integer.parseInt(args.get("loops"));
-			else if (args.containsKey("l")) handler.loops =  Integer.parseInt(args.get("l"));
+			handleEffect(message, prefix, handler);
 		} else if (message.startsWith(prefix) || message.startsWith("-music:")) {
 			if (message.startsWith(prefix + "play")) {
 				playSong(e, e.getGuild());
@@ -234,7 +212,27 @@ public class MusicBot extends ListenerAdapter {
 		}
 	}
 
-	private static void handleEffect(GuildMessageReceivedEvent e) {
+	private static void handleEffect(String message, String prefix, SendingHandler handler) {
+		String effects = message.substring((prefix + "effects").length());
+		if (effects.equals(" for the worst")) {
+			handler.isForTheWorstApplied = !handler.isForTheWorstApplied;
+		} else if (effects.equals(" reset")) {
+			handler.isForTheWorstApplied = false;
+			handler.volume = 100;
+			handler.byteSwap = 1;
+			handler.bassBoost = 0;
+		} //TODO: user presets
+		HashMap<String, String> args = parseArgs(effects);
+		if (args.containsKey("volume")) handler.volume =  Float.parseFloat(args.get("volume"));
+		else if (args.containsKey("v")) handler.volume =  Float.parseFloat(args.get("v"));
+		if (args.containsKey("byteswap")) handler.byteSwap =  Integer.parseInt(args.get("byteswap"));
+		if (args.containsKey("pr")) handler.pseudoRetro =  Integer.parseInt(args.get("pr"));
+		else if (args.containsKey("psuedo_retro")) handler.pseudoRetro =  Integer.parseInt(args.get("psuedo_retro"));
+		if (args.containsKey("bassboost")) handler.bassBoost =  Integer.parseInt(args.get("bassboost"));
+		else if (args.containsKey("bb")) handler.bassBoost =  Integer.parseInt(args.get("bb"));
+		else if (args.containsKey("bass_boost")) handler.bassBoost =  Integer.parseInt(args.get("bass_boost"));
+		if (args.containsKey("loops")) handler.loops =  Integer.parseInt(args.get("loops"));
+		else if (args.containsKey("l")) handler.loops =  Integer.parseInt(args.get("l"));
 	}
 	
 	private static void handlePlaylist(GuildMessageReceivedEvent e, Message m, String prefix, String subCommand) throws IOException {
@@ -293,6 +291,7 @@ public class MusicBot extends ListenerAdapter {
 							"Playlist " + listName + "has been created successfully!\n" +
 									"Use `-music:playlist add " + listName + " [url]` to start filling it up."
 					).reference(e.getMessage()).mentionRepliedUser(false).complete();
+					Files.create("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/playlist.json", "{}");
 				}
 			}
 		} else if (subCommand.startsWith("play")) {
@@ -501,6 +500,11 @@ public class MusicBot extends ListenerAdapter {
 					e.getChannel().sendMessage(playlistSongsBuilder(args, playlist.getVideos(), e).build()).complete();
 				}
 			}
+		} else if (subCommand.startsWith("list")) {
+			String message1 = m.getContentRaw();
+			subCommand = message1.substring((prefix + "playlist ").length());
+			String[] args = subCommand.substring("list".length()).split(" ");
+			e.getChannel().sendMessage(playlistListBuilder(args[0], e).build()).complete();
 		} else {
 			e.getChannel().sendMessage("`" + subCommand + "`" + " is not a valid subcommand for playlist").reference(e.getMessage()).mentionRepliedUser(false).complete();
 		}
@@ -635,6 +639,47 @@ public class MusicBot extends ListenerAdapter {
 		String videoId = url.substring(url.indexOf("v=") + 2, url.indexOf("&") > 0 ? url.indexOf("&") : url.length());
 		builder.setThumbnail("https://i.ytimg.com/vi/%id%/hqdefault.jpg".replace("%id%", videoId));
 		builder.setAuthor("Requested by: " + e.getMember().getEffectiveName(), null, e.getAuthor().getAvatarUrl());
+		builder.setFooter("Bot by: GiantLuigi4 and LorenzoPapi");
+		return builder;
+	}
+
+	private static EmbedBuilder playlistListBuilder(String page, GuildMessageReceivedEvent e) {
+		EmbedBuilder builder = new EmbedBuilder();
+		builder.setColor(new Color(((int) Math.abs(e.hashCode() * 3732.12382f)) % 255, Math.abs(Objects.hash("queue")) % 255, Math.abs(Objects.hash("QUEUE")) % 255));
+		File folder = new File("bots/music/playlists/" + e.getGuild().getId() + "/");
+		int playlistCounter = folder.listFiles().length;
+		if (playlistCounter > 10) {
+			if (!page.isEmpty()) {
+				builder.setTitle("Playlists available, page " + page);
+				int p = Integer.parseInt(page);
+				for (int i = 10 * (p - 1); i < Math.min((10 * p), playlistCounter); i++) {
+					JsonObject listJson = gson.fromJson(Files.read(folder.listFiles()[i] + "/playlist.json"), JsonObject.class);
+					Playlist list = Playlist.deserialize(listJson);
+					String owner = PropertyReader.read(folder.listFiles()[i] + "/attributes.properties", "owner");
+					builder.addField((i + 1) + ". " + folder.listFiles()[i], "By: " + e.getGuild().getMember(User.fromId(owner)).getEffectiveName() + "\n" + "Songs: " + list.getVideos().size(), false);
+				}
+			} else {
+				builder.setTitle("Playlists available, page 1");
+				for (int i = 0; i < 10; i++) {
+					JsonObject listJson = gson.fromJson(Files.read(folder.listFiles()[i] + "/playlist.json"), JsonObject.class);
+					Playlist list = Playlist.deserialize(listJson);
+					String owner = PropertyReader.read(folder.listFiles()[i] + "/attributes.properties", "owner");
+					builder.addField((i + 1) + ". " + folder.listFiles()[i], "By: " + e.getGuild().getMember(User.fromId(owner)).getEffectiveName() + "\n" + "Songs: " + list.getVideos().size(), false);
+				}
+			}
+		} else {
+			builder.setTitle("Playlists available");
+			for (int i = 0; i < playlistCounter; i++) {
+				JsonObject listJson = gson.fromJson(Files.read(folder.listFiles()[i] + "/playlist.json"), JsonObject.class);
+				Playlist list = Playlist.deserialize(listJson);
+				//String owner = PropertyReader.read(folder.listFiles()[i] + "/attributes.properties", "owner");
+				//is null for some reason
+				//TODO investigate
+				//System.out.println(e.getGuild().getMember(User.fromId(owner)));
+				String name = folder.listFiles()[i].toString();
+				builder.addField((i + 1) + ". " + name.substring(name.lastIndexOf("\\") + 1), "By: TODO\n" + "Songs: " + list.getVideos().size(), false);
+			}
+		}
 		builder.setFooter("Bot by: GiantLuigi4 and LorenzoPapi");
 		return builder;
 	}
