@@ -41,7 +41,7 @@ public class Playlist {
 	public static Playlist deserialize(JsonObject object) {
 		YoutubeVideoInfo[] infos = new YoutubeVideoInfo[object.entrySet().size()];
 		String pointer = "null";
-		ArrayList<YoutubeVideoInfo> infos1 = new ArrayList<>(Arrays.asList(infos));
+		ArrayList<YoutubeVideoInfo> infos1;
 		if (object.has("pointer")) {
 			pointer = object.get(pointer).getAsString();
 			infos1 = (ArrayList<YoutubeVideoInfo>) Playlist.deserialize(gson.fromJson(Files.read(new File("bots/music/playlists/" + pointer + "/playlist.json")), JsonObject.class)).getVideos();

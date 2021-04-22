@@ -39,10 +39,8 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.List;
 
 public class MusicBot extends ListenerAdapter {
 	public static String prefixesFile = "musicBotPrefixes.properties";
@@ -110,7 +108,9 @@ public class MusicBot extends ListenerAdapter {
 		SendingHandler handler = (SendingHandler) e.getGuild().getAudioManager().getSendingHandler();
 		if (message.startsWith(prefix + "playlist")) {
 			String subCommand = message.substring((prefix + "playlist ").length());
-			handlePlaylist(e, m, prefix, subCommand);
+			try {
+				handlePlaylist(e, m, prefix, subCommand);
+			} catch (IOException ignored) {}
 		} else if (message.startsWith(prefix + "effects ")) {
 			String effects = message.substring((prefix+"effects").length());
 			if (effects.equals(" for the worst")) {
@@ -237,7 +237,7 @@ public class MusicBot extends ListenerAdapter {
 	private static void handleEffect(GuildMessageReceivedEvent e) {
 	}
 	
-	private static void handlePlaylist(GuildMessageReceivedEvent e, Message m, String prefix, String subCommand) {
+	private static void handlePlaylist(GuildMessageReceivedEvent e, Message m, String prefix, String subCommand) throws IOException {
 		if (subCommand.startsWith("create")) {
 			String message1 = m.getContentRaw();
 			if (!subCommand.startsWith("create ")) {
@@ -263,24 +263,20 @@ public class MusicBot extends ListenerAdapter {
 					String name = "";
 					for (Member member1 : e.getGuild().getMembers()) {
 						if (member1.getId().equals(ownerID)) {
-							name = member.getEffectiveName();
-							name += "#" + member.getUser().getDiscriminator();
+							name = member.getEffectiveName() + "#" + member.getUser().getDiscriminator();
 						}
 					}
 					if (name.equals("")) {
 						if (member != null) {
-							name = member.getEffectiveName();
-							name += "#" + member.getUser().getDiscriminator();
+							name = member.getEffectiveName() + "#" + member.getUser().getDiscriminator();
 						} else {
 							if  (e.getJDA().getUserById(ownerID) != null) {
-								name = e.getJDA().getUserById(ownerID).getName();
-								name += "#" + e.getJDA().getUserById(ownerID).getDiscriminator();
+								name = e.getJDA().getUserById(ownerID).getName() + "#" + e.getJDA().getUserById(ownerID).getDiscriminator();
 							}
 						}
 					}
 					if (name.equals("")) {
-						name = PropertyReader.read(file, "ownerName");
-						name += "#" + PropertyReader.read(file, "ownerDiscriminator");
+						name = PropertyReader.read(file, "ownerName") + "#" + PropertyReader.read(file, "ownerDiscriminator");
 					}
 					e.getChannel()
 							.sendMessage("Playlist " + listName + " already exists, it is owned by " + name + ".")
@@ -343,6 +339,7 @@ public class MusicBot extends ListenerAdapter {
 					return;
 				}
 				file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/playlist.json");
+				Files.create("bots/music/playlists/" + e.getGuild().getId() + "/" + listName + "/playlist.json", "{}");
 				JsonObject listJson = gson.fromJson(Files.read(file), JsonObject.class);
 				Playlist playlist = Playlist.deserialize(listJson);
 				String info = "";
@@ -488,6 +485,22 @@ public class MusicBot extends ListenerAdapter {
 //							"Successfully deleted `" + listName + "`.\nAny servers which hold a copy of this playlist will no longer be able to play it."
 //					).reference(e.getMessage()).mentionRepliedUser(false).complete();
 			}
+		} else if (subCommand.startsWith("songs")) {
+			String message1 = m.getContentRaw();
+			if (!subCommand.startsWith("songs ")) {
+				e.getChannel().sendMessage("Specify a playlist to list").complete();
+			} else {
+				subCommand = message1.substring((prefix + "playlist ").length());
+				String[] args = subCommand.substring("songs ".length()).split(" ");
+				File file = new File("bots/music/playlists/" + e.getGuild().getId() + "/" + args[0] + "/playlist.json");
+				if (!file.exists()) {
+					e.getChannel().sendMessage("Playlist is empty! Fill it up with -music:add").complete();
+				} else {
+					JsonObject listJson = gson.fromJson(Files.read(file), JsonObject.class);
+					Playlist playlist = Playlist.deserialize(listJson);
+					e.getChannel().sendMessage(playlistSongsBuilder(args, playlist.getVideos(), e).build()).complete();
+				}
+			}
 		} else {
 			e.getChannel().sendMessage("`" + subCommand + "`" + " is not a valid subcommand for playlist").reference(e.getMessage()).mentionRepliedUser(false).complete();
 		}
@@ -622,6 +635,40 @@ public class MusicBot extends ListenerAdapter {
 		String videoId = url.substring(url.indexOf("v=") + 2, url.indexOf("&") > 0 ? url.indexOf("&") : url.length());
 		builder.setThumbnail("https://i.ytimg.com/vi/%id%/hqdefault.jpg".replace("%id%", videoId));
 		builder.setAuthor("Requested by: " + e.getMember().getEffectiveName(), null, e.getAuthor().getAvatarUrl());
+		builder.setFooter("Bot by: GiantLuigi4 and LorenzoPapi");
+		return builder;
+	}
+
+	private static EmbedBuilder playlistSongsBuilder(String[] args, List<YoutubeVideoInfo> infos, GuildMessageReceivedEvent e) {
+		String playlist = args[0];
+		String page = "";
+		if (args.length > 1) {
+			page = args[1];
+		}
+		EmbedBuilder builder = new EmbedBuilder();
+		builder.setColor(new Color(((int) Math.abs(e.hashCode() * 3732.12382f)) % 255, Math.abs(Objects.hash("queue")) % 255, Math.abs(Objects.hash("QUEUE")) % 255));
+		if (infos.size() > 10) {
+			if (!page.isEmpty()) {
+				builder.setTitle("Songs of playlist " + playlist + ", page " + page);
+				int p = Integer.parseInt(page);
+				for (int i = 10 * (p - 1); i < Math.min((10 * p), infos.size()); i++) {
+					YoutubeVideoInfo info = infos.get(i);
+					builder.addField((i + 1) + ". " + info.name, "Looping: " + info.loopCount + " times\n" + "Speed: " + info.speed, false);
+				}
+			} else {
+				builder.setTitle("Songs of playlist " + playlist + ", page 1");
+				for (int i = 0; i < 10; i++) {
+					YoutubeVideoInfo info = infos.get(i);
+					builder.addField((i + 1) + ". " + info.name, "Looping: " + info.loopCount + " times\n" + "Speed: " + info.speed, false);
+				}
+			}
+		} else {
+			builder.setTitle("Songs of playlist " + playlist);
+			for (int i = 0; i < infos.size(); i++) {
+				YoutubeVideoInfo info = infos.get(i);
+				builder.addField((i + 1) + ". " + info.name, "Looping: " + info.loopCount + " times\n" + "Speed: " + info.speed, false);
+			}
+		}
 		builder.setFooter("Bot by: GiantLuigi4 and LorenzoPapi");
 		return builder;
 	}
