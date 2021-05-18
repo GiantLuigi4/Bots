@@ -8,8 +8,8 @@ public class ScheduledEffect {
 	public int byteSwap = -1;
 	public int pseudoRetro = -1;
 	public int bassBoost = -1;
-	public float chance;
-	public int delay = 100;
+	public float chance = -1;
+	public int delay = 0;
 	
 	public ScheduledEffect() {
 	}

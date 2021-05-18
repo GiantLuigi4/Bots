@@ -110,7 +110,7 @@ public class SendingHandler implements AudioSendHandler {
 	public ByteBuffer provide20MsAudio() {
 		ArrayList<ScheduledEffect> toRemove = new ArrayList<>();
 		for (ScheduledEffect effect : effectsQueue) {
-			if (counter % (packetSize * effect.delay) == 0) {
+			if (effect.delay == 0 || counter % (packetSize * effect.delay) == 0) {
 				if (effect.chance == -1 || effect.chance >= 100 || new Random().nextDouble() <= (effect.chance / 100)) {
 					if (effect.bassBoost != -1) bassBoost = effect.bassBoost;
 					isForTheWorstApplied = effect.isForTheWorstApplied;

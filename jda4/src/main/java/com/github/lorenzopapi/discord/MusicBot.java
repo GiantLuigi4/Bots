@@ -219,6 +219,9 @@ public class MusicBot extends ListenerAdapter {
 			handler.volume = 100;
 			handler.byteSwap = 1;
 			handler.bassBoost = 0;
+			handler.effectsQueue.clear();
+			handler.pseudoRetro = 1;
+			handler.packetSize = 3840;
 		} //TODO: user presets
 		HashMap<String, String> args = parseArgs(effects);
 		if (args.containsKey("volume")) effect.volume =  Float.parseFloat(args.get("volume"));
