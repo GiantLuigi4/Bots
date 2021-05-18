@@ -1,5 +1,6 @@
 package com.github.lorenzopapi.discord;
 
+import com.github.lorenzopapi.discord.utils.ScheduledEffect;
 import com.github.lorenzopapi.discord.utils.YoutubeVideoInfo;
 import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.managers.AudioManager;
@@ -10,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Random;
 
 public class SendingHandler implements AudioSendHandler {
 
@@ -36,6 +38,8 @@ public class SendingHandler implements AudioSendHandler {
 	 * 192 * 20 = 3840, and that's exactly our magic number
 	 */
 	int packetSize;
+	
+	ArrayList<ScheduledEffect> effectsQueue = new ArrayList<>();
 
 	public SendingHandler(ArrayList<YoutubeVideoInfo> queue, AudioManager manager) {
 		this.queue = queue;
@@ -104,6 +108,24 @@ public class SendingHandler implements AudioSendHandler {
 	
 	@Override
 	public ByteBuffer provide20MsAudio() {
+		ArrayList<ScheduledEffect> toRemove = new ArrayList<>();
+		for (ScheduledEffect effect : effectsQueue) {
+			if (counter % (packetSize * effect.delay) == 0) {
+				if (effect.chance == -1 || effect.chance >= 100 || new Random().nextDouble() <= (effect.chance / 100)) {
+					if (effect.bassBoost != -1) bassBoost = effect.bassBoost;
+					isForTheWorstApplied = effect.isForTheWorstApplied;
+					if (effect.volume != -1) volume = effect.volume;
+					if (effect.byteSwap != -1) byteSwap = effect.byteSwap;
+					if (effect.pseudoRetro != -1) pseudoRetro = effect.pseudoRetro;
+				}
+				if (effect.chance == -1) {
+					toRemove.add(effect);
+				}
+			}
+		}
+		for (ScheduledEffect effect : toRemove) {
+			effectsQueue.remove(effect);
+		}
 		buf.clear();
 		byte[] sent = new byte[packetSize];
 //		counter = packetSize*41;

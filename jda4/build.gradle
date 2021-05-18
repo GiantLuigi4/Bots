@@ -27,6 +27,7 @@ configurations {
 
 dependencies {
     musicBot 'net.dv8tion:JDA:4.2.1_259'
+    musicBot 'net.dv8tion:JDA:3.5.0_329'
     // https://mvnrepository.com/artifact/ws.schild/jave-all-deps
     musicBot 'com.github.sealedtx:java-youtube-downloader:cc7ae9c675'
     musicBot group: 'ws.schild', name: 'jave-all-deps', version: '3.0.1'

@@ -7,10 +7,7 @@ import com.github.kiulian.downloader.model.formats.Format;
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg;
 import com.github.kokorin.jaffree.ffmpeg.UrlInput;
 import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
-import com.github.lorenzopapi.discord.utils.Files;
-import com.github.lorenzopapi.discord.utils.Playlist;
-import com.github.lorenzopapi.discord.utils.PropertyReader;
-import com.github.lorenzopapi.discord.utils.YoutubeVideoInfo;
+import com.github.lorenzopapi.discord.utils.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -213,6 +210,7 @@ public class MusicBot extends ListenerAdapter {
 	}
 
 	private static void handleEffect(String message, String prefix, SendingHandler handler) {
+		ScheduledEffect effect = new ScheduledEffect();
 		String effects = message.substring((prefix + "effects").length());
 		if (effects.equals(" for the worst")) {
 			handler.isForTheWorstApplied = !handler.isForTheWorstApplied;
@@ -223,16 +221,19 @@ public class MusicBot extends ListenerAdapter {
 			handler.bassBoost = 0;
 		} //TODO: user presets
 		HashMap<String, String> args = parseArgs(effects);
-		if (args.containsKey("volume")) handler.volume =  Float.parseFloat(args.get("volume"));
-		else if (args.containsKey("v")) handler.volume =  Float.parseFloat(args.get("v"));
-		if (args.containsKey("byteswap")) handler.byteSwap =  Integer.parseInt(args.get("byteswap"));
-		if (args.containsKey("pr")) handler.pseudoRetro =  Integer.parseInt(args.get("pr"));
-		else if (args.containsKey("psuedo_retro")) handler.pseudoRetro =  Integer.parseInt(args.get("psuedo_retro"));
-		if (args.containsKey("bassboost")) handler.bassBoost =  Integer.parseInt(args.get("bassboost"));
-		else if (args.containsKey("bb")) handler.bassBoost =  Integer.parseInt(args.get("bb"));
-		else if (args.containsKey("bass_boost")) handler.bassBoost =  Integer.parseInt(args.get("bass_boost"));
+		if (args.containsKey("volume")) effect.volume =  Float.parseFloat(args.get("volume"));
+		else if (args.containsKey("v")) effect.volume =  Float.parseFloat(args.get("v"));
+		if (args.containsKey("byteswap")) effect.byteSwap =  Integer.parseInt(args.get("byteswap"));
+		if (args.containsKey("pr")) effect.pseudoRetro =  Integer.parseInt(args.get("pr"));
+		else if (args.containsKey("psuedo_retro")) effect.pseudoRetro =  Integer.parseInt(args.get("psuedo_retro"));
+		if (args.containsKey("bassboost")) effect.bassBoost =  Integer.parseInt(args.get("bassboost"));
+		else if (args.containsKey("bb")) effect.bassBoost =  Integer.parseInt(args.get("bb"));
+		else if (args.containsKey("bass_boost")) effect.bassBoost =  Integer.parseInt(args.get("bass_boost"));
+		if (args.containsKey("delay")) effect.delay = Integer.parseInt(args.get("delay"));
+		if (args.containsKey("chance")) effect.chance = Integer.parseInt(args.get("chance"));
 		if (args.containsKey("loops")) handler.loops =  Integer.parseInt(args.get("loops"));
 		else if (args.containsKey("l")) handler.loops =  Integer.parseInt(args.get("l"));
+		handler.effectsQueue.add(effect);
 	}
 	
 	private static void handlePlaylist(GuildMessageReceivedEvent e, Message m, String prefix, String subCommand) throws IOException {
