@@ -673,15 +673,18 @@ public class MusicBot extends ListenerAdapter {
 			}
 		} else {
 			builder.setTitle("Playlists available");
+			File[] files = folder.listFiles();
 			for (int i = 0; i < playlistCounter; i++) {
-				JsonObject listJson = gson.fromJson(Files.read(folder.listFiles()[i] + "/playlist.json"), JsonObject.class);
+				JsonObject listJson = gson.fromJson(Files.read(files[i] + "/playlist.json"), JsonObject.class);
 				Playlist list = Playlist.deserialize(listJson);
-				//String owner = PropertyReader.read(folder.listFiles()[i] + "/attributes.properties", "owner");
-				//is null for some reason
-				//TODO investigate
-				//System.out.println(e.getGuild().getMember(User.fromId(owner)));
+				System.out.println(files[i] + "/attributes.properties");
+				//owner is null because JDA 4 is dumb without intents
+				String owner = PropertyReader.read(files[i] + "/attributes.properties", "owner");
+				Member member = e.getGuild().getMember(User.fromId(owner));
+				if (member != null) owner = member.getNickname();
+				else owner = PropertyReader.read(files[i] + "/attributes.properties", "ownerName");
 				String name = folder.listFiles()[i].toString();
-				builder.addField((i + 1) + ". " + name.substring(name.lastIndexOf("\\") + 1), "By: TODO\n" + "Songs: " + list.getVideos().size(), false);
+				builder.addField((i + 1) + ". " + name.substring(name.lastIndexOf("\\") + 1), "By: " + owner + "\n" + "Songs: " + list.getVideos().size(), false);
 			}
 		}
 		builder.setFooter("Bot by: GiantLuigi4 and LorenzoPapi");

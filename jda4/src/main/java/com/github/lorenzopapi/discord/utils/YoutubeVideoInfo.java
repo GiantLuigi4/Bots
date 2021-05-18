@@ -29,6 +29,9 @@ public class YoutubeVideoInfo {
 	public static YoutubeVideoInfo deserialize(JsonObject object) {
 		try {
 			//TODO Luigi I don't think that downloading the video each time the playlist is deserialized is a good idea....
+			/*Yes, I know
+			* We've been over this already lorenzo
+			* I'm too lazy to make it store the video info to the playlist, plus download count exists*/
 			YoutubeVideoInfo info = MusicBot.doYoutubeDLRequest(object.get("url").getAsString());
 			info.speed = object.get("speed").getAsInt();
 			info.loopCount = object.get("loop").getAsInt();
