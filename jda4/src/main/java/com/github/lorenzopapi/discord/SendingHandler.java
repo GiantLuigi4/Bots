@@ -8,10 +8,7 @@ import net.dv8tion.jda.api.managers.AudioManager;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Random;
+import java.util.*;
 
 public class SendingHandler implements AudioSendHandler {
 
@@ -28,6 +25,7 @@ public class SendingHandler implements AudioSendHandler {
 	float volume = 100;
 	int byteSwap = 1;
 	int pseudoRetro = 1;
+	boolean isReverseOn = false;
 	/**
 	 * This magic number is calculated like this:
 	 * So we have an audio file that has a sample rate of 48000 sample per second
@@ -128,7 +126,6 @@ public class SendingHandler implements AudioSendHandler {
 		}
 		buf.clear();
 		byte[] sent = new byte[packetSize];
-//		counter = packetSize*41;
 		System.arraycopy(audio, counter, sent, 0, Math.min(packetSize, audio.length - counter - 1));
 		for (int index = 0; index < sent.length; index++) {
 			if (isForTheWorstApplied) {
@@ -138,7 +135,6 @@ public class SendingHandler implements AudioSendHandler {
 			sent[index] += bassBoost;
 			sent[index] *= Math.min(Math.max(volume, -100) / 100f, 1);
 			sent[index] = sent[(index / pseudoRetro) * pseudoRetro];
-//			sent[index] = (byte) Math.sqrt(sent[index] * sent[index]);
 		}
 		byte[] srcSwap = Arrays.copyOf(sent, sent.length);
 		for (int index = 0; index < sent.length; index++) {
@@ -150,6 +146,9 @@ public class SendingHandler implements AudioSendHandler {
 			}
 		}
 //		System.out.println(Arrays.equals(sent, srcSwap));
+		if (isReverseOn) {
+
+		}
 		buf.put(sent);
 		buf.position(0);
 		counter += packetSize;

@@ -108,8 +108,10 @@ public class MusicBot extends ListenerAdapter {
 		} else if (message.startsWith(prefix + "effects ")) {
 			handleEffect(message, prefix, handler);
 		} else if (message.startsWith(prefix) || message.startsWith("-music:")) {
-			if (message.startsWith(prefix + "play")) {
+			if (message.startsWith(prefix + "play ")) {
 				playSong(e, e.getGuild());
+			} else if (message.startsWith(prefix + "playfile")) {
+				playFile(e, e.getGuild());
 			} else if (message.startsWith(prefix + "queue")) {
 				if (!getQueue(e.getGuild()).isEmpty()) {
 					e.getChannel().sendMessage(queueBuilder(e).build()).complete();
@@ -212,9 +214,7 @@ public class MusicBot extends ListenerAdapter {
 	private static void handleEffect(String message, String prefix, SendingHandler handler) {
 		ScheduledEffect effect = new ScheduledEffect();
 		String effects = message.substring((prefix + "effects").length());
-		if (effects.equals(" for the worst")) {
-			handler.isForTheWorstApplied = !handler.isForTheWorstApplied;
-		} else if (effects.equals(" reset")) {
+		if (effects.equals(" reset")) {
 			handler.isForTheWorstApplied = false;
 			handler.volume = 100;
 			handler.byteSwap = 1;
@@ -222,7 +222,14 @@ public class MusicBot extends ListenerAdapter {
 			handler.effectsQueue.clear();
 			handler.pseudoRetro = 1;
 			handler.packetSize = 3840;
-		} //TODO: user presets
+			handler.isReverseOn = false;
+		} else {
+			if (effects.equals(" for the worst")) {
+				handler.isForTheWorstApplied = !handler.isForTheWorstApplied;
+			} else if (effects.equals(" reverse")) {
+				handler.isReverseOn = !handler.isReverseOn;
+			}
+		}	//TODO: user presets
 		HashMap<String, String> args = parseArgs(effects);
 		if (args.containsKey("volume")) effect.volume =  Float.parseFloat(args.get("volume"));
 		else if (args.containsKey("v")) effect.volume =  Float.parseFloat(args.get("v"));
@@ -527,6 +534,77 @@ public class MusicBot extends ListenerAdapter {
 		} catch (IOException | YoutubeException ignored) {}
 	}
 
+	private static void playFile(GuildMessageReceivedEvent e, Guild guild) {
+		AudioManager manager = guild.getAudioManager();
+		if (e.getMessage().getAttachments().isEmpty()) {
+			e.getChannel().sendMessage("Please provide an attachment").reference(e.getMessage()).mentionRepliedUser(false).complete();
+			return;
+		} else if (e.getMessage().getAttachments().size() > 1) {
+			e.getChannel().sendMessage("Warn: a list of attachment has been given, but only the first will be used").reference(e.getMessage()).mentionRepliedUser(false).complete();
+		}
+		HashMap<String, String> args1 = parseArgs(e.getMessage().getContentRaw());
+		VoiceChannel vc = null;
+		for (VoiceChannel c : guild.getVoiceChannels()) {
+			if (c.getMembers().contains(e.getMember())) {
+				vc = c;
+				break;
+			}
+		}
+		Message.Attachment attachment = e.getMessage().getAttachments().get(0);
+		if (guild.getSelfMember().getVoiceState().inVoiceChannel()) {
+			try {
+				File file = attachment.downloadToFile().get();
+				FileInputStream fis = new FileInputStream(file);
+				byte[] audio = new byte[fis.available()];
+				fis.read(audio);
+				YoutubeVideoInfo info = new YoutubeVideoInfo(attachment.getFileName(), 1, audio, "");
+				if (streamsByServer.containsKey(e.getGuild().getId()))
+					streamsByServer.replace(e.getGuild().getId(), info);
+				else
+					streamsByServer.put(e.getGuild().getId(), info);
+				if (info.viewCount == -1)
+					e.getChannel().sendMessage(info.name).reference(e.getMessage()).mentionRepliedUser(false).complete();
+				else
+					e.getChannel().sendMessage(playingFileMessageBuilder(info, e, true).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
+				ArrayList<YoutubeVideoInfo> infos = getQueue(guild);
+				setupSpecial(info, args1);
+				infos.add(info);
+			} catch (Throwable err) {
+				e.getChannel().sendMessage(errorMessageBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
+			}
+			return;
+		}
+		if (vc != null) {
+			if (!guild.getSelfMember().hasPermission(vc, Permission.VOICE_CONNECT) || !guild.getSelfMember().hasPermission(vc, Permission.VOICE_SPEAK)) {
+				e.getChannel().sendMessage("Insufficient permissions!").reference(e.getMessage()).mentionRepliedUser(false).queue();
+			} else {
+				manager.openAudioConnection(vc);
+				bot.getDirectAudioController().connect(vc);
+				e.getChannel().sendMessage("Connected successfully!").reference(e.getMessage()).mentionRepliedUser(false).queue();
+				try {
+					File file = attachment.downloadToFile().get();
+					FileInputStream fis = new FileInputStream(file);
+					byte[] audio = new byte[fis.available()];
+					fis.read(audio);
+					YoutubeVideoInfo info = new YoutubeVideoInfo(attachment.getFileName(), 1, audio, "");
+					streamsByServer.put(e.getGuild().getId(), info);
+					if (info.viewCount == -1)
+						e.getChannel().sendMessage(info.name).reference(e.getMessage()).mentionRepliedUser(false).complete();
+					else
+						e.getChannel().sendMessage(playingFileMessageBuilder(info, e, false).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
+					ArrayList<YoutubeVideoInfo> infos = getQueue(guild);
+					setupSpecial(info, args1);
+					infos.add(info);
+					manager.setSendingHandler(new SendingHandler(infos, manager));
+				} catch (Throwable err) {
+					e.getChannel().sendMessage(errorMessageBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
+				}
+			}
+		} else {
+			e.getChannel().sendMessage("Please join a voice channel!").reference(e.getMessage()).mentionRepliedUser(false).queue();
+		}
+	}
+
 	private static void playSong(GuildMessageReceivedEvent e, Guild guild) {
 		String[] args = e.getMessage().getContentRaw().split(" ");
 		AudioManager manager = guild.getAudioManager();
@@ -566,7 +644,6 @@ public class MusicBot extends ListenerAdapter {
 				ArrayList<YoutubeVideoInfo> infos = getQueue(guild);
 				setupSpecial(info, args1);
 				infos.add(info);
-//				manager.setSendingHandler(new SendingHandler(infos, manager));
 			} catch (Throwable err) {
 				e.getChannel().sendMessage(errorMessageBuilder(err).build()).reference(e.getMessage()).mentionRepliedUser(false).complete();
 			}
@@ -626,6 +703,20 @@ public class MusicBot extends ListenerAdapter {
 		return builder;
 	}
 
+	private static EmbedBuilder playingFileMessageBuilder(YoutubeVideoInfo info, GuildMessageReceivedEvent e, boolean isQueueing) {
+		EmbedBuilder builder = new EmbedBuilder();
+		builder.setColor(new Color(((int) Math.abs(info.name.length() * 3732.12382f)) % 255, Math.abs(Objects.hash(info.name)) % 255, Math.abs(Objects.hash(info.name.toLowerCase())) % 255));
+		if (isQueueing) builder.setTitle("Added to queue: ");
+		else builder.setTitle("Now Playing:");
+		String url = info.link;
+		builder.setDescription(info.name);
+		builder.addField("Link: ", url, false);
+		builder.addField("Video has: ", info.viewCount + " views", false);
+		builder.setAuthor("Requested by: " + e.getMember().getEffectiveName(), null, e.getAuthor().getAvatarUrl());
+		builder.setFooter("Bot by: GiantLuigi4 and LorenzoPapi");
+		return builder;
+	}
+
 	private static EmbedBuilder infoMessageBuilder(GuildMessageReceivedEvent e) {
 		SendingHandler handler = (SendingHandler) e.getGuild().getAudioManager().getSendingHandler();
 		YoutubeVideoInfo info = handler.info;
@@ -638,7 +729,6 @@ public class MusicBot extends ListenerAdapter {
 		builder.addField("Video has:", info.viewCount + " views", false);
 		builder.addField("Timestamp:", handler.getTimestamp() + " / " + handler.getEndTimestamp(), true);
 		builder.addField("Selected Range:", handler.getStartTimestamp() + " - " + handler.getEndTimestamp(), true);
-//		builder.addField("", "", false);
 		builder.addField("**Remaining Loops:" + (handler.loops) + "**", "**Speed:" + info.speed + "**", false);
 		String videoId = url.substring(url.indexOf("v=") + 2, url.indexOf("&") > 0 ? url.indexOf("&") : url.length());
 		builder.setThumbnail("https://i.ytimg.com/vi/%id%/hqdefault.jpg".replace("%id%", videoId));
@@ -844,7 +934,7 @@ public class MusicBot extends ListenerAdapter {
 					byte[] audio = new byte[stream.available()];
 					stream.read(audio);
 					stream.close();
-					audioOut.delete();
+					//audioOut.delete();
 					return new YoutubeVideoInfo(title, views, audio, url);
 				}
 			}
